@@ -7,7 +7,7 @@ which sends events to [Amazon Kinesis](https://aws.amazon.com/kinesis/).
 
 ## Installation
 
-This project has not been published in rugygems.org at this time, 
+This project has not been published in rubygems.org at this time, 
 so you have to build and install by yourself.
 Your need [bundler](http://bundler.io/) to install.
 
