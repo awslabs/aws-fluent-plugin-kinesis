@@ -130,7 +130,7 @@ module FluentPluginKinesis
         # :http_wire_trace => true
       end
 
-      @client = Aws::Kinesis.new(options)
+      @client = Aws::Kinesis::Client.new(options)
 
     end
 
