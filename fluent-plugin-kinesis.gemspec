@@ -21,9 +21,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "test-unit-rr", "~> 1.0"
 
-  spec.add_dependency "fluentd", ">= 0.10.43", "< 0.11"
-  # The Amazon Kinesis client requires version 1.31.3+.
-  spec.add_dependency "aws-sdk-core"
+  spec.add_dependency "fluentd", ">= 0.10.53", "< 0.11"
+  spec.add_dependency "aws-sdk-core", "~> 2.0"
   spec.add_dependency "multi_json", "~> 1.0"
   spec.add_dependency "msgpack", ">= 0.5.8"
 end

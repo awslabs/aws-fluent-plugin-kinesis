@@ -2,11 +2,13 @@ require 'aws-sdk-core'
 require 'base64'
 require 'multi_json'
 require 'logger'
+require 'securerandom'
 require 'fluent/plugin/version'
 
 module FluentPluginKinesis
   class OutputFilter < Fluent::BufferedOutput
 
+    include Fluent::DetachMultiProcessMixin
     include Fluent::SetTimeKeyMixin
     include Fluent::SetTagKeyMixin
 
@@ -21,10 +23,10 @@ module FluentPluginKinesis
 
     config_param :aws_key_id,   :string, default: nil
     config_param :aws_sec_key,  :string, default: nil
-    config_param :use_iam_role, :bool,   default: false
     config_param :region,     :string, default: nil
 
     config_param :stream_name,      :string, default: nil
+    config_param :random_partition_key, :bool, default: false
     config_param :partition_key,      :string, default: nil
     config_param :partition_key_expr,   :string, default: nil
     config_param :explicit_hash_key,    :string, default: nil
@@ -36,6 +38,22 @@ module FluentPluginKinesis
     def configure(conf)
       super
       validate_params
+
+      if @detach_process or (@num_threads > 1)
+        @parallel_mode = true
+        if @detach_process
+          @use_detach_multi_process_mixin = true
+        end   
+      else
+        @parallel_mode = false
+      end
+
+      if @parallel_mode
+        if @order_events
+          log.warn 'You have set "order_events" to true, however this configuration will be ignored due to "detach_process" and/or "num_threads".'
+        end
+        @order_events = false
+      end
 
       if @partition_key_expr
         partition_key_proc_str = sprintf(
@@ -53,9 +71,11 @@ module FluentPluginKinesis
     end
 
     def start
-      super
-      load_client
-      check_connection_to_stream
+      detach_multi_process do
+        super
+        load_client
+        check_connection_to_stream
+      end
     end
 
     def format(tag, time, record)
@@ -100,8 +120,8 @@ module FluentPluginKinesis
         end
       end
 
-      unless @partition_key or @partition_key_expr
-        raise ConfigError, "'partition_key' or 'partition_key_expr' is required"
+      unless @random_partition_key or @partition_key or @partition_key_expr
+        raise ConfigError, "'random_partition_key' or 'partition_key' or 'partition_key_expr' is required"
       end
     end
 
@@ -130,7 +150,7 @@ module FluentPluginKinesis
         # :http_wire_trace => true
       end
 
-      @client = Aws::Kinesis.new(options)
+      @client = Aws::Kinesis::Client.new(options)
 
     end
 
@@ -139,16 +159,20 @@ module FluentPluginKinesis
     end
 
     def get_key(name, record)
-      key = instance_variable_get("@#{name}")
-      key_proc = instance_variable_get("@#{name}_proc")
+      if @random_partition_key
+        SecureRandom.uuid 
+      else
+        key = instance_variable_get("@#{name}")
+        key_proc = instance_variable_get("@#{name}_proc")
 
-      value = key ? record[key] : record
+        value = key ? record[key] : record
 
-      if key_proc
-        value = key_proc.call(value)
+        if key_proc
+          value = key_proc.call(value)
+        end
+
+        value.to_s
       end
-
-      value.to_s
     end
 
     def build_data_to_put(data)
