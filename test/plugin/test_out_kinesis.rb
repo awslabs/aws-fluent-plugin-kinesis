@@ -48,14 +48,14 @@ class KinesisOutputTest < Test::Unit::TestCase
     assert_equal 'test_stream', d.instance.stream_name
     assert_equal 'us-east-1', d.instance.region
     assert_equal 'test_partition_key', d.instance.partition_key
-    assert_equal 'Proc', 
+    assert_equal 'Proc',
       d.instance.instance_variable_get(:@partition_key_proc).class.to_s
     assert_equal 'test_hash_key', d.instance.explicit_hash_key
-    assert_equal 'Proc', 
+    assert_equal 'Proc',
       d.instance.instance_variable_get(:@explicit_hash_key_proc).class.to_s
-    assert_equal 'a', 
+    assert_equal 'a',
       d.instance.instance_variable_get(:@partition_key_proc).call('a')
-    assert_equal 'a', 
+    assert_equal 'a',
       d.instance.instance_variable_get(:@explicit_hash_key_proc).call('a')
     assert_equal true, d.instance.order_events
     assert_equal nil, d.instance.instance_variable_get(:@sequence_number_for_ordering)
@@ -138,26 +138,26 @@ class KinesisOutputTest < Test::Unit::TestCase
     d.emit(data2, time)
 
     d.expect_format({
-      'stream_name' => 'test_stream', 
-      'data' => Base64.encode64(data1.to_json), 
+      'stream_name' => 'test_stream',
+      'data' => Base64.encode64(data1.to_json),
       'partition_key' => 'key1' }.to_msgpack
     )
-    d.expect_format({ 
-      'stream_name' => 'test_stream', 
-      'data' => Base64.encode64(data2.to_json), 
+    d.expect_format({
+      'stream_name' => 'test_stream',
+      'data' => Base64.encode64(data2.to_json),
       'partition_key' => 'key2' }.to_msgpack
     )
 
     client = create_mock_clinet
     client.describe_stream(stream_name: 'test_stream')
-    client.put_record( 
-      stream_name: 'test_stream', 
-      data: Base64.encode64(data1.to_json), 
+    client.put_record(
+      stream_name: 'test_stream',
+      data: Base64.encode64(data1.to_json),
       partition_key: 'key1'
     )
-    client.put_record( 
-      stream_name: 'test_stream', 
-      data: Base64.encode64(data2.to_json), 
+    client.put_record(
+      stream_name: 'test_stream',
+      data: Base64.encode64(data2.to_json),
       partition_key: 'key2'
     )
 
@@ -235,8 +235,8 @@ class KinesisOutputTest < Test::Unit::TestCase
     assert_match(
       /\A[\da-f-]{36}\z/,
       d.instance.send(
-        :get_key, 
-        'partition_key', 
+        :get_key,
+        'partition_key',
         {"test_key" => 'key1'}
       )
     )
@@ -252,8 +252,8 @@ class KinesisOutputTest < Test::Unit::TestCase
     assert_match(
       /\A[\da-f-]{36}\z/,
       d.instance.send(
-        :get_key, 
-        'partition_key', 
+        :get_key,
+        'partition_key',
         {"test_key" => 'key1', "explicit_key" => 'key2'}
       )
     )
