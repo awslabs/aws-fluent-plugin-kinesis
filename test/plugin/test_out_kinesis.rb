@@ -138,12 +138,49 @@ class KinesisOutputTest < Test::Unit::TestCase
     d.emit(data2, time)
 
     d.expect_format({
-      'stream_name' => 'test_stream',
       'data' => Base64.strict_encode64(data1.to_json),
       'partition_key' => 'key1' }.to_msgpack
     )
     d.expect_format({
-      'stream_name' => 'test_stream',
+      'data' => Base64.strict_encode64(data2.to_json),
+      'partition_key' => 'key2' }.to_msgpack
+    )
+
+    client = create_mock_clinet
+    client.describe_stream(stream_name: 'test_stream')
+    client.put_records(
+      stream_name: 'test_stream',
+      records: [
+        {
+          data: Base64.strict_encode64(data1.to_json),
+          partition_key: 'key1'
+        },
+        {
+          data: Base64.strict_encode64(data2.to_json),
+          partition_key: 'key2'
+        }
+      ]
+    )
+
+    d.run
+  end
+
+  def test_order_events
+
+    d = create_driver(CONFIG + "\norder_events true")
+
+    data1 = {"test_partition_key"=>"key1","a"=>1,"time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
+    data2 = {"test_partition_key"=>"key2","a"=>2,"time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
+
+    time = Time.parse("2011-01-02 13:14:15 UTC").to_i
+    d.emit(data1, time)
+    d.emit(data2, time)
+
+    d.expect_format({
+      'data' => Base64.strict_encode64(data1.to_json),
+      'partition_key' => 'key1' }.to_msgpack
+    )
+    d.expect_format({
       'data' => Base64.strict_encode64(data2.to_json),
       'partition_key' => 'key2' }.to_msgpack
     )
@@ -151,15 +188,16 @@ class KinesisOutputTest < Test::Unit::TestCase
     client = create_mock_clinet
     client.describe_stream(stream_name: 'test_stream')
     client.put_record(
-      stream_name: 'test_stream',
       data: Base64.strict_encode64(data1.to_json),
-      partition_key: 'key1'
-    )
+      partition_key: 'key1',
+      stream_name: 'test_stream'
+    ) { {sequence_number: 1} }
     client.put_record(
-      stream_name: 'test_stream',
       data: Base64.strict_encode64(data2.to_json),
-      partition_key: 'key2'
-    )
+      partition_key: 'key2',
+      sequence_number_for_ordering: 1,
+      stream_name: 'test_stream'
+    ) { {} }
 
     d.run
   end
@@ -169,7 +207,6 @@ class KinesisOutputTest < Test::Unit::TestCase
     data = {"test_partition_key"=>"key1","a"=>1}
     assert_equal(
         MessagePack.pack({
-            "stream_name"       => "test_stream",
             "data"              => Base64.strict_encode64(data.to_json),
             "partition_key"     => "key1"
         }),
@@ -193,7 +230,6 @@ class KinesisOutputTest < Test::Unit::TestCase
     data = {"test_partition_key"=>"key1","test_hash_key"=>"hash1","a"=>1}
     assert_equal(
         MessagePack.pack({
-            "stream_name"       => "test_stream",
             "data"              => Base64.strict_encode64(data.to_json),
             "partition_key"     => "key1",
             "explicit_hash_key" => "hash1"
