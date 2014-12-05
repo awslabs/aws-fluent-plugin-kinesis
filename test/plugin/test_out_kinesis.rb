@@ -130,8 +130,8 @@ class KinesisOutputTest < Test::Unit::TestCase
 
     d = create_driver
 
-    data1 = {"test_partition_key"=>"key1","a"=>1}
-    data2 = {"test_partition_key"=>"key2","a"=>2}
+    data1 = {"test_partition_key"=>"key1","a"=>1,"time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
+    data2 = {"test_partition_key"=>"key2","a"=>2,"time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
 
     time = Time.parse("2011-01-02 13:14:15 UTC").to_i
     d.emit(data1, time)
