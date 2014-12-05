@@ -43,7 +43,7 @@ module FluentPluginKinesis
         @parallel_mode = true
         if @detach_process
           @use_detach_multi_process_mixin = true
-        end   
+        end
       else
         @parallel_mode = false
       end
@@ -83,7 +83,7 @@ module FluentPluginKinesis
       # http://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecord.html
       data = {
         stream_name: @stream_name,
-        data: Base64.encode64(record.to_json),
+        data: Base64.strict_encode64(record.to_json),
         partition_key: get_key(:partition_key,record)
       }
 
@@ -160,7 +160,7 @@ module FluentPluginKinesis
 
     def get_key(name, record)
       if @random_partition_key
-        SecureRandom.uuid 
+        SecureRandom.uuid
       else
         key = instance_variable_get("@#{name}")
         key_proc = instance_variable_get("@#{name}_proc")
