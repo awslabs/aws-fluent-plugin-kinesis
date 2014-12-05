@@ -83,7 +83,7 @@ module FluentPluginKinesis
       # http://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecord.html
       data = {
         stream_name: @stream_name,
-        data: Base64.encode64(record.to_json),
+        data: Base64.strict_encode64(record.to_json),
         partition_key: get_key(:partition_key,record)
       }
 
