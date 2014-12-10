@@ -1,5 +1,17 @@
+# Copyright 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
+
 require 'aws-sdk-core'
-require 'base64'
 require 'multi_json'
 require 'logger'
 require 'securerandom'
@@ -14,8 +26,9 @@ module FluentPluginKinesis
 
     USER_AGENT_NAME = 'fluent-plugin-kinesis-output-filter'
     PROC_BASE_STR = 'proc {|record| %s }'
-    PUT_RECORDS_MAX_COUNT = 1000
-    PUT_RECORDS_MAX_DATA_SIZE = 1048576
+    PUT_RECORDS_MAX_COUNT = 500
+    PUT_RECORD_MAX_DATA_SIZE = 1024 * 50
+    PUT_RECORDS_MAX_DATA_SIZE = 1024 * 1024 * 5
 
     Fluent::Plugin.register_output('kinesis',self)
 
@@ -24,6 +37,8 @@ module FluentPluginKinesis
 
     config_param :aws_key_id,  :string, default: nil
     config_param :aws_sec_key, :string, default: nil
+    # The 'region' parameter is optional because
+    # it may be set as an environment variable.
     config_param :region,      :string, default: nil
 
     config_param :stream_name,            :string
@@ -33,6 +48,7 @@ module FluentPluginKinesis
     config_param :explicit_hash_key,      :string, default: nil
     config_param :explicit_hash_key_expr, :string, default: nil
     config_param :order_events,           :bool,   default: false
+    config_param :retries_on_putrecords,  :integer, default: 3
 
     config_param :debug, :bool, default: false
 
@@ -80,10 +96,8 @@ module FluentPluginKinesis
     end
 
     def format(tag, time, record)
-      # XXX: The maximum size of the data blob is 50 kilobytes
-      # http://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecord.html
       data = {
-        data: Base64.strict_encode64(record.to_json),
+        data: record.to_json,
         partition_key: get_key(:partition_key,record)
       }
 
@@ -95,52 +109,25 @@ module FluentPluginKinesis
     end
 
     def write(chunk)
-      data_list = chunk.to_enum(:msgpack_each).map do |data|
-        build_data_to_put(data)
-      end
+      data_list = chunk.to_enum(:msgpack_each).find_all{|record|
+        unless record_exceeds_max_size?(record['data'])
+          true
+        else
+          log.error sprintf('Record exceeds the 50KB per-record size limit and will not be delivered: %s', record['data'])
+          false
+        end
+      }.map{|record|
+        build_data_to_put(record)
+      }
 
       if @order_events
         put_record_for_order_events(data_list)
       else
-        put_records(data_list)
+        records_array = build_records_array_to_put(data_list)
+        records_array.each{|records|
+          put_records_with_retry(records)
+        }
       end
-    end
-
-    def put_record_for_order_events(data_list)
-      sequence_number_for_ordering = nil
-      data_list.each do |data_to_put|
-        if sequence_number_for_ordering
-          data_to_put.update(
-            sequence_number_for_ordering: sequence_number_for_ordering
-          )
-        end
-        data_to_put.update(
-          stream_name: @stream_name
-        )
-        result = @client.put_record(data_to_put)
-        sequence_number_for_ordering = result[:sequence_number]
-      end
-    end
-
-    def put_records(data_list)
-      data_list.slice_before([]) {|data_to_put, buf|
-        # XXX: Record data size is not strictly...
-        data_size = data_to_put.to_s.length
-        total_data_size = (buf + [data_size]).inject {|r, i| r + i }
-
-        if buf.length > PUT_RECORDS_MAX_COUNT or total_data_size > PUT_RECORDS_MAX_DATA_SIZE
-          buf.clear
-          true
-        else
-          buf << data_size
-          false
-        end
-      }.each {|records|
-        @client.put_records(
-          records: records,
-          stream_name: @stream_name
-        )
-      }
     end
 
     private
@@ -204,7 +191,87 @@ module FluentPluginKinesis
     end
 
     def build_data_to_put(data)
-      Hash[data.map{ |k, v| [k.to_sym, v] }]
+      Hash[data.map{|k, v| [k.to_sym, v] }]
+    end
+
+    def put_record_for_order_events(data_list)
+      sequence_number_for_ordering = nil
+      data_list.each do |data_to_put|
+        if sequence_number_for_ordering
+          data_to_put.update(
+            sequence_number_for_ordering: sequence_number_for_ordering
+          )
+        end
+        data_to_put.update(
+          stream_name: @stream_name
+        )
+        result = @client.put_record(data_to_put)
+        sequence_number_for_ordering = result[:sequence_number]
+      end
+    end
+
+    def build_records_array_to_put(data_list)
+      records_array = []
+      records = []
+      records_payload_length = 0
+      data_list.each{|data_to_put|
+        payload = data_to_put[:data]
+        if records.length >= PUT_RECORDS_MAX_COUNT or (records_payload_length + payload.length) >= PUT_RECORDS_MAX_DATA_SIZE
+          records_array.push(records)
+          records = []
+          records_payload_length = 0
+        end
+        records.push(data_to_put)
+        records_payload_length += payload.length
+      }
+      records_array.push(records)
+      records_array
+    end
+
+    def put_records_with_retry(records,retry_count=0)
+      response = @client.put_records(
+        records: records,
+        stream_name: @stream_name
+      )
+
+      if response[:failed_record_count] && response[:failed_record_count] > 0
+        failed_records = []
+        response[:records].each_with_index{|record,index|
+          if record[:error_code]
+            failed_records.push({body: records[index], error_code: record[:error_code]})
+          end
+        }
+
+        if(retry_count < @retries_on_putrecords)
+          sleep(calculate_sleep_duration(retry_count))
+          retry_count += 1
+          log.warn sprintf('Retrying to put records. Retry count: %d', retry_count)
+          put_records_with_retry(
+            failed_records.map{|record| record[:body]},
+            retry_count
+          )
+        else
+          failed_records.each{|record|
+            log.error sprintf(
+              'Could not put record, Error: %s, Record: %s',
+              record[:error_code],
+              record[:body].to_json
+            )
+          }
+        end
+      end
+    end
+
+    def calculate_sleep_duration(current_retry)
+      Array.new(@retries_on_putrecords){|n| ((2 ** n) * scaling_factor)}[current_retry]
+    end
+
+    def scaling_factor
+      0.5 + Kernel.rand * 0.1
+    end
+
+    def record_exceeds_max_size?(record_string)
+      return record_string.length > PUT_RECORD_MAX_DATA_SIZE
     end
   end
 end

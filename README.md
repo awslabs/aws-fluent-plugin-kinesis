@@ -148,7 +148,7 @@ this option will be ignored.
 
 Integer. Optional. This defines the number of parallel processes to start.
 This can be used to increase throughput by allowing multiple processes to
-execute the plugin at once. This cannot be used together with order_events.
+execute the plugin at once. This cannot be used together with **order_events**.
 Setting this option to > 0 will cause the plugin to run in a separate
 process. The default is 0.
 
@@ -163,6 +163,14 @@ emitting with threads will improve throughput.
 This option can be used to parallelize writes into the output(s)
 designated by the output plugin. The default is 1.
 Also you can use this option with *detach_process*.
+
+### retries_on_putrecords
+
+Integer, default is 3. When **order_events** is false, the plugin will put multiple
+records to Amazon Kinesis in batches using PutRecords. A set of records in a batch
+may fail for reasons documented in the Kinesis Service API Reference for PutRecords.
+Failed records will be retried **retries_on_putrecords** times. If a record
+fails all retries an error log will be emitted. 
 
 ### debug
 
@@ -244,10 +252,15 @@ passed to your Ruby expression as a variable 'record'.
 
 ### Improving throughput to Amazon Kinesis
 
-You may improve throughput with *detach_process* and/or *num_threads*.
-These options enable putting records to Amazon Kinesis in parallel manner
-to improve throughput. Please note that *order_events* option will be
-ignored if you use these options.
+The achievable throughput to Amazon Kinesis is limited to single-threaded
+PutRecord calls if **order_events** is set to true. By setting **order_events**
+to false records will be sent to Amazon Kinesis in batches. When operating in
+this mode the plugin can also be configured to execute in parallel.
+The **detach_process** and **num_threads** configuration settings control
+parallelism.
+
+Please note that **order_events** option will be ignored if you choose to
+use either **detach_process** or **num_threads**.
 
 In case of the configuration below, you will spawn 2 processes.
 
