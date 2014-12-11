@@ -80,7 +80,7 @@ module FluentPluginKinesis
       time = Time.now.to_i
 
       records.each do |record|
-        record[:data] = Base64.decode64(record[:data])
+        record[:data] = Base64.strict_decode64(record[:data])
         Fluent::Engine.emit(@tag, time, record.to_h)
       end
     end
