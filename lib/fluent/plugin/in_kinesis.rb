@@ -26,6 +26,7 @@ module FluentPluginKinesis
 
     config_param :aws_key_id,  :string, default: nil
     config_param :aws_sec_key, :string, default: nil
+    config_param :region,      :string, default: nil
 
     config_param :stream_name,         :string
     config_param :shards,              :hash,   default: nil
