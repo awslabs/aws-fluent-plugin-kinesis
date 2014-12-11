@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'bundler'
 require 'stringio'
+require 'ostruct'
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -11,6 +12,7 @@ end
 
 require 'test/unit'
 require 'test/unit/rr'
+require 'timecop'
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
