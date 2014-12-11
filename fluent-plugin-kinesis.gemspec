@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "test-unit-rr", "~> 1.0"
+  spec.add_development_dependency "timecop"
 
   spec.add_dependency "fluentd", ">= 0.10.53", "< 0.11"
   spec.add_dependency "aws-sdk-core", "~> 2.0"
