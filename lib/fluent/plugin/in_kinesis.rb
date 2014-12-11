@@ -36,6 +36,10 @@ module FluentPluginKinesis
 
     config_param :debug, :bool, default: false
 
+    unless method_defined?(:log)
+      define_method(:log) { $log }
+    end
+
     def configure(conf)
       super
       @shard_iterator_type.upcase!
@@ -50,8 +54,8 @@ module FluentPluginKinesis
       load_client
       @running = true
 
-      @threads = shard_iterators.map do |shard_iterator|
-        Thread.new { fetch(shard_iterator) }
+      @threads = shard_iterators.map do |shard_id, shard_iterator|
+        Thread.new { fetch(shard_id, shard_iterator) }
       end
     end
 
@@ -62,26 +66,32 @@ module FluentPluginKinesis
 
     private
 
-    def fetch(shard_iterator)
+    def fetch(shard_id, shard_iterator)
       while @running
-        resp = @client.get_records(shard_iterator: shard_iterator)
+        begin
+          resp = @client.get_records(shard_iterator: shard_iterator)
 
-        resp.each do |page|
-          records = page[:records]
-          emit_records(records)
-          shard_iterator = page[:next_shard_iterator]
+          resp.each do |page|
+            records = page[:records]
+            emit_records(shard_id, records)
+            shard_iterator = page[:next_shard_iterator]
+          end
+
+          sleep 1
+        rescue => e
+          log.warn(e.message)
         end
-
-        sleep 1
       end
     end
 
-    def emit_records(records)
+    def emit_records(shard_id, records)
       time = Time.now.to_i
 
       records.each do |record|
+        record = record.to_h
+        record[:shard_id] = shard_id
         record[:data] = Base64.strict_decode64(record[:data])
-        Fluent::Engine.emit(@tag, time, record.to_h)
+        Fluent::Engine.emit(@tag, time, record)
       end
     end
 
@@ -100,7 +110,8 @@ module FluentPluginKinesis
         end
 
         resp = @client.get_shard_iterator(params)
-        resp[:shard_iterator]
+
+        [shard_id, resp[:shard_iterator]]
       end
     end
 
