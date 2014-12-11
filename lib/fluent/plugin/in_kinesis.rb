@@ -148,7 +148,7 @@ module FluentPluginKinesis
       if @debug
         options.update(
           logger: Logger.new(log.out),
-          log_level: :debug
+          log_level: :debug,
         )
         # XXX: Add the following options, if necessary
         # :http_wire_trace => true
