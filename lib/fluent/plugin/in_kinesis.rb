@@ -36,10 +36,6 @@ module FluentPluginKinesis
 
     config_param :debug, :bool, default: false
 
-    unless method_defined?(:log)
-      define_method(:log) { $log }
-    end
-
     def configure(conf)
       super
       @shard_iterator_type.upcase!
