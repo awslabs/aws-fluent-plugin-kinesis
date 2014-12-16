@@ -139,12 +139,12 @@ class KinesisOutputTest < Test::Unit::TestCase
 
     d.expect_format({
       'stream_name' => 'test_stream',
-      'data' => Base64.strict_encode64(data1.to_json),
+      'data' => data1.to_json,
       'partition_key' => 'key1' }.to_msgpack
     )
     d.expect_format({
       'stream_name' => 'test_stream',
-      'data' => Base64.strict_encode64(data2.to_json),
+      'data' => data2.to_json,
       'partition_key' => 'key2' }.to_msgpack
     )
 
@@ -152,12 +152,12 @@ class KinesisOutputTest < Test::Unit::TestCase
     client.describe_stream(stream_name: 'test_stream')
     client.put_record(
       stream_name: 'test_stream',
-      data: Base64.strict_encode64(data1.to_json),
+      data: data1.to_json,
       partition_key: 'key1'
     )
     client.put_record(
       stream_name: 'test_stream',
-      data: Base64.strict_encode64(data2.to_json),
+      data: data2.to_json,
       partition_key: 'key2'
     )
 
@@ -170,7 +170,7 @@ class KinesisOutputTest < Test::Unit::TestCase
     assert_equal(
         MessagePack.pack({
             "stream_name"       => "test_stream",
-            "data"              => Base64.strict_encode64(data.to_json),
+            "data"              => data.to_json,
             "partition_key"     => "key1"
         }),
         d.instance.format('test','test',data)
@@ -194,7 +194,7 @@ class KinesisOutputTest < Test::Unit::TestCase
     assert_equal(
         MessagePack.pack({
             "stream_name"       => "test_stream",
-            "data"              => Base64.strict_encode64(data.to_json),
+            "data"              => data.to_json,
             "partition_key"     => "key1",
             "explicit_hash_key" => "hash1"
         }),
