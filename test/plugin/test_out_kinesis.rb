@@ -46,6 +46,66 @@ class KinesisOutputTest < Test::Unit::TestCase
     assert_equal 'test_partition_key', d.instance.partition_key
   end
 
+  def test_configure_with_credentials
+    d = create_driver(<<-EOS)
+      profile default
+      credentials_path /home/scott/.aws/credentials
+      stream_name test_stream
+      region us-east-1
+      partition_key test_partition_key
+    EOS
+
+    assert_equal 'default', d.instance.profile
+    assert_equal '/home/scott/.aws/credentials', d.instance.credentials_path
+    assert_equal 'test_stream', d.instance.stream_name
+    assert_equal 'us-east-1', d.instance.region
+    assert_equal 'test_partition_key', d.instance.partition_key
+  end
+
+  def test_load_client
+    client = stub(Object.new)
+    client.describe_stream
+    client.put_records { {} }
+
+    stub(Aws::Kinesis::Client).new do |options|
+      assert_equal("test_key_id", options[:access_key_id])
+      assert_equal("test_sec_key", options[:secret_access_key])
+      assert_equal("us-east-1", options[:region])
+      client
+    end
+
+    d = create_driver
+    d.run
+  end
+
+  def test_load_client_with_credentials
+    client = stub(Object.new)
+    client.describe_stream
+    client.put_records { {} }
+
+    stub(Aws::Kinesis::Client).new do |options|
+      assert_equal(nil, options[:access_key_id])
+      assert_equal(nil, options[:secret_access_key])
+      assert_equal("us-east-1", options[:region])
+
+      credentials = options[:credentials]
+      assert_equal("default", credentials.profile_name)
+      assert_equal("/home/scott/.aws/credentials", credentials.path)
+
+      client
+    end
+
+    d = create_driver(<<-EOS)
+      profile default
+      credentials_path /home/scott/.aws/credentials
+      stream_name test_stream
+      region us-east-1
+      partition_key test_partition_key
+    EOS
+
+    d.run
+  end
+
   def test_configure_with_more_options
 
     conf = %[
