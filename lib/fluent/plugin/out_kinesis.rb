@@ -41,6 +41,9 @@ module FluentPluginKinesis
     # it may be set as an environment variable.
     config_param :region,      :string, default: nil
 
+    config_param :profile,          :string, :default => nil
+    config_param :credentials_path, :string, :default => nil
+
     config_param :stream_name,            :string
     config_param :random_partition_key,   :bool,   default: false
     config_param :partition_key,          :string, default: nil
@@ -154,6 +157,11 @@ module FluentPluginKinesis
           access_key_id: @aws_key_id,
           secret_access_key: @aws_sec_key,
         )
+      elsif @profile
+        credentials_opts = {:profile_name => @profile}
+        credentials_opts[:path] = @credentials_path if @credentials_path
+        credentials = Aws::SharedCredentials.new(credentials_opts)
+        options[:credentials] = credentials
       end
 
       if @debug
