@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.3.1
+
+- **Fluentd v0.12 support**: We now support Fluentd v0.12.
+
 ## 0.3.0
 
 - **Throughput improvement**: Added support for [PutRecords API](http://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecords.html) by default.
