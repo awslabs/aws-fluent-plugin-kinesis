@@ -1,5 +1,7 @@
 # Fluent Plugin for Amazon Kinesis
 
+ [![Build Status](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis)
+
 ## Overview
 
 [Fluentd](http://fluentd.org/) output plugin

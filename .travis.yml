@@ -1,0 +1,26 @@
+language: ruby
+
+rvm:
+  - 1.9.3
+  - 2.0.0
+  - 2.1
+  - 2.2
+  - ruby-head
+  - rbx-2
+
+os:
+  - linux
+  - osx
+
+gemfile:
+  - Gemfile
+
+script: bundle exec rake
+
+sudo: false
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+    - rvm: rbx-2
+    - rvm: 2.2
