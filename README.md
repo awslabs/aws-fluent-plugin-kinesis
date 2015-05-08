@@ -9,9 +9,16 @@ that sends events to [Amazon Kinesis](https://aws.amazon.com/kinesis/).
 
 ## Installation
 
-This project has not been published in rubygems.org at this time,
-so you have to build and install by yourself.
-Your need [bundler](http://bundler.io/) to install.
+This fluentd plugin is available as the `fluent-plugin-kinesis` gem from RubyGems.
+
+    gem install fluent-plugin-kinesis
+
+Or you can install this plugin for [td-agent](https://github.com/treasure-data/td-agent) as:
+
+    fluent-gem install fluent-plugin-kinesis
+
+If you would like to build by yourself and install, please see the section below.
+Your need [bundler](http://bundler.io/) for this.
 
 In case of using with Fluentd:
 Fluentd will be also installed via the process below.
@@ -22,7 +29,7 @@ Fluentd will be also installed via the process below.
     rake build
     rake install
 
-Also, you can use this plugin with [td-agent](https://github.com/treasure-data/td-agent):
+Also, you can use this plugin with td-agent:
 You have to install td-agent before installing this plugin.
 
     git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
