@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.version       = FluentPluginKinesis::VERSION
   spec.author        = 'Amazon Web Services'
   spec.summary       = %q{Fluentd output plugin that sends events to Amazon Kinesis.}
-  spec.homepage      = "https://github.com/awslabs/aws-kinesis-fluent-plugin"
+  spec.homepage      = "https://github.com/awslabs/aws-fluent-plugin-kinesis"
   spec.license       = "Apache License, Version 2.0"
 
   spec.files         = `git ls-files`.split($/)
