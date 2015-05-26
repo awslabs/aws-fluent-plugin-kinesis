@@ -107,6 +107,11 @@ It should be in form like "us-east-1", "us-west-2".
 Refer to [Regions and Endpoints in AWS General Reference](http://docs.aws.amazon.com/general/latest/gr/rande.html#ak_region)
 for supported regions.
 
+### http_proxy
+
+Proxy server, if any.
+It should be in form like "http://squid:3128/"
+
 ### random_partition_key
 
 Boolean. If true, the plugin uses randomly generated

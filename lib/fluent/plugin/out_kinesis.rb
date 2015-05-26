@@ -52,6 +52,8 @@ module FluentPluginKinesis
 
     config_param :debug, :bool, default: false
 
+    config_param :http_proxy, :string, default: nil
+
     def configure(conf)
       super
       validate_params
@@ -163,6 +165,10 @@ module FluentPluginKinesis
         )
         # XXX: Add the following options, if necessary
         # :http_wire_trace => true
+      end
+
+      if @http_proxy
+        options[:http_proxy] = @http_proxy
       end
 
       @client = Aws::Kinesis::Client.new(options)
