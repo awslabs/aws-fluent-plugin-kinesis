@@ -12,5 +12,5 @@
 # language governing permissions and limitations under the License.
 
 module FluentPluginKinesis
-  VERSION = '0.3.1.2'
+  VERSION = '0.3.2'
 end
