@@ -35,8 +35,8 @@ module FluentPluginKinesis
     config_set_default :include_time_key, true
     config_set_default :include_tag_key,  true
 
-    config_param :aws_key_id,  :string, default: nil
-    config_param :aws_sec_key, :string, default: nil
+    config_param :aws_key_id,  :string, default: nil, :secret => true
+    config_param :aws_sec_key, :string, default: nil, :secret => true
     # The 'region' parameter is optional because
     # it may be set as an environment variable.
     config_param :region,      :string, default: nil
