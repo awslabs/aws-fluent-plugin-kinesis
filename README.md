@@ -186,6 +186,11 @@ may fail for reasons documented in the Kinesis Service API Reference for PutReco
 Failed records will be retried **retries_on_putrecords** times. If a record
 fails all retries an error log will be emitted. 
 
+### use_yajl
+
+Boolean, default is false.
+In case you find error `Encoding::UndefinedConversionError` with multibyte texts, you can avoid that error with this option.
+
 ### debug
 
 Boolean. Enable if you need to debug Amazon Kinesis API call. Default is false.
