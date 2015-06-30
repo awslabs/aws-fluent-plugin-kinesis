@@ -35,8 +35,8 @@ module FluentPluginKinesis
     config_set_default :include_time_key, true
     config_set_default :include_tag_key,  true
 
-    config_param :aws_key_id,  :string, default: nil
-    config_param :aws_sec_key, :string, default: nil
+    config_param :aws_key_id,  :string, default: nil, :secret => true
+    config_param :aws_sec_key, :string, default: nil, :secret => true
     # The 'region' parameter is optional because
     # it may be set as an environment variable.
     config_param :region,      :string, default: nil
@@ -51,6 +51,8 @@ module FluentPluginKinesis
     config_param :retries_on_putrecords,  :integer, default: 3
 
     config_param :debug, :bool, default: false
+
+    config_param :http_proxy, :string, default: nil
 
     def configure(conf)
       super
@@ -163,6 +165,10 @@ module FluentPluginKinesis
         )
         # XXX: Add the following options, if necessary
         # :http_wire_trace => true
+      end
+
+      if @http_proxy
+        options[:http_proxy] = @http_proxy
       end
 
       @client = Aws::Kinesis::Client.new(options)

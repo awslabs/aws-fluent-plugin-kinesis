@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.3.3
+
+- **Security improvements**: Disabled logging `aws_key_id` and `aws_sec_key` into log file.
+
+## 0.3.2
+
+- **http_proxy support**: Added HTTP proxy support.
+
 ## 0.3.1
 
 - **Fluentd v0.12 support**: We now support Fluentd v0.12.
