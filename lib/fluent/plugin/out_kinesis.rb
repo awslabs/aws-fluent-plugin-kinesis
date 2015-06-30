@@ -27,7 +27,7 @@ module FluentPluginKinesis
     USER_AGENT_NAME = 'fluent-plugin-kinesis-output-filter'
     PROC_BASE_STR = 'proc {|record| %s }'
     PUT_RECORDS_MAX_COUNT = 500
-    PUT_RECORD_MAX_DATA_SIZE = 1024 * 50
+    PUT_RECORD_MAX_DATA_SIZE = 1024 * 1024
     PUT_RECORDS_MAX_DATA_SIZE = 1024 * 1024 * 5
 
     Fluent::Plugin.register_output('kinesis',self)
@@ -222,13 +222,14 @@ module FluentPluginKinesis
       records_payload_length = 0
       data_list.each{|data_to_put|
         payload = data_to_put[:data]
-        if records.length >= PUT_RECORDS_MAX_COUNT or (records_payload_length + payload.length) >= PUT_RECORDS_MAX_DATA_SIZE
+        partition_key = data_to_put[:partition_key]
+        if records.length >= PUT_RECORDS_MAX_COUNT or (records_payload_length + payload.length + partition_key.length) >= PUT_RECORDS_MAX_DATA_SIZE
           records_array.push(records)
           records = []
           records_payload_length = 0
         end
         records.push(data_to_put)
-        records_payload_length += payload.length
+        records_payload_length += (payload.length + partition_key.length)
       }
       records_array.push(records)
       records_array
