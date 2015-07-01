@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.3.4
+
+- **Multi-byte UTF-8 support**: We now support multi-byte UTF-8 by using *use_yajl* option.
+
 ## 0.3.3
 
 - **Security improvements**: Disabled logging `aws_key_id` and `aws_sec_key` into log file.
