@@ -26,6 +26,10 @@ class KinesisOutputTest < Test::Unit::TestCase
     partition_key test_partition_key
   ]
 
+  CONFIG_YAJL= CONFIG + %[
+    use_yajl true
+  ]
+
   def create_driver(conf = CONFIG, tag='test')
     Fluent::Test::BufferedOutputTestDriver
       .new(FluentPluginKinesis::OutputFilter, tag).configure(conf)
@@ -57,6 +61,7 @@ class KinesisOutputTest < Test::Unit::TestCase
       explicit_hash_key test_hash_key
       explicit_hash_key_expr record
       order_events true
+      use_yajl true
     ]
     d = create_driver(conf)
     assert_equal 'test_stream', d.instance.stream_name
@@ -74,6 +79,7 @@ class KinesisOutputTest < Test::Unit::TestCase
       d.instance.instance_variable_get(:@explicit_hash_key_proc).call('a')
     assert_equal true, d.instance.order_events
     assert_equal nil, d.instance.instance_variable_get(:@sequence_number_for_ordering)
+    assert_equal true, d.instance.use_yajl
   end
 
   def test_mode_configuration
@@ -141,9 +147,11 @@ class KinesisOutputTest < Test::Unit::TestCase
 
   end
 
-  def test_format
 
-    d = create_driver
+  data("json"=>CONFIG, "yajl"=>CONFIG_YAJL)
+  def test_format(config)
+
+    d = create_driver(config)
 
     data1 = {"test_partition_key"=>"key1","a"=>1,"time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
     data2 = {"test_partition_key"=>"key2","a"=>2,"time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
@@ -251,6 +259,37 @@ class KinesisOutputTest < Test::Unit::TestCase
         }),
         d.instance.format('test','test',data)
     )
+  end
+
+  def test_multibyte_with_yajl
+
+    d = create_driver(CONFIG_YAJL)
+
+    data1 = {"test_partition_key"=>"key1","a"=>"\xE3\x82\xA4\xE3\x83\xB3\xE3\x82\xB9\xE3\x83\x88\xE3\x83\xBC\xE3\x83\xAB","time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
+    json = Yajl.dump(data1)
+    data1["a"].force_encoding("ASCII-8BIT")
+
+    time = Time.parse("2011-01-02 13:14:15 UTC").to_i
+    d.emit(data1, time)
+
+    d.expect_format({
+      'data' => json,
+      'partition_key' => 'key1' }.to_msgpack
+    )
+
+    client = create_mock_client
+    client.describe_stream(stream_name: 'test_stream')
+    client.put_records(
+      stream_name: 'test_stream',
+      records: [
+        {
+          data: json,
+          partition_key: 'key1'
+        }
+      ]
+    ) { {} }
+
+    d.run
   end
 
   def test_get_key

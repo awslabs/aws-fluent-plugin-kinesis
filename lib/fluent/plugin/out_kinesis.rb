@@ -13,6 +13,7 @@
 
 require 'aws-sdk-core'
 require 'multi_json'
+require 'yajl'
 require 'logger'
 require 'securerandom'
 require 'fluent/plugin/version'
@@ -49,6 +50,7 @@ module FluentPluginKinesis
     config_param :explicit_hash_key_expr, :string, default: nil
     config_param :order_events,           :bool,   default: false
     config_param :retries_on_putrecords,  :integer, default: 3
+    config_param :use_yajl,               :bool,   default: false
 
     config_param :debug, :bool, default: false
 
@@ -87,6 +89,8 @@ module FluentPluginKinesis
         )
         @explicit_hash_key_proc = eval(explicit_hash_key_proc_str)
       end
+
+      @dump_class = @use_yajl ? Yajl : JSON
     end
 
     def start
@@ -99,7 +103,7 @@ module FluentPluginKinesis
 
     def format(tag, time, record)
       data = {
-        data: record.to_json,
+        data: @dump_class.dump(record),
         partition_key: get_key(:partition_key,record)
       }
 
@@ -261,7 +265,7 @@ module FluentPluginKinesis
             log.error sprintf(
               'Could not put record, Error: %s, Record: %s',
               record[:error_code],
-              record[:body].to_json
+              @dump_class.dump(record[:body])
             )
           }
         end
