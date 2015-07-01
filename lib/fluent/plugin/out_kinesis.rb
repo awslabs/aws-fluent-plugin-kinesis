@@ -115,7 +115,7 @@ module FluentPluginKinesis
         unless record_exceeds_max_size?(record['data'])
           true
         else
-          log.error sprintf('Record exceeds the 50KB per-record size limit and will not be delivered: %s', record['data'])
+          log.error sprintf('Record exceeds the %.3f KB(s) per-record size limit and will not be delivered: %s', PUT_RECORD_MAX_DATA_SIZE / 1024.0, record['data'])
           false
         end
       }.map{|record|
@@ -231,7 +231,7 @@ module FluentPluginKinesis
         records.push(data_to_put)
         records_payload_length += (payload.length + partition_key.length)
       }
-      records_array.push(records)
+      records_array.push(records) unless records.empty?
       records_array
     end
 

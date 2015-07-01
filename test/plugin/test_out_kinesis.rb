@@ -400,6 +400,13 @@ class KinesisOutputTest < Test::Unit::TestCase
     d.instance.class.const_set(:PUT_RECORDS_MAX_COUNT, original_put_records_max_count)
   end
 
+  def test_build_empty_array_to_put
+    d = create_driver
+    data_list = []
+    result = d.instance.send(:build_records_array_to_put,data_list)
+    assert_equal(0, result.length, 'Should return empty array if there is no record')
+  end
+
   def test_build_data_to_put
     d = create_driver
     assert_equal(
