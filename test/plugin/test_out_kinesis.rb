@@ -411,75 +411,99 @@ class KinesisOutputTest < Test::Unit::TestCase
 
   def test_record_exceeds_max_size
     d = create_driver
+
+    # PUT_RECORD_MAX_DATA_SIZE = 1024*1024 is way too big, try something smaller (10), just to verify the logic not the actual value
+    original_put_record_max_data_size = d.instance.class.send(:remove_const, :PUT_RECORD_MAX_DATA_SIZE) if d.instance.class.const_defined?(:PUT_RECORD_MAX_DATA_SIZE)
+    d.instance.class.const_set(:PUT_RECORD_MAX_DATA_SIZE, 10)
+
     string = ''
-    (1..1024).each{ string = string + '1' }
+    (1..5).each{ string = string + '1' }
     assert_equal(
       false,
       d.instance.send(:record_exceeds_max_size?,string)
     )
 
     string = ''
-    (1..(1024*50)).each{ string = string + '1' }
+    (1..10).each{ string = string + '1' }
     assert_equal(
       false,
       d.instance.send(:record_exceeds_max_size?,string)
     )
 
     string = ''
-    (1..(1024*51)).each{ string = string + '1' }
+    (1..11).each{ string = string + '1' }
     assert_equal(
       true,
       d.instance.send(:record_exceeds_max_size?,string)
     )
+
+    # reset the constant
+    d.instance.class.const_set(:PUT_RECORD_MAX_DATA_SIZE, original_put_record_max_data_size)
   end
 
   def test_build_records_array_to_put
     d = create_driver
 
+    # PUT_RECORDS_MAX_DATA_SIZE = 1024*1024*5 is way too big, try something smaller (100), just to verify the logic not the actual value
+    original_put_records_max_data_size = d.instance.class.send(:remove_const, :PUT_RECORDS_MAX_DATA_SIZE) if d.instance.class.const_defined?(:PUT_RECORDS_MAX_DATA_SIZE)
+    d.instance.class.const_set(:PUT_RECORDS_MAX_DATA_SIZE, 100)
+
+    # PUT_RECORDS_MAX_COUNT = 500 is way too big, try something smaller (10), just to verify the logic not the actual value
+    original_put_records_max_count = d.instance.class.send(:remove_const, :PUT_RECORDS_MAX_COUNT) if d.instance.class.const_defined?(:PUT_RECORDS_MAX_COUNT)
+    d.instance.class.const_set(:PUT_RECORDS_MAX_COUNT, 10)
+
     data_list = []
-    (0..500).each do |n|
-      data_list.push({data: n.to_s})
+    (0..10).each do |n|
+      data_list.push({data: '1', partition_key: '0'})
     end
     result = d.instance.send(:build_records_array_to_put,data_list)
     assert_equal(2,result.length)
-    assert_equal(500,result[0].length)
+    assert_equal(10,result[0].length)
     assert_equal(1,result[1].length)
 
     data_list = []
-    (0..1400).each do
-      data_list.push({data: '1'})
+    (0..24).each do
+      data_list.push({data: '1', partition_key: '0'})
     end
     result = d.instance.send(:build_records_array_to_put,data_list)
     assert_equal(3,result.length)
-    assert_equal(500,result[0].length)
-    assert_equal(500,result[1].length)
-    assert_equal(401,result[2].length)
+    assert_equal(10,result[0].length)
+    assert_equal(10,result[1].length)
+    assert_equal(5,result[2].length)
 
     data_list = []
-    data_string = ''
-    (0..(1024*30)).each do
-      data_string = data_string + '1'
+    (0..20).each do
+      data_list.push({data: '0123456789', partition_key: '1'})
     end
-    (0..500).each do
-      data_list.push({data: data_string})
-    end
+    # Should return 3 lists: 9*11 + 9*11 + 3*11
     result = d.instance.send(:build_records_array_to_put,data_list)
     assert_equal(3,result.length)
-    assert_equal(170,result[0].length)
+    assert_equal(9,result[0].length)
     assert_operator(
-      1024 * 1024 *5, :>,
-      result[0].reduce(0){|sum,i| sum + i[:data].length}
+      100, :>,
+      result[0].reduce(0){|sum,i| sum + i[:data].length + i[:partition_key].length}
     )
-    assert_equal(170,result[1].length)
+    assert_equal(9,result[1].length)
     assert_operator(
-      1024 * 1024 *5, :>,
-      result[1].reduce(0){|sum,i| sum + i[:data].length}
+      100, :>,
+      result[1].reduce(0){|sum,i| sum + i[:data].length + i[:partition_key].length}
     )
-    assert_equal(161,result[2].length)
+    assert_equal(3,result[2].length)
     assert_operator(
-      1024 * 1024 *5, :>,
-      result[2].reduce(0){|sum,i| sum + i[:data].length}
+      100, :>,
+      result[2].reduce(0){|sum,i| sum + i[:data].length + i[:partition_key].length}
     )
+
+    # reset the constants
+    d.instance.class.const_set(:PUT_RECORDS_MAX_DATA_SIZE, original_put_records_max_data_size)
+    d.instance.class.const_set(:PUT_RECORDS_MAX_COUNT, original_put_records_max_count)
+  end
+
+  def test_build_empty_array_to_put
+    d = create_driver
+    data_list = []
+    result = d.instance.send(:build_records_array_to_put,data_list)
+    assert_equal(0, result.length, 'Should return empty array if there is no record')
   end
 
   def test_build_data_to_put
