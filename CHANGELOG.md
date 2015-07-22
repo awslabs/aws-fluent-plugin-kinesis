@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.3.5
+
+- **1MB record size limit**: Increased record size limit from 50KB to 1MB due to [Amazon Kinesis improvement.](http://aws.amazon.com/jp/about-aws/whats-new/2015/06/amazon-kinesis-announces-put-pricing-change-1mb-record-support-and-the-kinesis-producer-library/)
+- **Switching IAM user support**: Added support for [shared credential file](http://docs.aws.amazon.com/ja_jp/AWSSdkDocsRuby/latest/DeveloperGuide/prog-basics-creds.html#creds-specify-provider).
+
 ## 0.3.4
 
 - **Multi-byte UTF-8 support**: We now support multi-byte UTF-8 by using *use_yajl* option.
