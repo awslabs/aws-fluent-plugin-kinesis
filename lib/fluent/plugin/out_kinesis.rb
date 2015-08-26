@@ -44,6 +44,8 @@ module FluentPluginKinesis
 
     config_param :profile,          :string, :default => nil
     config_param :credentials_path, :string, :default => nil
+    config_param :role_arn,         :string, :default => nil
+    config_param :external_id,      :string, :default => nil
 
     config_param :stream_name,            :string
     config_param :random_partition_key,   :bool,   default: false
@@ -167,6 +169,15 @@ module FluentPluginKinesis
         credentials_opts = {:profile_name => @profile}
         credentials_opts[:path] = @credentials_path if @credentials_path
         credentials = Aws::SharedCredentials.new(credentials_opts)
+        options[:credentials] = credentials
+      elsif @role_arn
+        credentials = Aws::AssumeRoleCredentials.new(
+          client: Aws::STS::Client.new(options),
+          role_arn: @role_arn,
+          role_session_name: "aws-fluent-plugin-kinesis",
+          external_id: @external_id,
+          duration_seconds: 60 * 60
+        )
         options[:credentials] = credentials
       end
 
