@@ -110,6 +110,34 @@ class KinesisOutputTest < Test::Unit::TestCase
     d.run
   end
 
+  def test_load_client_with_role_arn
+    client = stub(Object.new)
+    client.describe_stream
+    client.put_records { {} }
+
+    stub(Aws::AssumeRoleCredentials).new do |options|
+      assert_equal("arn:aws:iam::001234567890:role/my-role", options[:role_arn])
+      assert_equal("aws-fluent-plugin-kinesis", options[:role_session_name])
+      assert_equal("my_external_id", options[:external_id])
+      assert_equal(3600, options[:duration_seconds])
+      "sts_credentials"
+    end
+
+    stub(Aws::Kinesis::Client).new do |options|
+      assert_equal("sts_credentials", options[:credentials])
+      client
+    end
+
+    d = create_driver(<<-EOS)
+      role_arn arn:aws:iam::001234567890:role/my-role
+      external_id my_external_id
+      stream_name test_stream
+      region us-east-1
+      partition_key test_partition_key
+    EOS
+    d.run
+  end
+
   def test_configure_with_more_options
 
     conf = %[
