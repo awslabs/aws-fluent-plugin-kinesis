@@ -100,6 +100,18 @@ AWS access key id.
 
 AWS secret key.
 
+### role_arn
+
+IAM Role to be assumed with [AssumeRole](http://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
+Use this option for cross account access.
+
+### external_id
+
+A unique identifier that is used by third parties when
+[assuming roles](http://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html) in their customers' accounts.
+Use this option with `role_arn` for third party cross account access.
+For detail, please see [How to Use an External ID When Granting Access to Your AWS Resources to a Third Party](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html).
+
 ### region
 
 AWS region of your stream.

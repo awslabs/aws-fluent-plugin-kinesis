@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.3.6
+
+- **Cross account access support**: Added support for cross account access for Amazon Kinesis stream. With this update, you can put reocrds to streams those are owned by other AWS account. This feature is achieved by [AssumeRole](http://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
+
 ## 0.3.5
 
 - **1MB record size limit**: Increased record size limit from 50KB to 1MB due to [Amazon Kinesis improvement.](http://aws.amazon.com/jp/about-aws/whats-new/2015/06/amazon-kinesis-announces-put-pricing-change-1mb-record-support-and-the-kinesis-producer-library/)
