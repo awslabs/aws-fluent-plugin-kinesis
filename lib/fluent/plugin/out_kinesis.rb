@@ -41,6 +41,7 @@ module FluentPluginKinesis
     # The 'region' parameter is optional because
     # it may be set as an environment variable.
     config_param :region,      :string, default: nil
+    config_param :ensure_stream_connection, :bool, default: true
 
     config_param :profile,          :string, :default => nil
     config_param :credentials_path, :string, :default => nil
@@ -102,7 +103,9 @@ module FluentPluginKinesis
       detach_multi_process do
         super
         load_client
-        check_connection_to_stream
+        if @ensure_stream_connection
+          check_connection_to_stream
+        end
       end
     end
 
