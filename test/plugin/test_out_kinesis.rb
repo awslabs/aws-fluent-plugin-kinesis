@@ -638,4 +638,26 @@ class KinesisOutputTest < Test::Unit::TestCase
         d.instance.send(:calculate_sleep_duration,2)
     )
   end
+
+  def test_build_sizeexceeded_error_message
+    d = create_driver
+    original_put_record_max_data_size = d.instance.class.send(:remove_const, :PUT_RECORD_MAX_DATA_SIZE) if d.instance.class.const_defined?(:PUT_RECORD_MAX_DATA_SIZE)
+    tmp_put_record_max_data_size = 100
+    d.instance.class.const_set(:PUT_RECORD_MAX_DATA_SIZE, tmp_put_record_max_data_size)
+
+    assert_operator(
+      tmp_put_record_max_data_size, :>=,
+      d.instance.send(:build_sizeexceeded_error_message,'test').length
+    )
+
+    assert_operator(
+      tmp_put_record_max_data_size, :==,
+      d.instance.send(:build_sizeexceeded_error_message,(0...1024).map{|i|'a'}.join('')).length
+    )
+
+    assert_operator(
+      tmp_put_record_max_data_size, :==,
+      d.instance.send(:build_sizeexceeded_error_message,(0...99).map{|i|'a'}.join('')).length
+    )
+  end
 end

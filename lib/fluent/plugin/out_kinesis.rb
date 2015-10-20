@@ -131,7 +131,7 @@ module FluentPluginKinesis
         unless record_exceeds_max_size?(record[:data])
           true
         else
-          log.error sprintf('Record exceeds the %.3f KB(s) per-record size limit and will not be delivered: %s', PUT_RECORD_MAX_DATA_SIZE / 1024.0, record[:data])
+          log.error build_sizeexceeded_error_message(record[:data])
           false
         end
       }
@@ -311,6 +311,17 @@ module FluentPluginKinesis
 
     def record_exceeds_max_size?(record_string)
       return record_string.length > PUT_RECORD_MAX_DATA_SIZE
+    end
+
+    def build_sizeexceeded_error_message(record)
+      notification = '...(message truncated.)'
+      message = sprintf('Record exceeds the %.3f KB(s) per-record size limit and will not be delivered: %s', PUT_RECORD_MAX_DATA_SIZE / 1024.0, record)
+      if(message.length <= PUT_RECORD_MAX_DATA_SIZE)
+        message
+      else
+        truncated_message = message.slice(0,PUT_RECORD_MAX_DATA_SIZE - notification.length) + notification
+        truncated_message
+      end
     end
   end
 end
