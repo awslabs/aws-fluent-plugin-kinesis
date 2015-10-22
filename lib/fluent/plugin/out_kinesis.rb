@@ -17,6 +17,7 @@ require 'yajl'
 require 'logger'
 require 'securerandom'
 require 'fluent/plugin/version'
+require 'zlib'
 
 module FluentPluginKinesis
   class OutputFilter < Fluent::BufferedOutput
@@ -56,6 +57,7 @@ module FluentPluginKinesis
     config_param :order_events,           :bool,   default: false
     config_param :retries_on_putrecords,  :integer, default: 3
     config_param :use_yajl,               :bool,   default: false
+    config_param :zlib_compression,       :bool,   default: false
 
     config_param :debug, :bool, default: false
 
@@ -120,15 +122,15 @@ module FluentPluginKinesis
     end
 
     def write(chunk)
-      data_list = chunk.to_enum(:msgpack_each).find_all{|record|
-        unless record_exceeds_max_size?(record['data'])
+      data_list = chunk.to_enum(:msgpack_each).map{|record|
+        build_data_to_put(record)
+      }.find_all{|record|
+        unless record_exceeds_max_size?(record[:data])
           true
         else
-          log.error sprintf('Record exceeds the %.3f KB(s) per-record size limit and will not be delivered: %s', PUT_RECORD_MAX_DATA_SIZE / 1024.0, record['data'])
+          log.error sprintf('Record exceeds the %.3f KB(s) per-record size limit and will not be delivered: %s', PUT_RECORD_MAX_DATA_SIZE / 1024.0, record[:data])
           false
         end
-      }.map{|record|
-        build_data_to_put(record)
       }
 
       if @order_events
@@ -220,7 +222,11 @@ module FluentPluginKinesis
     end
 
     def build_data_to_put(data)
-      Hash[data.map{|k, v| [k.to_sym, v] }]
+      if @zlib_compression
+        Hash[data.map{|k, v| [k.to_sym, k=="data" ? Zlib::Deflate.deflate(v) : v] }]
+      else
+        Hash[data.map{|k, v| [k.to_sym, v] }]
+      end
     end
 
     def put_record_for_order_events(data_list)

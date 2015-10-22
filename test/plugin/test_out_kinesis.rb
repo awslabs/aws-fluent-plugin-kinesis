@@ -30,6 +30,14 @@ class KinesisOutputTest < Test::Unit::TestCase
     use_yajl true
   ]
 
+  CONFIG_WITH_COMPRESSION = CONFIG + %[
+    zlib_compression true
+  ]
+
+  CONFIG_YAJL_WITH_COMPRESSION = CONFIG_YAJL + %[
+    zlib_compression true
+  ]
+
   def create_driver(conf = CONFIG, tag='test')
     Fluent::Test::BufferedOutputTestDriver
       .new(FluentPluginKinesis::OutputFilter, tag).configure(conf)
@@ -237,7 +245,7 @@ class KinesisOutputTest < Test::Unit::TestCase
 
 
   data("json"=>CONFIG, "yajl"=>CONFIG_YAJL)
-  def test_format(config)
+  def test_format_without_compression(config)
 
     d = create_driver(config)
 
@@ -268,6 +276,46 @@ class KinesisOutputTest < Test::Unit::TestCase
         },
         {
           data: data2.to_json,
+          partition_key: 'key2'
+        }
+      ]
+    ) { {} }
+
+    d.run
+  end
+
+  data("json"=>CONFIG_WITH_COMPRESSION, "yajl"=>CONFIG_YAJL_WITH_COMPRESSION)
+  def test_format_with_compression(config)
+
+    d = create_driver(config)
+
+    data1 = {"test_partition_key"=>"key1","a"=>1,"time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
+    data2 = {"test_partition_key"=>"key2","a"=>2,"time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
+
+    time = Time.parse("2011-01-02 13:14:15 UTC").to_i
+    d.emit(data1, time)
+    d.emit(data2, time)
+
+    d.expect_format({
+      'data' => data1.to_json,
+      'partition_key' => 'key1' }.to_msgpack
+    )
+    d.expect_format({
+      'data' => data2.to_json,
+      'partition_key' => 'key2' }.to_msgpack
+    )
+
+    client = create_mock_client
+    client.describe_stream(stream_name: 'test_stream')
+    client.put_records(
+      stream_name: 'test_stream',
+      records: [
+        {
+          data: Zlib::Deflate.deflate(data1.to_json),
+          partition_key: 'key1'
+        },
+        {
+          data: Zlib::Deflate.deflate(data2.to_json),
           partition_key: 'key2'
         }
       ]
@@ -349,7 +397,7 @@ class KinesisOutputTest < Test::Unit::TestCase
     )
   end
 
-  def test_multibyte_with_yajl
+  def test_multibyte_with_yajl_without_compression
 
     d = create_driver(CONFIG_YAJL)
 
@@ -372,6 +420,37 @@ class KinesisOutputTest < Test::Unit::TestCase
       records: [
         {
           data: json,
+          partition_key: 'key1'
+        }
+      ]
+    ) { {} }
+
+    d.run
+  end
+
+  def test_multibyte_with_yajl_with_compression
+
+    d = create_driver(CONFIG_YAJL_WITH_COMPRESSION)
+
+    data1 = {"test_partition_key"=>"key1","a"=>"\xE3\x82\xA4\xE3\x83\xB3\xE3\x82\xB9\xE3\x83\x88\xE3\x83\xBC\xE3\x83\xAB","time"=>"2011-01-02T13:14:15Z","tag"=>"test"}
+    json = Yajl.dump(data1)
+    data1["a"].force_encoding("ASCII-8BIT")
+
+    time = Time.parse("2011-01-02 13:14:15 UTC").to_i
+    d.emit(data1, time)
+
+    d.expect_format({
+      'data' => json,
+      'partition_key' => 'key1' }.to_msgpack
+    )
+
+    client = create_mock_client
+    client.describe_stream(stream_name: 'test_stream')
+    client.put_records(
+      stream_name: 'test_stream',
+      records: [
+        {
+          data: Zlib::Deflate.deflate(json),
           partition_key: 'key1'
         }
       ]
