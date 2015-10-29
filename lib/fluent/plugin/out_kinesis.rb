@@ -31,6 +31,7 @@ module FluentPluginKinesis
     PUT_RECORDS_MAX_COUNT = 500
     PUT_RECORD_MAX_DATA_SIZE = 1024 * 1024
     PUT_RECORDS_MAX_DATA_SIZE = 1024 * 1024 * 5
+    ERROR_MESSAGE_MAX_DATA_SIZE = PUT_RECORD_MAX_DATA_SIZE - 100
 
     Fluent::Plugin.register_output('kinesis',self)
 
@@ -316,10 +317,10 @@ module FluentPluginKinesis
     def build_sizeexceeded_error_message(record)
       notification = '...(message truncated.)'
       message = sprintf('Record exceeds the %.3f KB(s) per-record size limit and will not be delivered: %s', PUT_RECORD_MAX_DATA_SIZE / 1024.0, record)
-      if(message.length <= PUT_RECORD_MAX_DATA_SIZE)
+      if(message.length <= ERROR_MESSAGE_MAX_DATA_SIZE)
         message
       else
-        truncated_message = message.slice(0,PUT_RECORD_MAX_DATA_SIZE - notification.length) + notification
+        truncated_message = message.slice(0,ERROR_MESSAGE_MAX_DATA_SIZE - notification.length) + notification
         truncated_message
       end
     end
