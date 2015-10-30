@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.4.0
+- Feature - Add option to ensure Kinesis Stream connection. [#35](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/35)
+- Feature - Add option to support zlib compression. [#39](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/39)
+
+Note: We introduced [Semantic Versioning](http://semver.org/) here.
+
 ## 0.3.6
 
 - **Cross account access support**: Added support for cross account access for Amazon Kinesis stream. With this update, you can put reocrds to streams those are owned by other AWS account. This feature is achieved by [AssumeRole](http://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
