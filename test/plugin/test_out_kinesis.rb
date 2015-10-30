@@ -143,6 +143,7 @@ class KinesisOutputTest < Test::Unit::TestCase
     conf = %[
       stream_name test_stream
       region us-east-1
+      ensure_stream_connection false
       http_proxy http://proxy:3333/
       partition_key test_partition_key
       partition_key_expr record
@@ -154,6 +155,7 @@ class KinesisOutputTest < Test::Unit::TestCase
     d = create_driver(conf)
     assert_equal 'test_stream', d.instance.stream_name
     assert_equal 'us-east-1', d.instance.region
+    assert_equal false, d.instance.ensure_stream_connection
     assert_equal 'http://proxy:3333/', d.instance.http_proxy
     assert_equal 'test_partition_key', d.instance.partition_key
     assert_equal 'Proc',

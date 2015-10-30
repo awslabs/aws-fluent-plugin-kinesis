@@ -119,6 +119,10 @@ It should be in form like "us-east-1", "us-west-2".
 Refer to [Regions and Endpoints in AWS General Reference](http://docs.aws.amazon.com/general/latest/gr/rande.html#ak_region)
 for supported regions.
 
+### ensure_stream_connection
+
+When enabled, the plugin checks and ensures a connection to the stream you are using by [DescribeStream](http://docs.aws.amazon.com/kinesis/latest/APIReference/API_DescribeStream.html) and throws exception if it fails. Enabled by default.
+
 ### http_proxy
 
 Proxy server, if any.
@@ -196,7 +200,7 @@ Integer, default is 3. When **order_events** is false, the plugin will put multi
 records to Amazon Kinesis in batches using PutRecords. A set of records in a batch
 may fail for reasons documented in the Kinesis Service API Reference for PutRecords.
 Failed records will be retried **retries_on_putrecords** times. If a record
-fails all retries an error log will be emitted. 
+fails all retries an error log will be emitted.
 
 ### use_yajl
 
