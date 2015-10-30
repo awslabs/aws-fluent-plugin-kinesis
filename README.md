@@ -207,6 +207,12 @@ fails all retries an error log will be emitted.
 Boolean, default is false.
 In case you find error `Encoding::UndefinedConversionError` with multibyte texts, you can avoid that error with this option.
 
+### zlib_compression
+
+Boolean, default is false.
+Zlib compresses the message data blob.
+Each zlib compressed message must remain within megabyte in size.
+
 ### debug
 
 Boolean. Enable if you need to debug Amazon Kinesis API call. Default is false.
