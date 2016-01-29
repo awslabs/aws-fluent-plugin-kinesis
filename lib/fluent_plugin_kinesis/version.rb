@@ -12,19 +12,6 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require "bundler/gem_tasks"
-
-require 'rake/testtask'
-
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.test_files = FileList['test/**/test_*.rb']
-  test.verbose = true
+module FluentPluginKinesis
+  VERSION = '1.0.0.rc1'
 end
-
-load 'kinesis_producer/tasks/binary.rake'
-
-Rake::Task[:build].enhance [:zip_file]
-Rake::Task[:test].enhance [:binary]
-
-task default: [:binary]

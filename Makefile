@@ -12,19 +12,29 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require "bundler/gem_tasks"
+.PHONY: test install streams firehose producer dummer hello
 
-require 'rake/testtask'
+all:
+	bundle install
+	bundle exec rake
 
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.test_files = FileList['test/**/test_*.rb']
-  test.verbose = true
-end
+install:
+	bundle exec rake install:local
 
-load 'kinesis_producer/tasks/binary.rake'
+test:
+	bundle exec rake test
 
-Rake::Task[:build].enhance [:zip_file]
-Rake::Task[:test].enhance [:binary]
+streams:
+	bundle exec fluentd -c benchmark/streams.conf -vv
 
-task default: [:binary]
+firehose:
+	bundle exec fluentd -c benchmark/firehose.conf -vv
+
+producer:
+	bundle exec fluentd -c benchmark/producer.conf -vv
+
+dummer:
+	bundle exec dummer -c benchmark/dummer.conf
+
+hello:
+	echo Hello World | bundle exec fluent-cat --none dummy

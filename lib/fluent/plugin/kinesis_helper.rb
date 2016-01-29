@@ -12,19 +12,18 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require "bundler/gem_tasks"
+require 'fluent/plugin/kinesis_helper/class_methods'
+require 'fluent/plugin/kinesis_helper/initialize'
 
-require 'rake/testtask'
+module Fluent
+  module KinesisHelper
+    include Fluent::SetTimeKeyMixin
+    include Fluent::SetTagKeyMixin
+    include Fluent::DetachMultiProcessMixin
 
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.test_files = FileList['test/**/test_*.rb']
-  test.verbose = true
+    def self.included(klass)
+      klass.extend ClassMethods
+    end
+    include Initialize
+  end
 end
-
-load 'kinesis_producer/tasks/binary.rake'
-
-Rake::Task[:build].enhance [:zip_file]
-Rake::Task[:test].enhance [:binary]
-
-task default: [:binary]

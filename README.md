@@ -1,45 +1,42 @@
-# Fluent Plugin for Amazon Kinesis
+# Fluent plugin for Amazon Kinesis
 
- [![Build Status](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis)
+**Under development!!! Now v1.0.0.rc1**
 
-## Overview
+[Fluentd][fluentd] output plugin
+that sends events to [Amazon Kinesis Streams][streams] (via both API and [Kinesis Producer Library (KPL)][producer]) and [Amazon Kinesis Firehose][firehose] (via API). This gem includes three output plugins respectively:
 
-[Fluentd](http://fluentd.org/) output plugin
-that sends events to [Amazon Kinesis](https://aws.amazon.com/kinesis/).
+- `kinesis_streams`
+- `kinesis_producer`
+- `kinesis_firehose`
 
 ## Installation
-
 This fluentd plugin is available as the `fluent-plugin-kinesis` gem from RubyGems.
 
     gem install fluent-plugin-kinesis
 
-Or you can install this plugin for [td-agent](https://github.com/treasure-data/td-agent) as:
+Or you can install this plugin for [td-agent][td-agent] as:
 
     fluent-gem install fluent-plugin-kinesis
 
-If you would like to build by yourself and install, please see the section below.
-Your need [bundler](http://bundler.io/) for this.
+If you would like to build by yourself and install, please see the section below. Your need [bundler][bundler] for this.
 
-In case of using with Fluentd:
-Fluentd will be also installed via the process below.
+In case of using with Fluentd: Fluentd will be also installed via the process below.
 
     git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
     cd aws-fluent-plugin-kinesis
     bundle install
-    rake build
-    rake install
+    bundle exec rake build
+    bundle exec rake install
 
-Also, you can use this plugin with td-agent:
-You have to install td-agent before installing this plugin.
+Also, you can use this plugin with td-agent: You have to install td-agent before installing this plugin.
 
     git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
     cd aws-fluent-plugin-kinesis
     bundle install
-    rake build
+    bundle exec rake build
     fluent-gem install pkg/fluent-plugin-kinesis
 
-Or just download specify your Ruby library path.
-Below is the sample for specifying your library path via RUBYLIB.
+Or just download specify your Ruby library path. Below is the sample for specifying your library path via RUBYLIB.
 
     git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
     cd aws-fluent-plugin-kinesis
@@ -47,12 +44,10 @@ Below is the sample for specifying your library path via RUBYLIB.
     export RUBYLIB=$RUBYLIB:/path/to/aws-fluent-plugin-kinesis/lib
 
 ## Dependencies
-
  * Ruby 1.9.3+
  * Fluentd 0.10.43+
 
 ## Basic Usage
-
 Here are general procedures for using this plugin:
 
  1. Install.
@@ -71,153 +66,384 @@ To run with td-agent, it would be as follows:
  1. Edit configuration file provided by td-agent.
  1. Then, run or restart td-agent.
 
-## Configuration
+## Getting started
+Assume you use Amazon EC2 instances with Instance profile. If you want to use specific credentials, see [Credentials](#configuration-credentials).
 
-Here are items for Fluentd configuration file.
+### kinesis_streams
+    <match your_tag>
+      @type kinesis_streams
+      region us-east-1
+      stream_name your_stream
+      partition_key key  # Otherwise, use random partition key
+    </match>
+For more detail, see [Configuration: kinesis_streams](#configuration-kinesis_streams)
 
-To put records into Amazon Kinesis,
-you need to provide AWS security credentials.
-If you provide aws_key_id and aws_sec_key in configuration file as below,
-we use it. You can also provide credentials via environment variables as
-AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY.  Also we support IAM Role for
-authentication. Please find the [AWS SDK for Ruby Developer Guide](http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html)
-for more information about authentication.
-We support all options which AWS SDK for Ruby supports.
+### kinesis_producer
+    <match your_tag>
+      @type kinesis_producer
+      region us-east-1
+      stream_name your_stream
+      partition_key key  # Otherwise, use random partition key
+    </match>
+For more detail, see [Configuration: kinesis_producer](#configuration-kinesis_producer)
 
-### type
+### kinesis_firehose
+    <match your_tag>
+      @type kinesis_firehose
+      region us-east-1
+      delivery_stream_name your_stream
+    </match>
+For more detail, see [Configuration: kinesis_firehose](#configuration-kinesis_firehose)
 
-Use the word 'kinesis'.
+### For better throughput
+Add configuration like below:
 
-### stream_name
+      flush_interval 1
+      buffer_chunk_limit 1m
+      try_flush_interval 0.1
+      queued_chunk_flush_interval 0.01
+      num_threads 15
+      detach_process 5
 
-Name of the stream to put data.
+Note: Each value should be adjusted to your system by yourself.
+
+## Configuration: Credentials
+To put records into Amazon Kinesis Streams or Firehose, you need to provide AWS security credentials.
+
+The credential provider will be choosen by the steps below:
+
+- Use [**shared_credentials**](#shared_credentials) section if you set it
+- Use [**assume_role_credentials**](#assume_role_credentials) section if you set it
+- Otherwise, default provicder chain:
+    - [**aws_key_id**](#aws_key_id) and [**aws_sec_key**](#aws_sec_key)
+    - Environment variables (ex. `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.)
+    - Default shared credentials (`default` in `~/.aws/credentials`)
+    - Instance profile (For Amazon EC2)
 
 ### aws_key_id
-
 AWS access key id.
 
 ### aws_sec_key
+AWS secret access key.
 
-AWS secret key.
+### shared_credentials
+Use this config section to specify shared credential file path and profile name. If you want to use default profile (`default` in `~/.aws/credentials`), you don't have to specify here.
 
-### role_arn
+#### profile_name
+Profile name of the credential file.
 
-IAM Role to be assumed with [AssumeRole](http://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
-Use this option for cross account access.
+#### path
+Path for the credential file.
 
-### external_id
+### assume_role_credentials
+Use this config section for cross account access.
 
-A unique identifier that is used by third parties when
-[assuming roles](http://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html) in their customers' accounts.
-Use this option with `role_arn` for third party cross account access.
-For detail, please see [How to Use an External ID When Granting Access to Your AWS Resources to a Third Party](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html).
+#### role_arn
+IAM Role to be assumed with [AssumeRole][assume_role].
+
+#### external_id
+A unique identifier that is used by third parties when [assuming roles][assmue_role] in their customers' accounts. Use this option with `role_arn` for third party cross account access. For detail, please see [How to Use an External ID When Granting Access to Your AWS Resources to a Third Party][external_id].
+
+## Configuraion: Format
+This plugin use `Fluent::TextFormatter` to serialize record to string. For more detail, see [formatter.rb]. Also, this plugin includes `Fluent::SetTimeKeyMixin` and `Fluent::SetTagKeyMixin` to use **include_time_key** and **include_tagkey**.
+
+### formatter
+Default `json`.
+
+### include_time_key
+Defalut `false`. If you want to include `time` field in your record, set `true`.
+
+### include_tag_key
+Defalut `false`. If you want to include `tag` field in your record, set `true`.
+
+## Configuration: kinesis_streams
+Here are `kinesis_streams` specific configurations.
+
+### stream_name
+Name of the stream to put data.
 
 ### region
+AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. Refer to [Regions and Endpoints in AWS General Reference][region] for supported regions.
 
-AWS region of your stream.
-It should be in form like "us-east-1", "us-west-2".
-Refer to [Regions and Endpoints in AWS General Reference](http://docs.aws.amazon.com/general/latest/gr/rande.html#ak_region)
-for supported regions.
-
-### ensure_stream_connection
-
-When enabled, the plugin checks and ensures a connection to the stream you are using by [DescribeStream](http://docs.aws.amazon.com/kinesis/latest/APIReference/API_DescribeStream.html) and throws exception if it fails. Enabled by default.
-
-### http_proxy
-
-Proxy server, if any.
-It should be in form like "http://squid:3128/"
-
-### random_partition_key
-
-Boolean. If true, the plugin uses randomly generated
-partition key for each record. Note that this parameter
-overrides *partition_key*, *partition_key_expr*,
-*explicit_hash_key* and *explicit_hash_key_expr*.
+Default `nil`, which means try to find from environment variable `AWS_REGION`.
 
 ### partition_key
-
-A key to extract partition key from JSON object.
-
-### partition_key_expr
-
-A Ruby expression to extract partition key from JSON object.
-We treat your expression as below.
-
-    a_proc = eval(sprintf('proc {|record| %s }', YOUR_EXPRESSION))
-    a_proc.call(record)
-
-You should write your Ruby expression that receives input data
-as a variable 'record', process it and return it. The returned
-value will be used as a partition key. For use case example,
-see 'Configuration examples' part.
-
-### explicit_hash_key
-
-A key to extract explicit hash key from JSON object.
-Explicit hash key is hash value used to explicitly
-determine the shard the data record is assigned to
-by overriding the partition key hash.
-
-### explicit_hash_key_expr
-
-A Ruby expression to extract explicit hash key from JSON object.
-Your expression will be treat in the same way as we treat partition_key_expr.
-
-### order_events
-
-Boolean. By enabling it, you can strictly order events in Amazon Kinesis,
-according to arrival of events. Without this, events will be coarsely ordered
-based on arrival time. For detail,
-see [Using the Amazon Kinesis Service API](http://docs.aws.amazon.com/kinesis/latest/dev/kinesis-using-api-java.html#kinesis-using-api-defn-sequence-number).
-
-Please note that if you set *detach_process* or *num_threads greater than 1*,
-this option will be ignored.
-
-### detach_process
-
-Integer. Optional. This defines the number of parallel processes to start.
-This can be used to increase throughput by allowing multiple processes to
-execute the plugin at once. This cannot be used together with **order_events**.
-Setting this option to > 0 will cause the plugin to run in a separate
-process. The default is 0.
-
-### num_threads
-
-Integer. The number of threads to flush the buffer. This plugin is based on
-Fluentd::BufferedOutput, so we buffer incoming records before emitting them to
-Amazon Kinesis. You can find the detail about buffering mechanism [here](http://docs.fluentd.org/articles/buffer-plugin-overview).
-Emitting records to Amazon Kinesis via network causes I/O Wait, so parallelizing
-emitting with threads will improve throughput.
-
-This option can be used to parallelize writes into the output(s)
-designated by the output plugin. The default is 1.
-Also you can use this option with *detach_process*.
+A key to extract partition key from JSON object. Default `nil`, which means partition key will generate randomly.
 
 ### retries_on_putrecords
+Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Streams in batches using PutRecords. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecords. Failed records will be retried **retries_on_putrecords** times. If a record fails all retries an error log will be emitted.
 
-Integer, default is 3. When **order_events** is false, the plugin will put multiple
-records to Amazon Kinesis in batches using PutRecords. A set of records in a batch
-may fail for reasons documented in the Kinesis Service API Reference for PutRecords.
-Failed records will be retried **retries_on_putrecords** times. If a record
-fails all retries an error log will be emitted.
+### http_proxy
+HTTP proxy for API calling. Default `nil`.
 
-### use_yajl
+### endpoint
+API endpoint URL, for testing. Defalut `nil`.
 
-Boolean, default is false.
-In case you find error `Encoding::UndefinedConversionError` with multibyte texts, you can avoid that error with this option.
-
-### zlib_compression
-
-Boolean, default is false.
-Zlib compresses the message data blob.
-Each zlib compressed message must remain within megabyte in size.
+### ssl_verify_peer
+Boolean. Disable if you want to verify ssl conncetion, for testing. Default `true`.
 
 ### debug
+Boolean. Enable if you need to debug Amazon Kinesis Firehose API call. Default is `false`.
 
-Boolean. Enable if you need to debug Amazon Kinesis API call. Default is false.
+## Configuration: kinesis_producer
+Here are `kinesis_producer` specific configurations.
 
-## Configuration examples
+### stream_name
+Name of the stream to put data.
+
+### region
+AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. Refer to [Regions and Endpoints in AWS General Reference][region] for supported regions.
+
+Default `nil`, which means try to find from environment variable `AWS_REGION`. If both **region** and `AWS_REGION` are not defined, KPL will try to find region from Amazon EC2 metadata.
+
+### partition_key
+A key to extract partition key from JSON object. Default `nil`, which means partition key will generate randomly.
+
+### debug
+Boolean. Enable if you need to debug Kinesis Producer Library metrics. Default is `false`.
+
+### kinesis_producer
+This section is configuration for Kinesis Producer Library. Almost all of description comes from [deault_config.propertites of KPL Java Sample Application][default_config.properties].
+
+#### aggregation_enabled
+Enable aggregation. With aggregation, multiple user records are packed into a single KinesisRecord. If disabled, each user record is sent in its own KinesisRecord.
+
+If your records are small, enabling aggregation will allow you to put many more records than you would otherwise be able to for a shard before getting throttled.
+
+Default: `true`
+
+#### aggregation_max_count
+Maximum number of items to pack into an aggregated record.
+
+There should be normally no need to adjust this. If you want to limit the time records spend buffering, look into record_max_buffered_time instead.
+
+Default: 4294967295
+Minimum: 1
+Maximum (inclusive): 9223372036854775807
+
+#### aggregation_max_size
+Maximum number of bytes to pack into an aggregated Kinesis record.
+
+There should be normally no need to adjust this. If you want to limit the time records spend buffering, look into [**record_max_buffered_time**](#record_max_buffered_time) instead.
+
+If a record has more data by itself than this limit, it will bypass the aggregator. Note the backend enforces a limit of 50KB on record size. If you set this beyond 50KB, oversize records will be rejected at the backend.
+
+Default: 51200
+Minimum: 64
+Maximum (inclusive): 1048576
+
+#### collection_max_count
+Maximum number of items to pack into an PutRecords request.
+
+There should be normally no need to adjust this. If you want to limit the time records spend buffering, look into [**record_max_buffered_time**](#record_max_buffered_time) instead.
+
+Default: 500
+Minimum: 1
+Maximum (inclusive): 500
+
+#### collection_max_size
+Maximum amount of data to send with a PutRecords request.
+
+There should be normally no need to adjust this. If you want to limit the time records spend buffering, look into [**record_max_buffered_time**](#record_max_buffered_time) instead.
+
+Records larger than the limit will still be sent, but will not be grouped with others.
+
+Default: 5242880
+Minimum: 52224
+Maximum (inclusive): 9223372036854775807
+
+#### connect_timeout
+Timeout (milliseconds) for establishing TLS connections.
+
+Default: 6000
+Minimum: 100
+Maximum (inclusive): 300000
+
+#### custom_endpoint
+Use a custom Kinesis and CloudWatch endpoint.
+
+Mostly for testing use. Note this does not accept protocols or paths, only host names or ip addresses. There is no way to disable TLS. The KPL always connects with TLS.
+
+Expected pattern: `^([A-Za-z0-9-\\.]+)?$`
+
+#### fail_if_throttled
+If `true`, throttled puts are not retried. The records that got throttled will be failed immediately upon receiving the throttling error. This is useful if you want to react immediately to any throttling without waiting for the KPL to retry. For example, you can use a different hash key to send the throttled record to a backup shard.
+
+If `false`, the KPL will automatically retry throttled puts. The KPL performs backoff for shards that it has received throttling errors from, and will avoid flooding them with retries. Note that records may fail from expiration (see [**record_ttl**](#record_ttl)) if they get delayed for too long because of
+throttling.
+
+Default: `false`
+
+#### log_level
+Minimum level of logs. Messages below the specified level will not be logged. Logs for the native KPL daemon show up on stderr.
+
+Default: `info`
+Expected pattern: `info|warning|error`
+
+#### max_connections
+Maximum number of connections to open to the backend. HTTP requests are sent in parallel over multiple connections.
+
+Setting this too high may impact latency and consume additional resources without increasing throughput.
+
+Default: 4
+Minimum: 1
+Maximum (inclusive): 128
+
+#### metrics_granularity
+Controls the granularity of metrics that are uploaded to CloudWatch. Greater granularity produces more metrics.
+
+When `shard` is selected, metrics are emitted with the stream name and shard id as dimensions. On top of this, the same metric is also emitted with only the stream name dimension, and lastly, without the stream name. This means for a particular metric, 2 streams with 2 shards (each) will produce 7 CloudWatch metrics, one for each shard, one for each stream, and one overall, all describing the same statistics, but at different levels of granularity.
+
+When `stream` is selected, per shard metrics are not uploaded; when `global` is selected, only the total aggregate for all streams and all shards are uploaded.
+
+Consider reducing the granularity if you're not interested in shard-level metrics, or if you have a large number of shards.
+
+If you only have 1 stream, select `global`; the global data will be equivalent to that for the stream.
+
+Refer to the metrics documentation for details about each metric.
+
+Default: `shard`
+Expected pattern: `global|stream|shard`
+
+#### metrics_level
+Controls the number of metrics that are uploaded to CloudWatch.
+
+`none` disables all metrics.
+
+`summary` enables the following metrics: UserRecordsPut, KinesisRecordsPut, ErrorsByCode, AllErrors, BufferingTime.
+
+`detailed` enables all remaining metrics.
+
+Refer to the metrics documentation for details about each metric.
+
+Default: `detailed`
+Expected pattern: `none|summary|detailed`
+
+#### metrics_namespace
+The namespace to upload metrics under.
+
+If you have multiple applications running the KPL under the same AWS account, you should use a different namespace for each application.
+
+If you are also using the KCL, you may wish to use the application name you have configured for the KCL as the the namespace here. This way both your KPL and KCL metrics show up under the same namespace.
+
+Default: `KinesisProducerLibrary`
+Expected pattern: `(?!AWS/).{1,255}`
+
+#### metrics_upload_delay
+Delay (in milliseconds) between each metrics upload.
+
+For testing only. There is no benefit in setting this lower or higher in production.
+
+Default: 60000
+Minimum: 1
+Maximum (inclusive): 60000
+
+#### min_connections
+Minimum number of connections to keep open to the backend.
+
+There should be no need to increase this in general.
+
+Default: 1
+Minimum: 1
+Maximum (inclusive): 16
+
+#### port
+Server port to connect to. Only useful with [**custom_endpoint**](#custom_endpoint).
+
+Default: 443
+Minimum: 1
+Maximum (inclusive): 65535
+
+#### rate_limit
+Limits the maximum allowed put rate for a shard, as a percentage of the backend limits.
+
+The rate limit prevents the producer from sending data too fast to a shard. Such a limit is useful for reducing bandwidth and CPU cycle wastage from sending requests that we know are going to fail from throttling.
+
+Kinesis enforces limits on both the number of records and number of bytes per second. This setting applies to both.
+
+The default value of 150% is chosen to allow a single producer instance to completely saturate the allowance for a shard. This is an aggressive setting. If you prefer to reduce throttling errors rather than completely saturate the shard, consider reducing this setting.
+
+Default: 150
+Minimum: 1
+Maximum (inclusive): 9223372036854775807
+
+#### record_max_buffered_time
+Maximum amount of itme (milliseconds) a record may spend being buffered before it gets sent. Records may be sent sooner than this depending on the other buffering limits.
+
+This setting provides coarse ordering among records - any two records will be reordered by no more than twice this amount (assuming no failures and retries and equal network latency).
+
+The library makes a best effort to enforce this time, but cannot guarantee that it will be precisely met. In general, if the CPU is not overloaded, the library will meet this deadline to within 10ms.
+
+Failures and retries can additionally increase the amount of time records spend in the KPL. If your application cannot tolerate late records, use the [**record_ttl**](#record_ttl) setting to drop records that do not get transmitted in time.
+
+Setting this too low can negatively impact throughput.
+
+Default: 100
+Maximum (inclusive): 9223372036854775807
+
+#### record_ttl
+Set a time-to-live on records (milliseconds). Records that do not get successfully put within the limit are failed.
+
+This setting is useful if your application cannot or does not wish to tolerate late records. Records will still incur network latency after they leave the KPL, so take that into consideration when choosing a value for this setting.
+
+If you do not wish to lose records and prefer to retry indefinitely, set record_ttl to a large value like INT_MAX. This has the potential to cause head-of-line blocking if network issues or throttling occur. You can respond to such situations by using the metrics reporting functions of the KPL. You may also set [**fail_if_throttled**](#fail_if_throttled) to true to prevent automatic retries in case of throttling.
+
+Default: 30000
+Minimum: 100
+Maximum (inclusive): 9223372036854775807
+
+#### request_timeout
+The maximum total time (milliseconds) elapsed between when we begin a HTTP request and receiving all of the response. If it goes over, the request will be timed-out.
+
+Note that a timed-out request may actually succeed at the backend. Retrying then leads to duplicates. Setting the timeout too low will therefore increase the probability of duplicates.
+
+Default: 6000
+Minimum: 100
+Maximum (inclusive): 600000
+
+#### verify_certificate
+Verify the endpoint's certificate. Do not disable unless using [**custom_endpoint**](#custom_endpoint) for testing. Never disable this in production.
+
+Default: `true`
+
+#### credentials_refresh_delay
+Interval seconds for refreshing credentials seding to KPL.
+
+Defalut 5000
+
+## Configuration: kinesis_firehose
+Here are `kinesis_firehose` specific configurations.
+
+### delivery_stream_name
+Name of the delivery stream to put data.
+
+### region
+AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. Refer to [Regions and Endpoints in AWS General Reference][region] for supported regions.
+
+Default `nil`, which means try to find from environment variable `AWS_REGION`.
+
+### data_key
+If your record contains a field whose string should be sent to Amazon Kinesis Firehose directly (without formatter), use this config to specify the field. In that case, other fileds than **data_key** are thorwn away and never sent to Amazon Kinesis Firehose. Default `nil`, which means whole record will be formatted and sent.
+
+### append_new_line
+Boolean. Default `true`. If it is enabled, the plugin add new line character (`\n`) to each serialized record.  
+
+### retries_on_putrecordbatch
+Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Firehose in batches using PutRecordBatch. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecordBatch. Failed records will be retried `retries_on_putrecordbatch`times. If a record fails all retries an error log will be emitted.
+
+### http_proxy
+HTTP proxy for API calling. Default `nil`.
+
+### endpoint
+API endpoint URL, for testing. Defalut `nil`.
+
+### ssl_verify_peer
+Boolean. Disable if you want to verify ssl conncetion, for testing. Default `true`.
+
+### debug
+Boolean. Enable if you need to debug Amazon Kinesis Firehose API call. Default is `false`.
+
+## Configuration: Examples
 
 Here are some configuration examles.
 Assume that the JSON object below is coming to with tag 'your_tag'.
@@ -227,100 +453,24 @@ Assume that the JSON object below is coming to with tag 'your_tag'.
       "action":"bar"
     }
 
-### Simply putting events to Amazon Kinesis with a partition key
-
-In this example, simply a value 'foo' will be used as partition key,
-then events will be sent to the stream specified in 'stream_name'.
-
-    <match your_tag>
-    type kinesis
-
-    stream_name YOUR_STREAM_NAME
-
-    aws_key_id YOUR_AWS_ACCESS_KEY
-    aws_sec_key YOUR_SECRET_KEY
-
-    region us-east-1
-
-    partition_key name
-    </match>
-
-### Using partition_key_expr to add specific prefix to partition key
-
-In this example, we add partition_key_expr to the example above.
-This expression adds string 'some_prefix-' to partition key 'name',
-then partition key finally will be 'some_prefix-foo'.
-
-With specifying parition_key and parition_key_expr both,
-the extracted value for partition key from JSON object will be
-passed to your Ruby expression as a variable 'record'.
-
-    <match your_tag>
-    type kinesis
-
-    stream_name YOUR_STREAM_NAME
-
-    aws_key_id YOUR_AWS_ACCESS_KEY
-    aws_sec_key YOUR_SECRET_KEY
-
-    region us-east-1
-
-    partition_key name
-    partition_key_expr 'some_prefix-' + record
-    </match>
-
-### Using partition_key_expr to extract a value for partition key
-
-In this example, we use only partition_key_expr to extract
-a value for partition key. It will be 'bar'.
-
-Specifying partition_key_expr without partition_key,
-hash object that is converted from whole JSON object will be
-passed to your Ruby expression as a variable 'record'.
-
-    <match your_tag>
-    type kinesis
-
-    stream_name YOUR_STREAM_NAME
-
-    aws_key_id YOUR_AWS_ACCESS_KEY
-    aws_sec_key YOUR_SECRET_KEY
-
-    region us-east-1
-
-    partition_key_expr record['action']
-    </match>
-
 ### Improving throughput to Amazon Kinesis
-
-The achievable throughput to Amazon Kinesis is limited to single-threaded
-PutRecord calls if **order_events** is set to true. By setting **order_events**
-to false records will be sent to Amazon Kinesis in batches. When operating in
-this mode the plugin can also be configured to execute in parallel.
-The **detach_process** and **num_threads** configuration settings control
-parallelism.
-
-Please note that **order_events** option will be ignored if you choose to
-use either **detach_process** or **num_threads**.
+The plugin can also be configured to execute in parallel. `detach_process` and `num_threads` configuration settings control parallelism.
 
 In case of the configuration below, you will spawn 2 processes.
 
     <match your_tag>
-    type kinesis
+    type kinesis_*
 
     stream_name YOUR_STREAM_NAME
     region us-east-1
 
     detach_process 2
-
     </match>
 
-You can also specify a number of threads to put.
-The number of threads is bound to each individual processes.
-So in this case, you will spawn 1 process which has 50 threads.
+You can also specify a number of threads to put. The number of threads is bound to each individual processes. So in this case, you will spawn 1 process which has 50 threads.
 
     <match your_tag>
-    type kinesis
+    type kinesis_*
 
     stream_name YOUR_STREAM_NAME
     region us-east-1
@@ -328,11 +478,10 @@ So in this case, you will spawn 1 process which has 50 threads.
     num_threads 50
     </match>
 
-Both options can be used together, in the configuration below,
-you will spawn 2 processes and 50 threads per each processes.
+Both options can be used together, in the configuration below, you will spawn 2 processes and 50 threads per each processes.
 
     <match your_tag>
-    type kinesis
+    type kinesis_*
 
     stream_name YOUR_STREAM_NAME
     region us-east-1
@@ -340,7 +489,43 @@ you will spawn 2 processes and 50 threads per each processes.
     detach_process 2
     num_threads 50
     </match>
+
+## Development
+
+To launch `fluentd` process with this plugin for development, follow the steps below:
+
+    git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
+    cd aws-fluent-plugin-kinesis
+    make # will install gems and download KPL jar file and extract it for your OS
+    make [stream/firehose/producer]
+
+Then, in another terminal, run the command below. It will emit one record.
+
+    make hello
+
+Also, you can test streaming log data by `dummer`:
+
+    make dummer # keep writing to /tmp/dummy.log
+
+## Contributing
+
+Bug reports and pull requests are welcome on [GitHub][github].
 
 ## Related Resources
 
-* [Amazon Kinesis Developer Guide](http://docs.aws.amazon.com/kinesis/latest/dev/introduction.html)  
+* [Amazon Kinesis Streams Developer Guide](http://docs.aws.amazon.com/kinesis/latest/dev/introduction.html)
+* [Amazon Kinesis Firehose Developer Guide](http://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html)
+
+[fluentd]: http://fluentd.org/
+[streams]: https://aws.amazon.com/kinesis/streams/
+[firehose]: https://aws.amazon.com/kinesis/firehose/
+[producer]: http://docs.aws.amazon.com/kinesis/latest/dev/developing-producers-with-kpl.html
+[td-agent]: https://github.com/treasure-data/td-agent
+[bundler]: http://bundler.io/
+[assume_role]: http://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html
+[external_id]: http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html
+[region]: http://docs.aws.amazon.com/general/latest/gr/rande.html#ak_region
+[fluentd_buffer]: http://docs.fluentd.org/articles/buffer-plugin-overview
+[github]: https://github.com/awslabs/aws-fluent-plugin-kinesis
+[formatter.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/formatter.rb
+[default_config.properties]: https://github.com/awslabs/amazon-kinesis-producer/blob/master/java/amazon-kinesis-producer-sample/default_config.properties

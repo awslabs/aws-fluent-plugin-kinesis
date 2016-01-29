@@ -12,19 +12,23 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require "bundler/gem_tasks"
+require 'fluent/plugin/kinesis_helper/api'
 
-require 'rake/testtask'
+require 'test-unit'
 
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.test_files = FileList['test/**/test_*.rb']
-  test.verbose = true
+class KinesisHelperAPITest < Test::Unit::TestCase
+  def setup
+    @object = Object.new
+    @object.extend(Fluent::KinesisHelper::API)
+  end
+
+  data(
+    'split_by_count' => [Array.new(11, {a:'a'*1}),  [10, 1]],
+    'split_by_size'  => [Array.new(11, {a:'a'*10}), [10, 1]],
+  )
+  def test_batch_by_limit(data)
+    records, expected = data
+    result = @object.send(:batch_by_limit, records, 10, 100)
+    assert_equal expected, result.map(&:size)
+  end
 end
-
-load 'kinesis_producer/tasks/binary.rake'
-
-Rake::Task[:build].enhance [:zip_file]
-Rake::Task[:test].enhance [:binary]
-
-task default: [:binary]

@@ -12,19 +12,25 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require "bundler/gem_tasks"
+module Fluent
+  module KinesisHelper
+    module Client
+      def client
+        @client ||= client_class.new(client_options)
+      end
 
-require 'rake/testtask'
+      private
 
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.test_files = FileList['test/**/test_*.rb']
-  test.verbose = true
+      def client_class
+        case request_type
+        when :streams
+          Aws::Kinesis::Client
+        when :firehose
+          Aws::Firehose::Client
+        when :producer
+          KinesisProducer::Library
+        end
+      end
+    end
+  end
 end
-
-load 'kinesis_producer/tasks/binary.rake'
-
-Rake::Task[:build].enhance [:zip_file]
-Rake::Task[:test].enhance [:binary]
-
-task default: [:binary]

@@ -12,19 +12,27 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require "bundler/gem_tasks"
+require 'fluent/plugin/kinesis_helper'
 
-require 'rake/testtask'
+module Fluent
+  class KinesisProducerOutput < BufferedOutput
+    include KinesisHelper
+    Fluent::Plugin.register_output('kinesis_producer', self)
+    config_param_for_producer
 
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.test_files = FileList['test/**/test_*.rb']
-  test.verbose = true
+    def write(chunk)
+      records = convert_to_records(chunk)
+      wait_futures(write_chunk_to_kpl(records))
+    end
+
+    private
+
+    def convert_format(tag, time, record)
+      {
+        data: data_format(tag, time, record),
+        partition_key: key(record),
+        stream_name: @stream_name,
+      }
+    end
+  end
 end
-
-load 'kinesis_producer/tasks/binary.rake'
-
-Rake::Task[:build].enhance [:zip_file]
-Rake::Task[:test].enhance [:binary]
-
-task default: [:binary]
