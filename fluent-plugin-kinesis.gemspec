@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
   spec.extensions    = ["Rakefile"]
-  spec.required_ruby_version = '>= 1.9.3'
+  spec.required_ruby_version = '>= 2.0.0'
 
   spec.add_dependency "fluentd", ">= 0.10.53", "< 0.13"
   spec.add_dependency "protobuf", ">= 3.5.5"
@@ -39,7 +39,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "test-unit-rr", ">= 1.0.3"
   spec.add_development_dependency "pry", ">= 0.10.1"
   spec.add_development_dependency "pry-byebug", ">= 3.3.0"
-  spec.add_development_dependency "byebug", ">= 8.2.1"
   spec.add_development_dependency "net-empty_port", ">= 0.0.2"
   spec.add_development_dependency "dummer", ">= 0.4.0"
 end
