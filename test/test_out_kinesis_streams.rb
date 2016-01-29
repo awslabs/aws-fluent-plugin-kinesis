@@ -21,12 +21,16 @@ require 'dummy_server'
 class KinesisStreamsOutputTest < Test::Unit::TestCase
   def setup
     ENV['AWS_REGION'] = 'ap-northeast-1'
+    ENV['AWS_ACCESS_KEY_ID'] = 'AAAAAAAAAAAAAAAAAAAA'
+    ENV['AWS_SECRET_ACCESS_KEY'] = 'ffffffffffffffffffffffffffffffffffffffff'
     Fluent::Test.setup
     @server = DummyServer.start
   end
 
   def teardown
     ENV.delete('AWS_REGION')
+    ENV.delete('AWS_ACCESS_KEY_ID')
+    ENV.delete('AWS_SECRET_ACCESS_KEY')
     @server.clear
   end
 
