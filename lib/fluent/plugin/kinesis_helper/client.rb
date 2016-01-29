@@ -12,8 +12,25 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/load'
-require 'fluent/test'
-require 'test/unit'
-require 'mocha/test_unit'
-require 'dummy_server'
+module Fluent
+  module KinesisHelper
+    module Client
+      def client
+        @client ||= client_class.new(client_options)
+      end
+
+      private
+
+      def client_class
+        case request_type
+        when :streams
+          Aws::Kinesis::Client
+        when :firehose
+          Aws::Firehose::Client
+        when :producer
+          KinesisProducer::Library
+        end
+      end
+    end
+  end
+end

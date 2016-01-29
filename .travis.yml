@@ -1,12 +1,13 @@
 language: ruby
 
 rvm:
-  - 1.9.3
   - 2.0.0
   - 2.1
   - 2.2
-  - ruby-head
-  - rbx-2
+
+env:
+  - "fluentd=stable"
+  - "fluentd=0.10.58"
 
 os:
   - linux
@@ -15,12 +16,14 @@ os:
 gemfile:
   - Gemfile
 
-script: bundle exec rake
+before_install:
+  - gem update bundler
+
+script: bundle exec rake test
 
 sudo: false
 
 matrix:
-  allow_failures:
-    - rvm: ruby-head
-    - rvm: rbx-2
+  exclude:
     - rvm: 2.2
+      os: osx

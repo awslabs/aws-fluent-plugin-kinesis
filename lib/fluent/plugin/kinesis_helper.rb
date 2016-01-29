@@ -12,8 +12,19 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/load'
-require 'fluent/test'
-require 'test/unit'
-require 'mocha/test_unit'
-require 'dummy_server'
+require 'fluent/plugin/kinesis_helper/class_methods'
+require 'fluent/plugin/kinesis_helper/initialize'
+require 'fluent/plugin/kinesis_helper/error'
+
+module Fluent
+  module KinesisHelper
+    include Fluent::SetTimeKeyMixin
+    include Fluent::SetTagKeyMixin
+    include Fluent::DetachMultiProcessMixin
+
+    def self.included(klass)
+      klass.extend ClassMethods
+    end
+    include Initialize
+  end
+end

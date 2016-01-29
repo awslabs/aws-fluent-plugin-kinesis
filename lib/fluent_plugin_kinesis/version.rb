@@ -12,8 +12,6 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/load'
-require 'fluent/test'
-require 'test/unit'
-require 'mocha/test_unit'
-require 'dummy_server'
+module FluentPluginKinesis
+  VERSION = '1.0.0.rc11'
+end
