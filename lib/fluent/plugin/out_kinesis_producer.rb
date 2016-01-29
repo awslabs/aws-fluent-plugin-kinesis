@@ -12,8 +12,27 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/load'
-require 'fluent/test'
-require 'test/unit'
-require 'mocha/test_unit'
-require 'dummy_server'
+require 'fluent/plugin/kinesis_helper'
+
+module Fluent
+  class KinesisProducerOutput < BufferedOutput
+    include KinesisHelper
+    Fluent::Plugin.register_output('kinesis_producer', self)
+    config_param_for_producer
+
+    def write(chunk)
+      records = convert_to_records(chunk)
+      wait_futures(write_chunk_to_kpl(records))
+    end
+
+    private
+
+    def convert_format(tag, time, record)
+      {
+        data: data_format(tag, time, record),
+        partition_key: key(record),
+        stream_name: @stream_name,
+      }
+    end
+  end
+end

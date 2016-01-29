@@ -1,6 +1,15 @@
 # CHANGELOG
 
+## 1.0.0
+
+To support Firehose and KPL, this was refactored and added more tests.
+
+- Feature - Support Firehose
+- Feature - Support KPL
+- Feature - New parameters, such as formatter, data_key, reset_backoff_if_success, batch_request_max_count, batch_request_max_size, log_truncate_max_size
+
 ## 0.4.0
+
 - Feature - Add option to ensure Kinesis Stream connection. [#35](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/35)
 - Feature - Add option to support zlib compression. [#39](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/39)
 
