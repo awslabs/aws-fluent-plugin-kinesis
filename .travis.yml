@@ -4,8 +4,6 @@ rvm:
   - 2.0.0
   - 2.1
   - 2.2
-  - ruby-head
-  - rbx-2
 
 os:
   - linux
@@ -22,5 +20,6 @@ script: bundle exec rake test
 sudo: false
 
 matrix:
-  allow_failures:
-    - rvm: rbx-2
+  exclude:
+    - rvm: 2.2
+      os: osx
