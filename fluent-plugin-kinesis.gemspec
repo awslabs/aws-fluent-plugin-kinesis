@@ -2,6 +2,7 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fluent_plugin_kinesis/version'
+require 'kinesis_producer/binary'
 
 Gem::Specification.new do |spec|
   spec.name          = "fluent-plugin-kinesis"
@@ -12,10 +13,9 @@ Gem::Specification.new do |spec|
   spec.license       = "Amazon Software License"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
-  spec.files         << "amazon-kinesis-producer-native-binaries.zip"
+  spec.files         += KinesisProducer::Binary::Files.values
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-  spec.extensions    = ["Rakefile"]
   spec.required_ruby_version = '>= 2.0.0'
 
   spec.add_dependency "fluentd", ">= 0.10.53", "< 0.13"

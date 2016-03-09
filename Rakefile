@@ -24,7 +24,7 @@ end
 
 load 'kinesis_producer/tasks/binary.rake'
 
-Rake::Task[:build].enhance [:zip_file]
-Rake::Task[:test].enhance [:binary]
+Rake::Task[:build].enhance [:binaries]
+Rake::Task[:test].enhance [:binaries]
 
-task default: [:binary]
+task default: [:test]

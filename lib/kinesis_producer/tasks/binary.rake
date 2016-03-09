@@ -21,10 +21,7 @@ jar_file = "amazon-kinesis-producer-#{jar_version}.jar"
 jar_url = "https://search.maven.org/remotecontent?filepath=com/amazonaws/amazon-kinesis-producer/#{jar_version}/#{jar_file}"
 cache_dir = Pathname.new(".cache")
 cache_jar_file = cache_dir.join(jar_file)
-binaries = KinesisProducer::Library.binaries.values
-
-zip_file = "amazon-kinesis-producer-native-binaries.zip"
-binary = KinesisProducer::Library.binary
+binaries = KinesisProducer::Binary::Files.values
 
 directory cache_dir
 
@@ -34,36 +31,16 @@ file cache_jar_file => [cache_dir] do |t|
 end
 
 binaries.each do |bin|
-  file cache_dir.join(bin) => [cache_jar_file] do |t|
+  file bin => [cache_jar_file] do |t|
     puts "Extracting #{bin} from #{jar_file}"
-    Dir.chdir(cache_dir) do
-      unzip(jar_file, bin)
-    end
+    unzip(cache_jar_file, bin)
   end
 end
 
-file zip_file => binaries.map{|bin|cache_dir.join(bin)} do |t|
-  puts "Archiving to #{zip_file}"
-  Dir.chdir(cache_dir) do
-    zip(t.name, *binaries)
-  end
-  mv(cache_dir.join(t.name), t.name)
-end
-
-file binary do |t|
-  unzip(zip_file, t.name)
-  chmod 0755, t.name
-end
-
-task :zip_file do
-  Rake::Task[zip_file].invoke unless File.exists?(zip_file)
-end
-
-task :binary => [:zip_file, binary]
+task :binaries => binaries
 
 task :clean do
   rm_rf cache_dir
-  rm_f zip_file
   rm_rf File.dirname(File.dirname(binary))
 end
 
@@ -78,15 +55,6 @@ def download(url, target)
           io.write(chunk)
         end
       end
-    end
-  end
-end
-
-def zip(zip_file, *targets)
-  rm_f zip_file
-  Zip::File.open(zip_file, Zip::File::CREATE) do |z|
-    targets.each do |target|
-      z.add(target, target)
     end
   end
 end

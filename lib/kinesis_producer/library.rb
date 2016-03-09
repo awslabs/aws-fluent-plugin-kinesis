@@ -52,20 +52,11 @@ module KinesisProducer
     end
 
     class << self
-      def binaries
-        dir = 'amazon-kinesis-producer-native-binaries'
-        {
-          'linux'   => File.join(dir, 'linux',   'kinesis_producer'),
-          'osx'     => File.join(dir, 'osx',     'kinesis_producer'),
-          'windows' => File.join(dir, 'windows', 'kinesis_producer.exe'),
-        }
-      end
-
       def binary
         case
-        when OS.linux?;   binaries['linux']
-        when OS.osx?;     binaries['osx']
-        when OS.windows?; binaries['windows']
+        when OS.linux?;   Binary::Files['linux']
+        when OS.osx?;     Binary::Files['osx']
+        when OS.windows?; Binary::Files['windows']
         else; raise
         end
       end

@@ -13,6 +13,7 @@
 #  permissions and limitations under the License.
 
 require 'protobuf'
+require 'kinesis_producer/binary'
 require 'kinesis_producer/library'
 require 'kinesis_producer/daemon'
 require 'kinesis_producer/protobuf/config.pb'
