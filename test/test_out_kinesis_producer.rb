@@ -12,6 +12,7 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
+require 'fluent/load'
 require 'fluent/test'
 require 'fluent/plugin/out_kinesis_producer'
 

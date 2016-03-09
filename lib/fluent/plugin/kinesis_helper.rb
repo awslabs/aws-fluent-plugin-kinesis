@@ -12,7 +12,6 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/process'
 require 'fluent/plugin/kinesis_helper/class_methods'
 require 'fluent/plugin/kinesis_helper/initialize'
 
