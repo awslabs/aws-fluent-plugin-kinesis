@@ -34,6 +34,7 @@ binaries.each do |bin|
   file bin => [cache_jar_file] do |t|
     puts "Extracting #{bin} from #{jar_file}"
     unzip(cache_jar_file, bin)
+    chmod 0755, bin
   end
 end
 
