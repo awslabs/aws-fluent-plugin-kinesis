@@ -7,6 +7,8 @@
 [Fluentd](http://fluentd.org/) output plugin
 that sends events to [Amazon Kinesis](https://aws.amazon.com/kinesis/).
 
+Also, there is a documentation on [Fluentd official site](http://docs.fluentd.org/articles/kinesis-stream).
+
 ## Installation
 
 This fluentd plugin is available as the `fluent-plugin-kinesis` gem from RubyGems.
