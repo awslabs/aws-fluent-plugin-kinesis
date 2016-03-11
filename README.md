@@ -1,6 +1,6 @@
 # Fluent plugin for Amazon Kinesis
 
-**Under development!!! Now v1.0.0.rc1**
+**Under development!!!**
 
 [Fluentd][fluentd] output plugin
 that sends events to [Amazon Kinesis Streams][streams] (via both API and [Kinesis Producer Library (KPL)][producer]) and [Amazon Kinesis Firehose][firehose] (via API). This gem includes three output plugins respectively:
@@ -12,11 +12,11 @@ that sends events to [Amazon Kinesis Streams][streams] (via both API and [Kinesi
 ## Installation
 This fluentd plugin is available as the `fluent-plugin-kinesis` gem from RubyGems.
 
-    gem install fluent-plugin-kinesis
+    gem install fluent-plugin-kinesis --pre
 
 Or you can install this plugin for [td-agent][td-agent] as:
 
-    fluent-gem install fluent-plugin-kinesis
+    td-agent-gem install fluent-plugin-kinesis --pre
 
 If you would like to build by yourself and install, please see the section below. Your need [bundler][bundler] for this.
 
@@ -44,7 +44,7 @@ Or just download specify your Ruby library path. Below is the sample for specify
     export RUBYLIB=$RUBYLIB:/path/to/aws-fluent-plugin-kinesis/lib
 
 ## Dependencies
- * Ruby 1.9.3+
+ * Ruby 2.0.0+
  * Fluentd 0.10.43+
 
 ## Basic Usage
@@ -84,6 +84,8 @@ For more detail, see [Configuration: kinesis_streams](#configuration-kinesis_str
       region us-east-1
       stream_name your_stream
       partition_key key  # Otherwise, use random partition key
+      <kinesis_producer> # You can't omit this section!
+      </kinesis_producer>
     </match>
 For more detail, see [Configuration: kinesis_producer](#configuration-kinesis_producer)
 

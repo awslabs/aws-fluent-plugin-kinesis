@@ -63,6 +63,17 @@ class KinesisProducerOutputTest < Test::Unit::TestCase
     assert_equal false,         d.instance.kinesis_producer.verify_certificate
   end
 
+  def test_configure_without_section
+    omit 'Current Fluentd does not instantiate empty config_section'
+    d = create_driver("stream_name test-stream")
+    assert_not_nil d.instance.kinesis_producer
+  end
+
+  def test_configure_with_empty_section
+    d = create_driver("stream_name test-stream\n<kinesis_producer>\n</kinesis_producer>")
+    assert_not_nil d.instance.kinesis_producer
+  end
+
   def test_region
     d = create_driver(default_config + "region us-west-2")
     assert_equal 'us-west-2', d.instance.region
