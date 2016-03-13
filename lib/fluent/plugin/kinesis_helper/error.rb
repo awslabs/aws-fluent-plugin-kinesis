@@ -42,6 +42,10 @@ module Fluent
     end
 
     class InvalidRecordError < BaseError
+      def initialize(record)
+        msg = "Invalid type of record: #{record}"
+        super(msg)
+      end
     end
   end
 end
