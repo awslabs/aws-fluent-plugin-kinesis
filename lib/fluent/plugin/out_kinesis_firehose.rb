@@ -34,7 +34,7 @@ module Fluent
 
     def convert_format(tag, time, record)
       if @data_key and record[@data_key].nil?
-        raise Fluent::KinesisHelper::ConvertError, "data_key '#{@data_key}' does not exist on #{record}"
+        raise Fluent::KinesisHelper::KeyNotFoundError.new(@data_key, record)
       elsif @data_key
         { data: record[@data_key].to_s }
       else

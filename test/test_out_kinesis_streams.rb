@@ -70,6 +70,14 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     assert_equal expected+"\n", @server.records.first
   end
 
+  def test_partition_key_not_found
+    d = create_driver(default_config + "partition_key partition_key")
+    d.emit({"a"=>1})
+    d.run
+    assert_equal 0, @server.records.size
+    assert_equal 1, d.instance.log.logs.size
+  end
+
   def test_max_record_size
     d = create_driver
     d.emit({"a"=>"a"*(1024*1024-8)})

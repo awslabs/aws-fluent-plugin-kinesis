@@ -28,7 +28,11 @@ module Fluent
       end
     end
 
-    class ConvertError < BaseError
+    class KeyNotFoundError < BaseError
+      def initialize(key, record)
+        msg = "Key '#{key}' doesn't exist on #{record}"
+        super(msg)
+      end
     end
 
     class ExceedMaxRecordSizeError < BaseError

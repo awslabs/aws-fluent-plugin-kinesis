@@ -16,15 +16,14 @@ require "bundler/gem_tasks"
 
 require 'rake/testtask'
 
-Rake::TestTask.new(:test) do |test|
+task default: [:test]
+Rake::TestTask.new do |test|
   test.libs << 'lib' << 'test'
   test.test_files = FileList['test/**/test_*.rb']
-  test.verbose = true
+  test.options = '-v'
 end
 
 load 'kinesis_producer/tasks/binary.rake'
 
 Rake::Task[:build].enhance [:binaries]
 Rake::Task[:test].enhance [:binaries]
-
-task default: [:test]

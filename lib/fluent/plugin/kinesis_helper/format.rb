@@ -37,7 +37,9 @@ module Fluent
 
       def key(record)
         if @partition_key.nil?
-          SecureRandom.uuid
+          SecureRandom.hex(16)
+        elsif !record.key?(@partition_key)
+          raise Fluent::KinesisHelper::KeyNotFoundError.new(@partition_key, record)
         else
           record[@partition_key]
         end

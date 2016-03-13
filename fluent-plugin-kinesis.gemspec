@@ -23,7 +23,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "aws-sdk", "~> 2"
   spec.add_dependency "concurrent-ruby", "~> 1"
   spec.add_dependency "os", ">= 0.9.6"
-  spec.add_dependency "rubyzip", ">= 1.0.0"
 
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
@@ -34,4 +33,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry-stack_explorer", ">= 0.4.9.2"
   spec.add_development_dependency "net-empty_port", ">= 0.0.2"
   spec.add_development_dependency "dummer", ">= 0.4.0"
+  spec.add_development_dependency "rubyzip", ">= 1.0.0"
 end

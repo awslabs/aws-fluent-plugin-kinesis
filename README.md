@@ -168,7 +168,7 @@ AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. R
 Default `nil`, which means try to find from environment variable `AWS_REGION`.
 
 ### partition_key
-A key to extract partition key from JSON object. Default `nil`, which means partition key will generate randomly.
+A key to extract partition key from JSON object. Default `nil`, which means partition key will be generated randomly.
 
 ### retries_on_putrecords
 Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Streams in batches using PutRecords. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecords. Failed records will be retried **retries_on_putrecords** times. If a record fails all retries an error log will be emitted.
@@ -197,7 +197,7 @@ AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. R
 Default `nil`, which means try to find from environment variable `AWS_REGION`. If both **region** and `AWS_REGION` are not defined, KPL will try to find region from Amazon EC2 metadata.
 
 ### partition_key
-A key to extract partition key from JSON object. Default `nil`, which means partition key will generate randomly.
+A key to extract partition key from JSON object. Default `nil`, which means partition key will be generated randomly.
 
 ### debug
 Boolean. Enable if you need to debug Kinesis Producer Library metrics. Default is `false`.
