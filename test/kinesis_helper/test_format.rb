@@ -25,7 +25,7 @@ class KinesisHelperFormatTest < Test::Unit::TestCase
         @log ||= Fluent::Test::TestLogger.new
       end
       define_method :convert_format do |tag, time, record|
-        { data: record.to_s }
+        { data: record.to_json }
       end
     end
   end
@@ -34,10 +34,24 @@ class KinesisHelperFormatTest < Test::Unit::TestCase
     'valid'   => [{}, {data: "{}"}],
     'invalid' => [[], nil],
   )
-  def test_convert_record(data)
+  def test_convert_record_validation(data)
     record, expected = data
     result = @object.send(:convert_record, '', '', record)
     assert_equal expected, result
     assert_equal result.nil? ? 1 : 0, @object.log.logs.size
+  end
+
+  data(
+    'not_exceeded' => [{"a"=>"a"*(1024*1024-'{"a":""}'.size)},   {data: '{"a":"'+"a"*(1024*1024-'{"a":""}'.size)+'"}'}],
+    'exceeded'     => [{"a"=>"a"*(1024*1024-'{"a":""}'.size+1)}, nil],
+  )
+  def test_convert_record_max_record_size(data)
+    record, expected = data
+    result = @object.send(:convert_record, '', '', record)
+    assert_equal expected, result
+    assert_equal result.nil? ? 1 : 0, @object.log.logs.size
+    if result.nil?
+      assert @object.log.logs.first.size < 1024*1024
+    end
   end
 end

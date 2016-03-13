@@ -67,7 +67,7 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
     d = create_driver(default_config + "formatter #{formatter}")
     d.emit({"a"=>1,"b"=>2})
     d.run
-    assert_equal expected+"\n\n", @server.records.first
+    assert_equal expected+"\n", @server.records.first
   end
 
   data(
@@ -79,7 +79,7 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
     d = create_driver(default_config + "formatter #{formatter}\nappend_new_line false")
     d.emit({"a"=>1,"b"=>2})
     d.run
-    assert_equal expected+"\n", @server.records.first
+    assert_equal expected, @server.records.first
   end
 
   def test_data_key
@@ -87,7 +87,35 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
     d.emit({"a"=>1,"b"=>2})
     d.emit({"b"=>2})
     d.run
+    assert_equal "1\n", @server.records.first
+    assert_equal 1, @server.records.size
+    assert_equal 1, d.instance.log.logs.size
+  end
+
+  def test_data_key_without_append_new_line
+    d = create_driver(default_config + "data_key a\nappend_new_line false")
+    d.emit({"a"=>1,"b"=>2})
+    d.emit({"b"=>2})
+    d.run
     assert_equal "1", @server.records.first
+    assert_equal 1, @server.records.size
+    assert_equal 1, d.instance.log.logs.size
+  end
+
+  def test_max_record_size
+    d = create_driver
+    d.emit({"a"=>"a"*(1024*1024-'{"a":""}n'.size)})
+    d.emit({"a"=>"a"*(1024*1024-'{"a":""}n'.size+1)}) # exceeded
+    d.run
+    assert_equal 1, @server.records.size
+    assert_equal 1, d.instance.log.logs.size
+  end
+
+  def test_max_record_size_without_append_new_line
+    d = create_driver(default_config + "append_new_line false")
+    d.emit({"a"=>"a"*(1024*1024-'{"a":""}'.size)})
+    d.emit({"a"=>"a"*(1024*1024-'{"a":""}'.size+1)}) # exceeded
+    d.run
     assert_equal 1, @server.records.size
     assert_equal 1, d.instance.log.logs.size
   end

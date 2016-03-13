@@ -36,8 +36,9 @@ module Fluent
     end
 
     class ExceedMaxRecordSizeError < BaseError
-      def to_s
-        "Record size limit exceeded for #{truncated}"
+      def initialize(record)
+        msg = "Record size limit exceeded for #{record}"
+        super(msg)
       end
     end
 

@@ -30,9 +30,7 @@ module Fluent
       private
 
       def data_format(tag, time, record)
-        data = @formatter.format(tag, time, record)
-        data += "\n" if @append_new_line
-        data
+        @formatter.format(tag, time, record).chomp
       end
 
       def key(record)
@@ -56,6 +54,7 @@ module Fluent
           raise Fluent::KinesisHelper::InvalidRecordError, record
         end
         converted = convert_format(tag, time, record)
+        converted[:data] += "\n" if @append_new_line
         if converted[:data].size > MAX_RECORD_SIZE
           raise Fluent::KinesisHelper::ExceedMaxRecordSizeError, converted[:data]
         else
