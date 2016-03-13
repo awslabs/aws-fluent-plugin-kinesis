@@ -17,6 +17,12 @@ module Fluent
     module KPL
       def configure(conf)
         super
+        # To workaround when the kinesis_producer section is not specified,
+        # calling Fluent::Configurable#configure with conf added an empty section.
+        if @kinesis_producer.nil?
+          conf.add_element("kinesis_producer")
+          Fluent::Configurable.instance_method(:configure).bind(self).call(conf)
+        end
         if @region.nil?
           keys = %w(AWS_REGION AMAZON_REGION AWS_DEFAULT_REGION)
           @region = ENV.values_at(*keys).compact.first

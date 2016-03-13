@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "test-unit-rr", ">= 1.0.3"
   spec.add_development_dependency "pry", ">= 0.10.1"
   spec.add_development_dependency "pry-byebug", ">= 3.3.0"
+  spec.add_development_dependency "pry-stack_explorer", ">= 0.4.9.2"
   spec.add_development_dependency "net-empty_port", ">= 0.0.2"
   spec.add_development_dependency "dummer", ">= 0.4.0"
 end

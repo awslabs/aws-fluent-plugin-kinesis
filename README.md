@@ -84,8 +84,6 @@ For more detail, see [Configuration: kinesis_streams](#configuration-kinesis_str
       region us-east-1
       stream_name your_stream
       partition_key key  # Otherwise, use random partition key
-      <kinesis_producer> # You can't omit this section!
-      </kinesis_producer>
     </match>
 For more detail, see [Configuration: kinesis_producer](#configuration-kinesis_producer)
 

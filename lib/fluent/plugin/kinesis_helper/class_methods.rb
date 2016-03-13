@@ -49,7 +49,7 @@ module Fluent
         config_param_for_format
         config_param_for_debug
 
-        config_section :kinesis_producer, required: true, multi: false do
+        config_section :kinesis_producer, multi: false do
           require 'kinesis_producer'
           type_map = {
             Protobuf::Field::BoolField   => :bool,

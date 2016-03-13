@@ -64,7 +64,6 @@ class KinesisProducerOutputTest < Test::Unit::TestCase
   end
 
   def test_configure_without_section
-    omit 'Current Fluentd does not instantiate empty config_section'
     d = create_driver("stream_name test-stream")
     assert_not_nil d.instance.kinesis_producer
   end
