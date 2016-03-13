@@ -71,6 +71,10 @@ module Fluent
         result << buf
       end
 
+      def size_of_values(record)
+        record.values_at(:data, :partition_key).compact.map(&:size).inject(:+) || 0
+      end
+
       def put_records_with_retry(batch, retry_count=0)
         res = put_records(batch)
         if failed_exists?(res)

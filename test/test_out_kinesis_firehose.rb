@@ -12,12 +12,8 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/load'
-require 'fluent/test'
+require_relative 'helper'
 require 'fluent/plugin/out_kinesis_firehose'
-
-require 'test/unit/rr'
-require 'dummy_server'
 
 class KinesisFirehoseOutputTest < Test::Unit::TestCase
   def setup
@@ -86,13 +82,14 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
     assert_equal expected+"\n", @server.records.first
   end
 
-  def test_data_key(data)
+  def test_data_key
     d = create_driver(default_config + "data_key a")
     d.emit({"a"=>1,"b"=>2})
     d.emit({"b"=>2})
     d.run
     assert_equal "1", @server.records.first
     assert_equal 1, @server.records.size
+    assert_equal 1, d.instance.log.logs.size
   end
 
   def test_record_count

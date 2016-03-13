@@ -12,23 +12,7 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/plugin/kinesis_helper/api'
-
-require 'test-unit'
-
-class KinesisHelperAPITest < Test::Unit::TestCase
-  def setup
-    @object = Object.new
-    @object.extend(Fluent::KinesisHelper::API)
-  end
-
-  data(
-    'split_by_count' => [Array.new(11, {data:'a'*1}),  [10, 1]],
-    'split_by_size'  => [Array.new(11, {data:'a'*10}), [ 6, 5]],
-  )
-  def test_batch_by_limit(data)
-    records, expected = data
-    result = @object.send(:batch_by_limit, records, 10, 60)
-    assert_equal expected, result.map(&:size)
-  end
-end
+require 'fluent/load'
+require 'fluent/test'
+require 'test/unit/rr'
+require 'dummy_server'

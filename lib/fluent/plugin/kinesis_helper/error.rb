@@ -12,19 +12,32 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/plugin/kinesis_helper/class_methods'
-require 'fluent/plugin/kinesis_helper/initialize'
-require 'fluent/plugin/kinesis_helper/error'
-
 module Fluent
   module KinesisHelper
-    include Fluent::SetTimeKeyMixin
-    include Fluent::SetTagKeyMixin
-    include Fluent::DetachMultiProcessMixin
+    class BaseError < ::StandardError
+      TruncateSize = 200
+      attr_reader :truncated
 
-    def self.included(klass)
-      klass.extend ClassMethods
+      def initialize(msg=nil)
+        super
+        @truncated = (msg.is_a? String and msg.size > TruncateSize) ? msg[0...TruncateSize] + '...' : msg
+      end
+
+      def to_s
+        truncated || super
+      end
     end
-    include Initialize
+
+    class ConvertError < BaseError
+    end
+
+    class ExceedMaxRecordSizeError < BaseError
+      def to_s
+        "Record size limit exceeded for #{truncated}"
+      end
+    end
+
+    class InvalidRecordError < BaseError
+    end
   end
 end

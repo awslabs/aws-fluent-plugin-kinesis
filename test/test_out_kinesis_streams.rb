@@ -12,12 +12,8 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/load'
-require 'fluent/test'
+require_relative 'helper'
 require 'fluent/plugin/out_kinesis_streams'
-
-require 'test/unit/rr'
-require 'dummy_server'
 
 class KinesisStreamsOutputTest < Test::Unit::TestCase
   def setup
@@ -76,10 +72,11 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
 
   def test_max_record_size
     d = create_driver
-    d.emit({"a"=>"a"*(1024*1024-45)})
-    d.emit({"a"=>"a"*(1024*1024-44)})
+    d.emit({"a"=>"a"*(1024*1024-8)})
+    d.emit({"a"=>"a"*(1024*1024-9)})
     d.run
     assert_equal 1, @server.records.size
+    assert_equal 1, d.instance.log.logs.size
   end
 
   def test_record_count

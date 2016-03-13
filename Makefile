@@ -12,7 +12,7 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-.PHONY: test install streams firehose producer dummer hello
+.PHONY: install streams firehose producer dummer hello $(wildcard test/test_*.rb) $(wildcard test/**/test_*.rb)
 
 all:
 	bundle install
@@ -20,9 +20,6 @@ all:
 
 install:
 	bundle exec rake install:local
-
-test:
-	bundle exec rake test
 
 streams:
 	bundle exec fluentd -c benchmark/streams.conf -vv
@@ -38,3 +35,6 @@ dummer:
 
 hello:
 	echo Hello World | bundle exec fluent-cat --none dummy
+
+$(wildcard test/test_*.rb) $(wildcard test/**/test_*.rb):
+	bundle exec rake test TEST=$@

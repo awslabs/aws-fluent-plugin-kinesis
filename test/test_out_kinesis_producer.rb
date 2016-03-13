@@ -12,12 +12,8 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/load'
-require 'fluent/test'
+require_relative 'helper'
 require 'fluent/plugin/out_kinesis_producer'
-
-require 'test/unit/rr'
-require 'dummy_server'
 
 class KinesisProducerOutputTest < Test::Unit::TestCase
   def setup

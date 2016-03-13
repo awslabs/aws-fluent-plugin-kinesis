@@ -15,7 +15,7 @@
 module Fluent
   module KinesisHelper
     module Format
-      MAX_RECORD_SIZE = 1024 * 1024
+      MAX_RECORD_SIZE = 1024 * 1024 # 1 MB
 
       def configure(conf)
         super
@@ -45,21 +45,23 @@ module Fluent
 
       def convert_to_records(chunk)
         chunk.to_enum(:msgpack_each).map{|tag, time, record|
-          convert_format(tag, time, record)
-        }.select{|record|
-          if record.nil?
-            false
-          elsif size_of_values(record) > MAX_RECORD_SIZE
-            log.warn("Can't send record more than %d bytes" % [MAX_RECORD_SIZE])
-            false
-          else
-            true
-          end
-        }
+          convert_record(tag, time, record)
+        }.compact
       end
 
-      def size_of_values(record)
-        record.values.inject(0){|sum,x| sum += x.size}
+      def convert_record(tag, time, record)
+        unless record.is_a? Hash
+          raise Fluent::KinesisHelper::InvalidRecordError, record
+        end
+        converted = convert_format(tag, time, record)
+        if converted[:data].size > MAX_RECORD_SIZE
+          raise Fluent::KinesisHelper::ExceedMaxRecordSizeError, converted[:data]
+        else
+          converted
+        end
+      rescue => e
+        log.error(e)
+        nil
       end
     end
   end
