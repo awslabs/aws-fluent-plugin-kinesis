@@ -5,6 +5,10 @@ rvm:
   - 2.1
   - 2.2
 
+env:
+  - "fluentd=0.12.22"
+  - "fluentd=0.10.53"
+
 os:
   - linux
   - osx
@@ -20,6 +24,6 @@ script: bundle exec rake test
 sudo: false
 
 matrix:
-  exclude:
+  allow_failures:
     - rvm: 2.2
       os: osx
