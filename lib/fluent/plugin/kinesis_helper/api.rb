@@ -12,13 +12,9 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require 'fluent/plugin/kinesis_helper/format'
-
 module Fluent
   module KinesisHelper
     module API
-      include Format
-
       def configure(conf)
         super
         @sleep_duration = exponential_backoff(retries_on_batch_request)
