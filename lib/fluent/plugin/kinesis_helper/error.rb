@@ -28,21 +28,23 @@ module Fluent
       end
     end
 
-    class KeyNotFoundError < BaseError
+    class SkipRecordError < BaseError; end
+
+    class KeyNotFoundError < SkipRecordError
       def initialize(key, record)
         msg = "Key '#{key}' doesn't exist on #{record}"
         super(msg)
       end
     end
 
-    class ExceedMaxRecordSizeError < BaseError
+    class ExceedMaxRecordSizeError < SkipRecordError
       def initialize(record)
         msg = "Record size limit exceeded for #{record}"
         super(msg)
       end
     end
 
-    class InvalidRecordError < BaseError
+    class InvalidRecordError < SkipRecordError
       def initialize(record)
         msg = "Invalid type of record: #{record}"
         super(msg)

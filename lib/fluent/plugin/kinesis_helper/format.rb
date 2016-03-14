@@ -60,7 +60,7 @@ module Fluent
         else
           converted
         end
-      rescue => e
+      rescue Fluent::KinesisHelper::SkipRecordError => e
         log.error(e)
         nil
       end

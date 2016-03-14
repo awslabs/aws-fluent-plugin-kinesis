@@ -18,14 +18,12 @@ module Fluent
   class KinesisFirehoseOutput < BufferedOutput
     include KinesisHelper
     Fluent::Plugin.register_output('kinesis_firehose', self)
-    PUT_RECORD_BATCH_MAX_COUNT = 500
-    PUT_RECORD_BATCH_MAX_SIZE = 4 * 1024 * 1024
     config_param_for_firehose
 
     def write(chunk)
       records = convert_to_records(chunk)
-      batch_by_limit(records, PUT_RECORD_BATCH_MAX_COUNT, PUT_RECORD_BATCH_MAX_SIZE).each do |batch|
-        put_record_batch_with_retry(batch)
+      split_to_batches(records).each do |batch|
+        batch_request_with_retry(batch)
       end
       log.debug("Written #{records.size} records")
     end
@@ -42,12 +40,11 @@ module Fluent
       end
     end
 
-    def put_record_batch(batch)
+    def batch_request(batch)
       client.put_record_batch(
         delivery_stream_name: @delivery_stream_name,
         records: batch
       )
     end
-    alias_method :put_records, :put_record_batch
   end
 end

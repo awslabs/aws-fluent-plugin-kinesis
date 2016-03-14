@@ -18,14 +18,12 @@ module Fluent
   class KinesisStreamsOutput < BufferedOutput
     include KinesisHelper
     Fluent::Plugin.register_output('kinesis_streams', self)
-    PUT_RECORDS_MAX_COUNT = 500
-    PUT_RECORDS_MAX_SIZE = 5 * 1024 * 1024
     config_param_for_streams
 
     def write(chunk)
       records = convert_to_records(chunk)
-      batch_by_limit(records, PUT_RECORDS_MAX_COUNT, PUT_RECORDS_MAX_SIZE).each do |batch|
-        put_records_with_retry(batch)
+      split_to_batches(records).each do |batch|
+        batch_request_with_retry(batch)
       end
       log.debug("Written #{records.size} records")
     end
@@ -39,7 +37,7 @@ module Fluent
       }
     end
 
-    def put_records(batch)
+    def batch_request(batch)
       client.put_records(
         stream_name: @stream_name,
         records: batch,

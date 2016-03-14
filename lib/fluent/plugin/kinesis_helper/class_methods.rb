@@ -17,26 +17,30 @@ module Fluent
     module ClassMethods
       def config_param_for_streams
         const_set(:RequestType, :streams)
-        config_param :stream_name,           :string
-        config_param :region,                :string,  default: nil
-        config_param :partition_key,         :string,  default: nil
-        config_param :retries_on_putrecords, :integer, default: 3
+        const_set(:BatchRequestLimitCount, 500)
+        const_set(:BatchRequestLimitSize, 5 * 1024 * 1024)
+        config_param :stream_name,   :string
+        config_param :region,        :string,  default: nil
+        config_param :partition_key, :string,  default: nil
         config_param_for_sdk
         config_param_for_credentials
         config_param_for_format
+        config_param_for_batch_request
         config_param_for_debug
       end
 
       def config_param_for_firehose
         const_set(:RequestType, :firehose)
-        config_param :delivery_stream_name,      :string
-        config_param :region,                    :string,  default: nil
-        config_param :data_key,                  :string,  default: nil
-        config_param :append_new_line,           :bool,    default: true
-        config_param :retries_on_putrecordbatch, :integer, default: 3
+        const_set(:BatchRequestLimitCount, 500)
+        const_set(:BatchRequestLimitSize, 4 * 1024 * 1024)
+        config_param :delivery_stream_name, :string
+        config_param :region,               :string,  default: nil
+        config_param :data_key,             :string,  default: nil
+        config_param :append_new_line,      :bool,    default: true
         config_param_for_sdk
         config_param_for_credentials
         config_param_for_format
+        config_param_for_batch_request
         config_param_for_debug
       end
 
@@ -86,6 +90,12 @@ module Fluent
 
       def config_param_for_format
         config_param :formatter, :string, default: 'json'
+      end
+
+      def config_param_for_batch_request
+        config_param :retries_on_batch_request, :integer, default: 3
+        config_param :batch_request_max_count,  :integer, default: const_get(:BatchRequestLimitCount)
+        config_param :batch_request_max_size,   :integer, default: const_get(:BatchRequestLimitSize)
       end
 
       def config_param_for_debug

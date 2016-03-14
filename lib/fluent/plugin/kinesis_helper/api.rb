@@ -17,7 +17,13 @@ module Fluent
     module API
       def configure(conf)
         super
-        @sleep_duration = exponential_backoff(retries_on_batch_request)
+        if @batch_request_max_count > self.class::BatchRequestLimitCount
+          raise ConfigError, "batch_request_max_count can't be grater than #{self.class::BatchRequestLimitCount}."
+        end
+        if @batch_request_max_size > self.class::BatchRequestLimitSize
+          raise ConfigError, "batch_request_max_size can't be grater than #{self.class::BatchRequestLimitSize}."
+        end
+        @sleep_duration = exponential_backoff(@retries_on_batch_request)
         @region = client.config.region if @region.nil?
       end
 
@@ -53,9 +59,13 @@ module Fluent
         0.5 + rand * 0.1
       end
 
-      def batch_by_limit(records, max_num, max_size)
+      def split_to_batches(records)
+        batch_by_limit(records, @batch_request_max_count, @batch_request_max_size)
+      end
+
+      def batch_by_limit(records, max_count, max_size)
         result, buf, size = records.inject([[],[],0]){|(result, buf, size), record|
-          if buf.size >= max_num or size >= max_size
+          if buf.size >= max_count or size >= max_size
             result << buf
             buf = []
             size = 0
@@ -71,14 +81,14 @@ module Fluent
         record.values_at(:data, :partition_key).compact.map(&:size).inject(:+) || 0
       end
 
-      def put_records_with_retry(batch, retry_count=0)
-        res = put_records(batch)
+      def batch_request_with_retry(batch, retry_count=0)
+        res = batch_request(batch)
         if failed_exists?(res)
           failed_records = collect_failed_records(batch, res)
-          if retry_count < retries_on_batch_request
+          if retry_count < @retries_on_batch_request
             sleep @sleep_duration[retry_count]
             log.warn('Retrying to request batch. Retry count: %d, Retry records: %d' % [retry_count, failed_records.size])
-            put_records_with_retry(failed_records.map{|r| r[:original] }, retry_count + 1)
+            batch_request_with_retry(failed_records.map{|r| r[:original] }, retry_count + 1)
           else
             failed_records.each {|record|
               log.error('Could not put record, Error: %s/%s, Record: %s' % [
@@ -90,7 +100,6 @@ module Fluent
           end
         end
       end
-      alias_method :put_record_batch_with_retry, :put_records_with_retry
 
       def collect_failed_records(records, res)
         failed_records = []
@@ -119,13 +128,6 @@ module Fluent
                        when :firehose; :request_responses
                        end
         res[result_field]
-      end
-
-      def retries_on_batch_request
-        case request_type
-        when :streams;  @retries_on_putrecords
-        when :firehose; @retries_on_putrecordbatch
-        end
       end
     end
   end
