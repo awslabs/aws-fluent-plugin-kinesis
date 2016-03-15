@@ -78,6 +78,16 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     assert_equal 1, d.instance.log.logs.size
   end
 
+  def test_data_key
+    d = create_driver(default_config + "data_key a")
+    d.emit({"a"=>1,"b"=>2})
+    d.emit({"b"=>2})
+    d.run
+    assert_equal "1", @server.records.first
+    assert_equal 1, @server.records.size
+    assert_equal 1, d.instance.log.logs.size
+  end
+
   def test_max_record_size
     d = create_driver
     d.emit({"a"=>"a"*(1024*1024-'{"a":""}'.size)})

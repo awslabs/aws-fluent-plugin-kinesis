@@ -31,13 +31,7 @@ module Fluent
     private
 
     def convert_format(tag, time, record)
-      if @data_key and record[@data_key].nil?
-        raise Fluent::KinesisHelper::KeyNotFoundError.new(@data_key, record)
-      elsif @data_key
-        { data: record[@data_key].to_s }
-      else
-        { data: data_format(tag, time, record) }
-      end
+      { data: data_format(tag, time, record) }
     end
 
     def batch_request(batch)

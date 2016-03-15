@@ -170,6 +170,9 @@ Default `nil`, which means try to find from environment variable `AWS_REGION`.
 ### partition_key
 A key to extract partition key from JSON object. Default `nil`, which means partition key will be generated randomly.
 
+### data_key
+If your record contains a field whose string should be sent to Amazon Kinesis directly (without formatter), use this parameter to specify the field. In that case, other fileds than **data_key** are thrown away and never sent to Amazon Kinesis. Default `nil`, which means whole record will be formatted and sent.
+
 ### retries_on_batch_request
 Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Streams in batches using PutRecords. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecords. Failed records will be retried **retries_on_batch_request** times. If a record fails all retries an error log will be emitted.
 
@@ -210,6 +213,9 @@ Default `nil`, which means try to find from environment variable `AWS_REGION`. I
 
 ### partition_key
 A key to extract partition key from JSON object. Default `nil`, which means partition key will be generated randomly.
+
+### data_key
+If your record contains a field whose string should be sent to Amazon Kinesis directly (without formatter), use this parameter to specify the field. In that case, other fileds than **data_key** are thrown away and never sent to Amazon Kinesis. Default `nil`, which means whole record will be formatted and sent.
 
 ### log_truncate_max_size
 Integer, default 0. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 (default) means no truncation.
@@ -438,7 +444,7 @@ AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. R
 Default `nil`, which means try to find from environment variable `AWS_REGION`.
 
 ### data_key
-If your record contains a field whose string should be sent to Amazon Kinesis Firehose directly (without formatter), use this config to specify the field. In that case, other fileds than **data_key** are thorwn away and never sent to Amazon Kinesis Firehose. Default `nil`, which means whole record will be formatted and sent.
+If your record contains a field whose string should be sent to Amazon Kinesis directly (without formatter), use this parameter to specify the field. In that case, other fileds than **data_key** are thrown away and never sent to Amazon Kinesis. Default `nil`, which means whole record will be formatted and sent.
 
 ### append_new_line
 Boolean. Default `true`. If it is enabled, the plugin add new line character (`\n`) to each serialized record.  

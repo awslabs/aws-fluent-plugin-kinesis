@@ -32,7 +32,13 @@ module Fluent
       private
 
       def data_format(tag, time, record)
-        @formatter.format(tag, time, record).chomp
+        if @data_key and record[@data_key].nil?
+          raise KeyNotFoundError.new(@data_key, record)
+        elsif @data_key
+          record[@data_key].to_s
+        else
+          @formatter.format(tag, time, record).chomp
+        end
       end
 
       def key(record)

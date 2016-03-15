@@ -35,7 +35,6 @@ module Fluent
         const_set(:BatchRequestLimitSize, 4 * 1024 * 1024)
         config_param :delivery_stream_name, :string
         config_param :region,               :string,  default: nil
-        config_param :data_key,             :string,  default: nil
         config_param :append_new_line,      :bool,    default: true
         config_param_for_sdk
         config_param_for_credentials
@@ -90,6 +89,7 @@ module Fluent
 
       def config_param_for_format
         config_param :formatter,             :string,  default: 'json'
+        config_param :data_key,              :string,  default: nil
         config_param :log_truncate_max_size, :integer, default: 0
       end
 
