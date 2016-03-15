@@ -14,20 +14,28 @@
 
 require_relative '../helper'
 require 'fluent/plugin/kinesis_helper/format'
-require 'fluent/plugin/kinesis_helper/error'
 
 class KinesisHelperFormatTest < Test::Unit::TestCase
-  def setup
-    @object = Object.new
-    @object.extend(Fluent::KinesisHelper::Format)
-    class << @object
-      define_method :log do
-        @log ||= Fluent::Test::TestLogger.new
-      end
-      define_method :convert_format do |tag, time, record|
-        { data: record.to_json }
-      end
+  class Mock
+    include Fluent::KinesisHelper::Format
+
+    attr_accessor :log_truncate_max_size
+
+    def initialize
+      @log_truncate_max_size = 0
     end
+
+    def log
+      @log ||= Fluent::Test::TestLogger.new
+    end
+
+    def convert_format(tag, time, record)
+      { data: record.to_json }
+    end
+  end
+
+  def setup
+    @object = Mock.new
   end
 
   data(
@@ -50,8 +58,17 @@ class KinesisHelperFormatTest < Test::Unit::TestCase
     result = @object.send(:convert_record, '', '', record)
     assert_equal expected, result
     assert_equal result.nil? ? 1 : 0, @object.log.logs.size
-    if result.nil?
-      assert @object.log.logs.first.size < 1024*1024
-    end
+  end
+
+  data(
+    '1'     => [1,   "1"],
+    '5'     => [5,   "12345"],
+    '100'   => [100, "123456789"],
+  )
+  def test_truncate_max_size(data)
+    max_size, expected = data
+    @object.log_truncate_max_size = max_size
+    result = @object.send(:truncate, "123456789")
+    assert_equal expected, result
   end
 end

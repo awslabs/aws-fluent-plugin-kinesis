@@ -23,7 +23,6 @@ module Fluent
         if @batch_request_max_size > self.class::BatchRequestLimitSize
           raise ConfigError, "batch_request_max_size can't be grater than #{self.class::BatchRequestLimitSize}."
         end
-        @sleep_duration = exponential_backoff(@retries_on_batch_request)
         @region = client.config.region if @region.nil?
       end
 
@@ -51,14 +50,6 @@ module Fluent
         options
       end
 
-      def exponential_backoff(count)
-        Array.new(count) {|n| ((2 ** n) * scaling_factor) }
-      end
-
-      def scaling_factor
-        0.5 + rand * 0.1
-      end
-
       def split_to_batches(records)
         batch_by_limit(records, @batch_request_max_count, @batch_request_max_size)
       end
@@ -81,24 +72,24 @@ module Fluent
         record.values_at(:data, :partition_key).compact.map(&:size).inject(:+) || 0
       end
 
-      def batch_request_with_retry(batch, retry_count=0)
+      def batch_request_with_retry(batch, retry_count=0, backoff: nil)
+        backoff ||= Backoff.new
         res = batch_request(batch)
-        if failed_exists?(res)
+        if failed_count(res) > 0
           failed_records = collect_failed_records(batch, res)
           if retry_count < @retries_on_batch_request
-            sleep @sleep_duration[retry_count]
-            log.warn('Retrying to request batch. Retry count: %d, Retry records: %d' % [retry_count, failed_records.size])
-            batch_request_with_retry(failed_records.map{|r| r[:original] }, retry_count + 1)
+            backoff.reset if @reset_backoff_if_success and any_records_shipped?(res)
+            sleep(backoff.next)
+            log.warn(truncate 'Retrying to request batch. Retry count: %d, Retry records: %d' % [retry_count, failed_records.size])
+            batch_request_with_retry(failed_records.map{|r| r[:original] }, retry_count + 1, backoff: backoff)
           else
-            failed_records.each {|record|
-              log.error('Could not put record, Error: %s/%s, Record: %s' % [
-                record[:error_code],
-                record[:error_message],
-                record[:original]
-              ])
-            }
+            give_up_retries(failed_records)
           end
         end
+      end
+
+      def any_records_shipped?(res)
+        results(res).size > failed_count(res)
       end
 
       def collect_failed_records(records, res)
@@ -114,12 +105,12 @@ module Fluent
         failed_records
       end
 
-      def failed_exists?(res)
+      def failed_count(res)
         failed_field = case request_type
                        when :streams;  :failed_record_count
                        when :firehose; :failed_put_count
                        end
-        res[failed_field] && res[failed_field] > 0
+        res[failed_field]
       end
 
       def results(res)
@@ -128,6 +119,42 @@ module Fluent
                        when :firehose; :request_responses
                        end
         res[result_field]
+      end
+
+      def give_up_retries(failed_records)
+        failed_records.each {|record|
+          log.error(truncate 'Could not put record, Error: %s/%s, Record: %s' % [
+            record[:error_code],
+            record[:error_message],
+            record[:original]
+          ])
+        }
+      end
+
+      class Backoff
+        def initialize
+          @count = 0
+        end
+
+        def next
+          value = calc(@count)
+          @count += 1
+          value
+        end
+
+        def reset
+          @count = 0
+        end
+
+        private
+
+        def calc(count)
+          (2 ** count) * scaling_factor
+        end
+
+        def scaling_factor
+          0.3 + (0.5-rand) * 0.1
+        end
       end
     end
   end

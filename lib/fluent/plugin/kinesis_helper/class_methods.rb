@@ -89,11 +89,13 @@ module Fluent
       end
 
       def config_param_for_format
-        config_param :formatter, :string, default: 'json'
+        config_param :formatter,             :string,  default: 'json'
+        config_param :log_truncate_max_size, :integer, default: 0
       end
 
       def config_param_for_batch_request
         config_param :retries_on_batch_request, :integer, default: 3
+        config_param :reset_backoff_if_success, :bool,    default: true
         config_param :batch_request_max_count,  :integer, default: const_get(:BatchRequestLimitCount)
         config_param :batch_request_max_size,   :integer, default: const_get(:BatchRequestLimitSize)
       end

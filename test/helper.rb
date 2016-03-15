@@ -14,5 +14,7 @@
 
 require 'fluent/load'
 require 'fluent/test'
+require 'test/unit'
 require 'test/unit/rr'
+require 'mocha/test_unit'
 require 'dummy_server'

@@ -14,40 +14,24 @@
 
 module Fluent
   module KinesisHelper
-    class BaseError < ::StandardError
-      TruncateSize = 200
-      attr_reader :truncated
-
-      def initialize(msg=nil)
-        super
-        @truncated = (msg.is_a? String and msg.size > TruncateSize) ? msg[0...TruncateSize] + '...' : msg
-      end
-
-      def to_s
-        truncated || super
-      end
-    end
-
+    class BaseError < ::StandardError; end
     class SkipRecordError < BaseError; end
 
     class KeyNotFoundError < SkipRecordError
       def initialize(key, record)
-        msg = "Key '#{key}' doesn't exist on #{record}"
-        super(msg)
+        super "Key '#{key}' doesn't exist on #{record}"
       end
     end
 
     class ExceedMaxRecordSizeError < SkipRecordError
       def initialize(record)
-        msg = "Record size limit exceeded for #{record}"
-        super(msg)
+        super "Record size limit exceeded for #{record}"
       end
     end
 
     class InvalidRecordError < SkipRecordError
       def initialize(record)
-        msg = "Invalid type of record: #{record}"
-        super(msg)
+        super "Invalid type of record: #{record}"
       end
     end
   end

@@ -12,10 +12,12 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
+require 'fluent/plugin/kinesis_helper/error'
+
 module Fluent
   module KinesisHelper
     module Format
-      MAX_RECORD_SIZE = 1024 * 1024 # 1 MB
+      MaxRecordSize = 1024 * 1024 # 1 MB
 
       def configure(conf)
         super
@@ -37,7 +39,7 @@ module Fluent
         if @partition_key.nil?
           SecureRandom.hex(16)
         elsif !record.key?(@partition_key)
-          raise Fluent::KinesisHelper::KeyNotFoundError.new(@partition_key, record)
+          raise KeyNotFoundError.new(@partition_key, record)
         else
           record[@partition_key]
         end
@@ -51,18 +53,26 @@ module Fluent
 
       def convert_record(tag, time, record)
         unless record.is_a? Hash
-          raise Fluent::KinesisHelper::InvalidRecordError, record
+          raise InvalidRecordError, record
         end
         converted = convert_format(tag, time, record)
         converted[:data] += "\n" if @append_new_line
-        if converted[:data].size > MAX_RECORD_SIZE
-          raise Fluent::KinesisHelper::ExceedMaxRecordSizeError, converted[:data]
+        if converted[:data].size > MaxRecordSize
+          raise ExceedMaxRecordSizeError, converted[:data]
         else
           converted
         end
-      rescue Fluent::KinesisHelper::SkipRecordError => e
-        log.error(e)
+      rescue SkipRecordError => e
+        log.error(truncate e)
         nil
+      end
+
+      def truncate(msg)
+        if @log_truncate_max_size == 0 or (msg.to_s.size <= @log_truncate_max_size)
+          msg.to_s
+        else
+          msg.to_s[0...@log_truncate_max_size]
+        end
       end
     end
   end

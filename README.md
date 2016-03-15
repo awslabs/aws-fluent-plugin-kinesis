@@ -170,8 +170,20 @@ Default `nil`, which means try to find from environment variable `AWS_REGION`.
 ### partition_key
 A key to extract partition key from JSON object. Default `nil`, which means partition key will be generated randomly.
 
-### retries_on_putrecords
-Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Streams in batches using PutRecords. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecords. Failed records will be retried **retries_on_putrecords** times. If a record fails all retries an error log will be emitted.
+### retries_on_batch_request
+Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Streams in batches using PutRecords. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecords. Failed records will be retried **retries_on_batch_request** times. If a record fails all retries an error log will be emitted.
+
+### reset_backoff_if_success
+Boolean, default `true`. If enabled, when after retrying, the next retrying checks the number of succeeded records on the former batch request and reset exponential backoff if there is any success. Because batch request could be composed by requests across shards, simple exponential backoff for the batch request wouldn't work some cases.
+
+### batch_request_max_count
+Integer, default 500. The number of max count of making batch request from record chunk. It can't exceed the default value because it's API limit.
+
+### batch_request_max_size
+Integer, default 5 * 1024*1024. The number of max size of making batch request from record chunk. It can't exceed the default value because it's API limit.
+
+### log_truncate_max_size
+Integer, default 0. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 (default) means no truncation.
 
 ### http_proxy
 HTTP proxy for API calling. Default `nil`.
@@ -198,6 +210,9 @@ Default `nil`, which means try to find from environment variable `AWS_REGION`. I
 
 ### partition_key
 A key to extract partition key from JSON object. Default `nil`, which means partition key will be generated randomly.
+
+### log_truncate_max_size
+Integer, default 0. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 (default) means no truncation.
 
 ### debug
 Boolean. Enable if you need to debug Kinesis Producer Library metrics. Default is `false`.
@@ -428,8 +443,20 @@ If your record contains a field whose string should be sent to Amazon Kinesis Fi
 ### append_new_line
 Boolean. Default `true`. If it is enabled, the plugin add new line character (`\n`) to each serialized record.  
 
-### retries_on_putrecordbatch
-Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Firehose in batches using PutRecordBatch. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecordBatch. Failed records will be retried `retries_on_putrecordbatch`times. If a record fails all retries an error log will be emitted.
+### retries_on_batch_request
+Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Streams in batches using PutRecords. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecords. Failed records will be retried **retries_on_batch_request** times. If a record fails all retries an error log will be emitted.
+
+### reset_backoff_if_success
+Boolean, default `true`. If enabled, when after retrying, the next retrying checks the number of succeeded records on the former batch request and reset exponential backoff if there is any success. Because batch request could be composed by requests across shards, simple exponential backoff for the batch request wouldn't work some cases.
+
+### batch_request_max_count
+Integer, default 500. The number of max count of making batch request from record chunk. It can't exceed the default value because it's API limit.
+
+### batch_request_max_size
+Integer, default 5 * 1024*1024. The number of max size of making batch request from record chunk. It can't exceed the default value because it's API limit.
+
+### log_truncate_max_size
+Integer, default 0. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 (default) means no truncation.
 
 ### http_proxy
 HTTP proxy for API calling. Default `nil`.
