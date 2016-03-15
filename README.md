@@ -453,7 +453,7 @@ Boolean, default `true`. If enabled, when after retrying, the next retrying chec
 Integer, default 500. The number of max count of making batch request from record chunk. It can't exceed the default value because it's API limit.
 
 ### batch_request_max_size
-Integer, default 5 * 1024*1024. The number of max size of making batch request from record chunk. It can't exceed the default value because it's API limit.
+Integer, default 4 * 1024*1024. The number of max size of making batch request from record chunk. It can't exceed the default value because it's API limit.
 
 ### log_truncate_max_size
 Integer, default 0. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 (default) means no truncation.
