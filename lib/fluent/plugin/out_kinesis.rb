@@ -12,7 +12,6 @@
 # language governing permissions and limitations under the License.
 
 require 'aws-sdk-core'
-require 'multi_json'
 require 'yajl'
 require 'logger'
 require 'securerandom'
