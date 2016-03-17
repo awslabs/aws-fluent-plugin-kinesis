@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   spec.required_ruby_version = '>= 2.0.0'
 
-  spec.add_dependency "fluentd", ">= 0.10.58", "< 0.13"
+  spec.add_dependency "fluentd", ">= 0.10.58", "< 2"
   spec.add_dependency "protobuf", ">= 3.5.5"
   spec.add_dependency "aws-sdk", "~> 2"
   spec.add_dependency "concurrent-ruby", "~> 1"

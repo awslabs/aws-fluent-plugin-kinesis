@@ -12,6 +12,8 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
+require 'fluent_plugin_kinesis/version'
+
 module Fluent
   module KinesisHelper
     module API
@@ -81,7 +83,8 @@ module Fluent
             backoff.reset if @reset_backoff_if_success and any_records_shipped?(res)
             sleep(backoff.next)
             log.warn(truncate 'Retrying to request batch. Retry count: %d, Retry records: %d' % [retry_count, failed_records.size])
-            batch_request_with_retry(failed_records.map{|r| r[:original] }, retry_count + 1, backoff: backoff)
+            retry_batch = failed_records.map{|r| r[:original] }
+            batch_request_with_retry(retry_batch, retry_count + 1, backoff: backoff)
           else
             give_up_retries(failed_records)
           end
