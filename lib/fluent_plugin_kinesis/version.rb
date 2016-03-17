@@ -13,5 +13,5 @@
 #  permissions and limitations under the License.
 
 module FluentPluginKinesis
-  VERSION = '1.0.0.rc10'
+  VERSION = '1.0.0.rc11'
 end
