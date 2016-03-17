@@ -27,5 +27,6 @@ require 'test/unit/rr'
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
+require 'fluent/load'
 require 'fluent/test'
 require 'fluent/plugin/out_kinesis'
