@@ -1,5 +1,5 @@
 This file contains a list of people who have made large or regular contributions
-to the Fluent Plugin for Amazon Kinesis. Give them a special thanks!
+to the Fluent Plugin for Amazon Kinesis Streams and Amazon Kinesis Firehose. Give them a special thanks!
 
 Genki Sugawara
 sgwr_dts@yahoo.co.jp
