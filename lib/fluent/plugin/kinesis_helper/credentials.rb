@@ -16,23 +16,23 @@ module Fluent
   module KinesisHelper
     module Credentials
       def credentials
-        case
-        when @assume_role_credentials
-          Aws::AssumeRoleCredentials.new(
-            client:            Aws::STS::Client.new(region: @region),
-            role_arn:          @assume_role_credentials.role_arn,
-            external_id:       @assume_role_credentials.external_id,
-            role_session_name: 'aws-fluent-plugin-kinesis',
-            duration_seconds:  60 * 60,
-        )
-        when @shared_credentials
-          Aws::SharedCredentials.new(
-            profile_name: @shared_credentials.profile_name,
-            path:         @shared_credentials.path,
+        @provider ||= case
+          when @assume_role_credentials
+            Aws::AssumeRoleCredentials.new(
+              client:            Aws::STS::Client.new(region: @region),
+              role_arn:          @assume_role_credentials.role_arn,
+              external_id:       @assume_role_credentials.external_id,
+              role_session_name: 'aws-fluent-plugin-kinesis',
+              duration_seconds:  60 * 60,
           )
-        else
-          default_credentials_provider
-        end
+          when @shared_credentials
+            Aws::SharedCredentials.new(
+              profile_name: @shared_credentials.profile_name,
+              path:         @shared_credentials.path,
+            )
+          else
+            default_credentials_provider
+          end
       end
 
       private
@@ -44,7 +44,7 @@ module Fluent
         if provider.nil?
           raise Fluent::ConfigError, "You must specify credentials on ~/.aws/credentials, environment variables or IAM role for default credentials"
         end
-        provider.credentials
+        provider
       end
     end
   end

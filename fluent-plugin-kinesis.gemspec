@@ -49,4 +49,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "dummer", ">= 0.4.0"
   spec.add_development_dependency "rubyzip", ">= 1.0.0"
   spec.add_development_dependency "mocha", ">= 1.1.0"
+  spec.add_development_dependency "webmock", ">= 1.24.2"
+  spec.add_development_dependency "fakefs", ">= 0.8.1"
 end

@@ -158,7 +158,7 @@ module KinesisProducer
     def update_credentials
       add(make_set_credentials_message)
       add(make_set_metrics_credentials_message) if @metrics_credentials
-      sleep @credentials_refresh_delay
+      sleep(@credentials_refresh_delay.to_f/1000)
     end
 
     def make_configuration_message
@@ -183,9 +183,9 @@ module KinesisProducer
     def make_set_credential_message(credentials, for_metrics = false)
       return nil if credentials.nil?
       cred = KinesisProducer::Protobuf::Credentials.new(
-        akid:       credentials.access_key_id,
-        secret_key: credentials.secret_access_key,
-        token:      credentials.session_token
+        akid:       credentials.credentials.access_key_id,
+        secret_key: credentials.credentials.secret_access_key,
+        token:      credentials.credentials.session_token
       )
       set_credentials = KinesisProducer::Protobuf::SetCredentials.new(credentials: cred, for_metrics: for_metrics)
       make_message(FixnumMax, :set_credentials, set_credentials)
