@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.0.1
+
+- Bug fix - Instance profile credentials expiring [#58](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/58)
+
 ## 1.0.0
 
 To support Firehose and KPL, this was refactored and added more tests.
