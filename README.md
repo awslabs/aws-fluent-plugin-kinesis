@@ -431,7 +431,7 @@ Verify the endpoint's certificate. Do not disable unless using [**custom_endpoin
 Default: `true`
 
 #### credentials_refresh_delay
-Interval seconds for refreshing credentials seding to KPL.
+Interval milliseconds for refreshing credentials seding to KPL.
 
 Defalut 5000
 

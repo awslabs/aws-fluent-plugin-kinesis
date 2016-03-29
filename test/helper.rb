@@ -17,3 +17,6 @@ require 'fluent/test'
 require 'test/unit'
 require 'mocha/test_unit'
 require 'dummy_server'
+require 'fakefs/safe'
+require 'webmock/test_unit'
+WebMock.disable!
