@@ -31,9 +31,8 @@ class KinesisProducerOutputTest < Test::Unit::TestCase
     @server.clear
   end
 
-  def default_config
+  def base_config
     %[
-      stream_name test-stream
       log_level error
 
       <kinesis_producer>
@@ -43,6 +42,10 @@ class KinesisProducerOutputTest < Test::Unit::TestCase
         log_level error
       </kinesis_producer>
     ]
+  end
+
+  def default_config
+    "stream_name test-stream " + base_config
   end
 
   def create_driver(conf = default_config)
@@ -59,6 +62,20 @@ class KinesisProducerOutputTest < Test::Unit::TestCase
     assert_equal false,         d.instance.kinesis_producer.verify_certificate
   end
 
+  def test_configure_with_stream_name_prefix
+    d = create_driver("stream_name_prefix test-stream-")
+    assert_equal 'test-stream-', d.instance.stream_name_prefix
+    assert_nil d.instance.stream_name
+  end
+
+  def test_configure_without_stream_name_or_prefix
+    assert_raise(Fluent::ConfigError) { d = create_driver("") }
+  end
+
+  def test_configure_with_stream_name_and_prefix
+    assert_raise(Fluent::ConfigError) { d = create_driver("stream_name test-stream\nstream_name_prefix test-stream-") }
+  end
+
   def test_configure_without_section
     d = create_driver("stream_name test-stream")
     assert_not_nil d.instance.kinesis_producer
@@ -72,6 +89,22 @@ class KinesisProducerOutputTest < Test::Unit::TestCase
   def test_region
     d = create_driver(default_config + "region us-west-2")
     assert_equal 'us-west-2', d.instance.region
+  end
+
+  def test_stream_name
+    # First record using stream_name_prefix + tag
+    d = create_driver(base_config + "stream_name_prefix test-stream-")
+    d.emit({"a"=>1,"b"=>2})
+    d.run
+    # Second record using explicit stream_name
+    d = create_driver
+    d.emit({"a"=>1,"b"=>2})
+    d.run
+
+    records = @server.detailed_records
+    assert_equal 2, records.size
+    assert_equal "test-stream-test", records[0][:stream_name]
+    assert_equal "test-stream", records[1][:stream_name]
   end
 
   data(

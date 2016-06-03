@@ -72,7 +72,11 @@ class DummyServer
   end
 
   def records
-    flatten_records(@accepted_records)
+    flatten_records(@accepted_records, false)
+  end
+
+  def detailed_records
+    flatten_records(@accepted_records, true)
   end
 
   def failed_count
@@ -172,7 +176,7 @@ class DummyServer
           "ErrorMessage" => "Rate exceeded for shard shardId-000000000001 in stream exampleStreamName under account 111111111111."
         }
       else
-        @accepted_records << record
+        @accepted_records << {:stream_name => body['StreamName'], :record => record}
         {
           "SequenceNumber" => "49543463076548007577105092703039560359975228518395019266",
           "ShardId" => "shardId-000000000000"
@@ -197,7 +201,7 @@ class DummyServer
           "ErrorMessage" => "Some message"
         }
       else
-        @accepted_records << record
+        @accepted_records << {:stream_name => body['StreamName'], :record => record}
         {
           "RecordId" => "49543463076548007577105092703039560359975228518395019266",
         }
@@ -210,15 +214,24 @@ class DummyServer
     }
   end
 
-  def flatten_records(records)
+  def flatten_records(records, detailed)
     records.flat_map do |record|
-      data = Base64.decode64(record['Data'])
+      data = Base64.decode64(record[:record]['Data'])
+      partition_key = record[:record]['PartitionKey']
       if data[0,4] == ['F3899AC2'].pack('H*')
         protobuf = data[4,data.length-20]
         agg = KinesisProducer::Protobuf::AggregatedRecord.decode(protobuf)
-        agg.records.map(&:data)
+        if detailed
+          {:stream_name => record[:stream_name], :data => agg.records.map(&:data), :partition_key => partition_key}
+        else
+          agg.records.map(&:data)
+        end
       else
-        data
+        if detailed
+          {:stream_name => record[:stream_name], :data => data, :partition_key => partition_key}
+        else
+          data
+        end
       end
     end
   end
