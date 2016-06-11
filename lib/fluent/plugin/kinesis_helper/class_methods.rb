@@ -70,7 +70,7 @@ module Fluent
       end
 
       def config_param_for_sdk
-        config_param :http_proxy,      :string, default: nil
+        config_param :http_proxy,      :string, default: nil, secret: true
         config_param :endpoint,        :string, default: nil
         config_param :ssl_verify_peer, :bool,   default: true
       end
