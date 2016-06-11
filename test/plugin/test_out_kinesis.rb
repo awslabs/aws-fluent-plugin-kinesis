@@ -50,8 +50,9 @@ class KinesisOutputTest < Test::Unit::TestCase
 
   def create_mock_client
     client = mock(Object.new)
+    require 'fluent_plugin_kinesis/version'
     opts = {
-      user_agent_suffix: "fluent-plugin-kinesis-output-filter/1.0.1",
+      user_agent_suffix: "fluent-plugin-kinesis-output-filter/#{FluentPluginKinesis::VERSION}",
       region:            "us-east-1",
       access_key_id:     "test_key_id",
       secret_access_key: "test_sec_key",
