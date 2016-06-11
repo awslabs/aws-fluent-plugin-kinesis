@@ -46,7 +46,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry-byebug", ">= 3.3.0"
   spec.add_development_dependency "pry-stack_explorer", ">= 0.4.9.2"
   spec.add_development_dependency "net-empty_port", ">= 0.0.2"
-  spec.add_development_dependency "dummer", ">= 0.4.0"
+  # Due to the version conflict of msgpack between fluentd-0.14 and fluent-logger-0.5.1
+  # spec.add_development_dependency "dummer", ">= 0.4.0"
   spec.add_development_dependency "rubyzip", ">= 1.0.0"
   spec.add_development_dependency "mocha", ">= 1.1.0"
   spec.add_development_dependency "webmock", ">= 1.24.2"

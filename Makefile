@@ -12,11 +12,14 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-.PHONY: install streams firehose producer dummer hello $(wildcard test/test_*.rb) $(wildcard test/**/test_*.rb)
+.PHONY: test install streams firehose producer dummer hello $(wildcard test/test_*.rb) $(wildcard test/**/test_*.rb)
 
 all:
 	bundle install
 	bundle exec rake
+
+test:
+	bundle exec rake test
 
 install:
 	bundle exec rake install:local

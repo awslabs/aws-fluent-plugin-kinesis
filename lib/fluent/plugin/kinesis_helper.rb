@@ -20,6 +20,7 @@ module Fluent
   module KinesisHelper
     include Fluent::SetTimeKeyMixin
     include Fluent::SetTagKeyMixin
+    require 'fluent/process'
     include Fluent::DetachMultiProcessMixin
 
     def self.included(klass)

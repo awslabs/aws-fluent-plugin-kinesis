@@ -50,7 +50,13 @@ class KinesisOutputTest < Test::Unit::TestCase
 
   def create_mock_client
     client = mock(Object.new)
-    mock(Aws::Kinesis::Client).new({}) { client }
+    opts = {
+      user_agent_suffix: "fluent-plugin-kinesis-output-filter/1.0.1",
+      region:            "us-east-1",
+      access_key_id:     "test_key_id",
+      secret_access_key: "test_sec_key",
+    }
+    mock(Aws::Kinesis::Client).new(opts) { client }
     return client
   end
 
