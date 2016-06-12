@@ -98,6 +98,7 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
   end
 
   def test_record_count
+    @server.enable_random_error
     d = create_driver
     count = 10
     count.times do
