@@ -23,7 +23,15 @@ sudo: false
 
 matrix:
   exclude:
-    - rvm: 2.2
+    - rvm: 2.0.0
       os: osx
     - rvm: 2.0.0
       gemfile: Gemfile
+    - rvm: 2.1
+      os: osx
+      gemfile: gemfiles/Gemfile.fluentd-0.10.58
+    - rvm: 2.1
+      os: osx
+      gemfile: gemfiles/Gemfile.fluentd-0.12
+    - rvm: 2.2
+      os: osx
