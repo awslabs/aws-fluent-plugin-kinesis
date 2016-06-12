@@ -527,15 +527,9 @@ To launch `fluentd` process with this plugin for development, follow the steps b
     git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
     cd aws-fluent-plugin-kinesis
     make # will install gems and download KPL jar file and extract binaries
-    make [stream/firehose/producer]
+    bundle exec fluentd -c /path/to/fluent.conf
 
-Then, in another terminal, run the command below. It will emit one record.
-
-    make hello
-
-Also, you can test streaming log data by `dummer`:
-
-    make dummer # keep writing to /tmp/dummy.log
+If you want to run benchmark, use `make benchmark`.
 
 ## Contributing
 
