@@ -27,14 +27,15 @@ end
 
 class DummyServer
   class << self
-    def start(seed = 0, seed_500 = 0)
-      @server ||= DummyServer.new(seed, seed_500).start
+    def start(seed = 0)
+      @server ||= DummyServer.new(seed).start
     end
   end
 
-  def initialize(seed = 0, seed_500 = 0)
+  def initialize(seed = 0)
     @random = Random.new(seed)
-    @random_500 = Random.new(seed_500)
+    @random_500 = Random.new(seed)
+    @random_error = false
     @requests = []
     @accepted_records = []
     @failed_count = 0
@@ -52,6 +53,7 @@ class DummyServer
   end
 
   def clear
+    @random_error = false
     @requests = []
     @accepted_records = []
     @failed_count = 0
@@ -72,11 +74,11 @@ class DummyServer
   end
 
   def records
-    flatten_records(@accepted_records, false)
+    flatten_records(@accepted_records)
   end
 
   def detailed_records
-    flatten_records(@accepted_records, true)
+    flatten_records(@accepted_records, detailed: true)
   end
 
   def failed_count
@@ -85,6 +87,25 @@ class DummyServer
 
   def error_count
     @error_count
+  end
+
+  def aggregated_count
+    aggregated_count = 0
+    @accepted_records.flat_map do |record|
+      data = Base64.decode64(record[:record]['Data'])
+      if data[0,4] == ['F3899AC2'].pack('H*')
+        aggregated_count += 1
+      end
+    end
+    aggregated_count
+  end
+
+  def enable_random_error
+    @random_error = true
+  end
+
+  def disable_random_error
+    @random_error = false
   end
 
   private
@@ -131,11 +152,13 @@ class DummyServer
   end
 
   def random_fail
+    return false unless @random_error
     return true if failed_count == 0
     @random.rand >= 0.9
   end
 
   def random_error_500
+    return false unless @random_error
     return true if error_count == 0
     @random_500.rand >= 0.9
   end
@@ -214,7 +237,7 @@ class DummyServer
     }
   end
 
-  def flatten_records(records, detailed)
+  def flatten_records(records, detailed: false)
     records.flat_map do |record|
       data = Base64.decode64(record[:record]['Data'])
       partition_key = record[:record]['PartitionKey']

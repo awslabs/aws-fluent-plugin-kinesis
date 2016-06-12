@@ -147,6 +147,7 @@ class KinesisProducerOutputTest < Test::Unit::TestCase
   end
 
   def test_record_count
+    @server.enable_random_error
     d = create_driver
     count = 200
     count.times do
@@ -158,5 +159,6 @@ class KinesisProducerOutputTest < Test::Unit::TestCase
     assert_equal count, @server.records.size
     assert @server.failed_count > 0
     assert @server.error_count > 0
+    assert @server.aggregated_count > 0
   end
 end
