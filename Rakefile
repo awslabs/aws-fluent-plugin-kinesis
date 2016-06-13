@@ -24,6 +24,7 @@ Rake::TestTask.new do |test|
 end
 
 load 'kinesis_producer/tasks/binary.rake'
-
 Rake::Task[:build].enhance [:binaries]
 Rake::Task[:test].enhance [:binaries]
+
+load 'benchmark/task.rake'

@@ -73,6 +73,10 @@ class DummyServer
     @requests
   end
 
+  def raw_records
+    @accepted_records
+  end
+
   def records
     flatten_records(@accepted_records)
   end
