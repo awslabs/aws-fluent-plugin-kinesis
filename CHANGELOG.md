@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.1.0
+
+- Feature - Derive stream name from fluentd tag for KPL [#67](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/67)
+- Enhancement - Make http_proxy parameter secret [#64](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/64)
+- Bug fix - Plugin incompatible with new fluentd release 0.14 [#70](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/70)
+- Misc - Fix legacy test and reduce travis tests [#74](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/74)
+- Misc - Some test, benchmark improvement [#74](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/74), [#75](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/75), [#76](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/76)
+
 ## 1.0.1
 
 - Bug fix - Instance profile credentials expiring [#58](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/58)
