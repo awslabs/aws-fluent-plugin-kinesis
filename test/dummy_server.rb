@@ -73,6 +73,14 @@ class DummyServer
     @requests
   end
 
+  def count_per_requests
+    @requests.map{|req|JSON.parse(req.body)['Records'].size}
+  end
+
+  def size_per_requests
+    @requests.map{|req|JSON.parse(req.body)['Records'].map{|r|(r['Data'] ? Base64.decode64(r['Data']).size : 0)+(r['PartitionKey'] ? r['PartitionKey'].size : 0)}.inject(:+) || 0}
+  end
+
   def raw_records
     @accepted_records
   end
@@ -136,6 +144,9 @@ class DummyServer
                  @error_count += 1
                  res.status = 500
                  {}
+               elsif exceeded?(req, 500, 5*1024*1024)
+                 res.status = 400
+                 {}
                else
                  put_records_boby(req)
                end
@@ -143,6 +154,9 @@ class DummyServer
                if random_error_500
                  @error_count += 1
                  res.status = 500
+                 {}
+               elsif exceeded?(req, 500, 4*1024*1024)
+                 res.status = 400
                  {}
                else
                  put_record_batch_boby(req)
@@ -190,6 +204,13 @@ class DummyServer
         "StreamStatus" => "ACTIVE"
       }
     }
+  end
+
+  def exceeded?(req, max_count, max_size)
+    records = JSON.parse(req.body)['Records']
+    count = records.size
+    size = records.map{|r|(r['Data'] ? Base64.decode64(r['Data']).size : 0)+(r['PartitionKey'] ? r['PartitionKey'].size : 0)}.inject(:+) || 0
+    count > max_count or size > max_size
   end
 
   def put_records_boby(req)

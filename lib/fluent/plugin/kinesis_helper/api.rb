@@ -58,13 +58,14 @@ module Fluent
 
       def batch_by_limit(records, max_count, max_size)
         result, buf, size = records.inject([[],[],0]){|(result, buf, size), record|
-          if buf.size >= max_count or size >= max_size
+          record_size = size_of_values(record)
+          if buf.size+1 > max_count or size+record_size > max_size
             result << buf
             buf = []
             size = 0
           end
           buf << record
-          size += size_of_values(record)
+          size += record_size
           [result, buf, size]
         }
         result << buf
