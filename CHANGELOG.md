@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.1.1
+
+- Bug fix - Fix incompatibility for AWS SDK 2.5 [#80](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/80)
+- Bug fix - Fix wrong logic for batch request [#81](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/81)
+
 ## 1.1.0
 
 - Feature - Derive stream name from fluentd tag for KPL [#67](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/67)
