@@ -1,37 +1,29 @@
 language: ruby
 
-rvm:
-  - 2.0.0
-  - 2.1
-  - 2.2
-
-gemfile:
-  - Gemfile
-  - gemfiles/Gemfile.fluentd-0.10.58
-  - gemfiles/Gemfile.fluentd-0.12
-
-os:
-  - linux
-  - osx
-
-before_install:
-  - gem update bundler
+matrix:
+  include:
+    - rvm: 2.0.0-p648
+      os: linux
+      gemfile: gemfiles/Gemfile.ruby-2.0
+    - rvm: 2.1.10
+      os: linux
+      gemfile: gemfiles/Gemfile.ruby-2.1
+    - rvm: 2.2.5
+      os: linux
+      gemfile: Gemfile
+    - rvm: 2.3.1
+      os: linux
+      gemfile: Gemfile
+    - rvm: 2.3.1
+      os: linux
+      gemfile: gemfiles/Gemfile.fluentd-0.10.58
+    - rvm: 2.3.1
+      os: linux
+      gemfile: gemfiles/Gemfile.fluentd-0.12
+    - rvm: 2.3.1
+      os: linux
+      gemfile: gemfiles/Gemfile.aws-sdk-2.4
 
 script: bundle exec rake test
 
 sudo: false
-
-matrix:
-  exclude:
-    - rvm: 2.0.0
-      os: osx
-    - rvm: 2.0.0
-      gemfile: Gemfile
-    - rvm: 2.1
-      os: osx
-      gemfile: gemfiles/Gemfile.fluentd-0.10.58
-    - rvm: 2.1
-      os: osx
-      gemfile: gemfiles/Gemfile.fluentd-0.12
-    - rvm: 2.2
-      os: osx

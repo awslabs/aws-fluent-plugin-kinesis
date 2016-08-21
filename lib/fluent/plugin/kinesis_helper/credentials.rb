@@ -38,11 +38,11 @@ module Fluent
       private
 
       def default_credentials_provider
-        config_class = Struct.new(:access_key_id, :secret_access_key, :session_token, :profile)
-        config = config_class.new(@aws_key_id, @aws_sec_key)
+        config_class = Struct.new(:access_key_id, :secret_access_key, :region, :session_token, :profile)
+        config = config_class.new(@aws_key_id, @aws_sec_key, @region)
         provider = Aws::CredentialProviderChain.new(config).resolve
         if provider.nil?
-          raise Fluent::ConfigError, "You must specify credentials on ~/.aws/credentials, environment variables or IAM role for default credentials"
+          raise Fluent::ConfigError, "You must specify credentials on ~/.aws/credentials, environment variables or instance profile for default credentials"
         end
         provider
       end
