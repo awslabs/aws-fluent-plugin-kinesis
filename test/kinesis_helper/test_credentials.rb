@@ -25,6 +25,7 @@ class KinesisHelperCredentialsTest < Test::Unit::TestCase
     WebMock.enable!
     FakeFS.activate!
     @object = Mock.new
+    Aws.shared_config.fresh
   end
 
   def teardown
