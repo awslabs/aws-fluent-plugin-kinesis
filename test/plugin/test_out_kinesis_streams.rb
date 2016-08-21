@@ -97,6 +97,27 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     assert_equal 1, d.instance.log.logs.size
   end
 
+  pad = 32 + '{"data":""}'.size
+  data(
+    'split_by_count'           => [Array.new(501, {data:'a'}),                                        [500,1]],
+    'split_by_size'            => [Array.new(257, {data:'a'*(20480-pad)}),                            [256,1]],
+    'split_by_size_with_space' => [Array.new(255, {data:'a'*(20480-pad)})+[{data:'a'*(20480-pad+2)}], [255,1]],
+    'no_split_by_size'         => [Array.new(255, {data:'a'*(20480-pad)})+[{data:'a'*(20480-pad)}],   [256]],
+  )
+  def test_batch_request(data)
+    records, expected = data
+    d = create_driver
+    records.each do |record|
+      d.emit(record)
+    end
+    d.run
+    assert_equal records.size, @server.records.size
+    assert_equal expected, @server.count_per_requests
+    @server.size_per_requests.each do |size|
+      assert size <= 5*1024*1024
+    end
+  end
+
   def test_record_count
     @server.enable_random_error
     d = create_driver
