@@ -19,9 +19,10 @@ module Fluent
         const_set(:RequestType, :streams)
         const_set(:BatchRequestLimitCount, 500)
         const_set(:BatchRequestLimitSize, 5 * 1024 * 1024)
-        config_param :stream_name,   :string
-        config_param :region,        :string,  default: nil
-        config_param :partition_key, :string,  default: nil
+        config_param :stream_name,      :string
+        config_param :region,           :string, default: nil
+        config_param :partition_key,    :string, default: nil
+        config_param :zlib_compression, :bool,   default: false
         config_param_for_sdk
         config_param_for_credentials
         config_param_for_format

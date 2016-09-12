@@ -21,6 +21,8 @@ module Fluent
           define_method('log') { $log } unless method_defined?(:log)
 
           require 'aws-sdk'
+          require 'zlib'
+
           require 'fluent/plugin/kinesis_helper/format'
           require 'fluent/plugin/kinesis_helper/client'
           require 'fluent/plugin/kinesis_helper/credentials'

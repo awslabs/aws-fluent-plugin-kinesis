@@ -63,6 +63,9 @@ module Fluent
         end
         converted = convert_format(tag, time, record)
         converted[:data] += "\n" if @append_new_line
+        if @zlib_compression
+          converted[:data] = Zlib::Deflate.deflate(converted[:data])
+        end
         if converted[:data].size > MaxRecordSize
           raise ExceedMaxRecordSizeError, converted[:data]
         else
