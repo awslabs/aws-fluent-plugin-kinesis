@@ -38,7 +38,7 @@ module Fluent
       private
 
       def default_credentials_provider
-        config_class = Struct.new(:access_key_id, :secret_access_key, :region, :session_token, :profile)
+        config_class = Struct.new(:access_key_id, :secret_access_key, :region, :session_token, :profile, :instance_profile_credentials_retries, :instance_profile_credentials_timeout)
         config = config_class.new(@aws_key_id, @aws_sec_key, @region)
         provider = Aws::CredentialProviderChain.new(config).resolve
         if provider.nil?
