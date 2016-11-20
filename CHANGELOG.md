@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.2
+
+- Bug fix - Adjust credentials_provider for newer version of aws-ruby-sdk [#93](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/93)
+
 ## 1.1.1
 
 - Bug fix - Fix incompatibility for AWS SDK 2.5 [#80](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/80)
