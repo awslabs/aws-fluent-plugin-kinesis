@@ -1,5 +1,5 @@
 #
-#  Copyright 2014-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #  Licensed under the Amazon Software License (the "License").
 #  You may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-.PHONY: test install benchmark benchmark-streams benchmark-producer hello $(wildcard test/test_*.rb) $(wildcard test/**/test_*.rb)
+.PHONY: copyright test install benchmark benchmark-streams benchmark-producer hello $(wildcard test/test_*.rb) $(wildcard test/**/test_*.rb)
 
 all:
 	bundle install
@@ -37,3 +37,13 @@ hello:
 
 $(wildcard test/test_*.rb) $(wildcard test/**/test_*.rb):
 	bundle exec rake test TEST=$@
+
+copyright:
+	find . \( -name 'Gemfile*' \
+              -or -name 'Makefile' \
+	      -or -name 'NOTICE.txt' \
+	      -or -name 'Rakefile' \
+	      -or -name 'fluent-plugin-kinesis.gemspec' \
+	      -or -name '*.rake' \
+	      -or -name '*.rb' \
+	\) -exec sed -i '' -e 's/Copyright 2014-2017/Copyright 2014-2017/' {} \;
