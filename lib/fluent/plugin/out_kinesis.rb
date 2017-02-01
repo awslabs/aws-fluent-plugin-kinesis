@@ -22,7 +22,13 @@ require 'fluent_plugin_kinesis/version'
 module FluentPluginKinesis
   class OutputFilter < Fluent::BufferedOutput
 
-    include Fluent::DetachMultiProcessMixin
+    # detach_multi_process has been deleted at 0.14.12
+    # https://github.com/fluent/fluentd/commit/fcd8cc18e1f3a95710a80f982b91a1414fadc432
+    require 'fluent/version'
+    if Gem::Version.new(Fluent::VERSION) < Gem::Version.new('0.14.12')
+      require 'fluent/process'
+      include Fluent::DetachMultiProcessMixin
+    end
     include Fluent::SetTimeKeyMixin
     include Fluent::SetTagKeyMixin
 
