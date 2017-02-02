@@ -1,5 +1,5 @@
 #
-#  Copyright 2014-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #  Licensed under the Amazon Software License (the "License").
 #  You may not use this file except in compliance with the License.
@@ -233,28 +233,32 @@ class KinesisOutputTest < Test::Unit::TestCase
     assert_equal(false, d.instance.order_events)
     assert_equal(true, d.instance.instance_variable_get(:@parallel_mode))
 
-    conf = %[
-      stream_name test_stream
-      region us-east-1
-      partition_key test_partition_key
-      detach_process 1
-    ]
-    d = create_driver(conf)
-    assert_equal(false, d.instance.order_events)
-    assert_equal(true, d.instance.instance_variable_get(:@parallel_mode))
+    # detach_multi_process has been deleted at 0.14.12
+    # https://github.com/fluent/fluentd/commit/fcd8cc18e1f3a95710a80f982b91a1414fadc432
+    require 'fluent/version'
+    if Gem::Version.new(Fluent::VERSION) < Gem::Version.new('0.14.12')
+      conf = %[
+        stream_name test_stream
+        region us-east-1
+        partition_key test_partition_key
+        detach_process 1
+      ]
+      d = create_driver(conf)
+      assert_equal(false, d.instance.order_events)
+      assert_equal(true, d.instance.instance_variable_get(:@parallel_mode))
 
-    conf = %[
-      stream_name test_stream
-      region us-east-1
-      partition_key test_partition_key
-      order_events true
-      detach_process 1
-      num_threads 2
-    ]
-    d = create_driver(conf)
-    assert_equal(false, d.instance.order_events)
-    assert_equal(true, d.instance.instance_variable_get(:@parallel_mode))
-
+      conf = %[
+        stream_name test_stream
+        region us-east-1
+        partition_key test_partition_key
+        order_events true
+        detach_process 1
+        num_threads 2
+      ]
+      d = create_driver(conf)
+      assert_equal(false, d.instance.order_events)
+      assert_equal(true, d.instance.instance_variable_get(:@parallel_mode))
+    end
   end
 
 
