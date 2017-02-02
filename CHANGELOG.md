@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.3
+
+- Bug fix - Fix issues with fluentd 0.14.12 [#99](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/99)
+
 ## 1.1.2
 
 - Bug fix - Adjust credentials_provider for newer version of aws-ruby-sdk [#93](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/93)
