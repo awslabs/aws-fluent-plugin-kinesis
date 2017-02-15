@@ -58,6 +58,7 @@ module Fluent
       end
 
       def convert_record(tag, time, record)
+        return nil if record.nil?
         unless record.is_a? Hash
           raise InvalidRecordError, record
         end
