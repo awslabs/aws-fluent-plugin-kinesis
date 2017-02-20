@@ -71,4 +71,14 @@ class KinesisHelperFormatTest < Test::Unit::TestCase
     result = @object.send(:truncate, "123456789")
     assert_equal expected, result
   end
+
+  data(
+    'skip'   => [nil, nil],
+    'invalid' => [[], nil],
+  )
+  def test_convert_record_nil_handler(data)
+    record, expected = data
+    result = @object.send(:convert_record, '', '', record)
+    assert_equal expected, result
+  end
 end
