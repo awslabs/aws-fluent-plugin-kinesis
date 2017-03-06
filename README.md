@@ -147,7 +147,7 @@ Path for the credential file.
 Use this config section for cross account access.
 
     <assume_role_credentials>
-      role_arn "your_role_arn_in_cross_account"
+      role_arn "your_role_arn_in_cross_account_to_assume"
     </assume_role_credentials>
 
 #### role_arn
