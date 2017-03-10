@@ -122,7 +122,7 @@ The credential provider will be choosen by the steps below:
 
 - Use [**shared_credentials**](#shared_credentials) section if you set it
 - Use [**assume_role_credentials**](#assume_role_credentials) section if you set it
-- Otherwise, default provicder chain:
+- Otherwise, default provider chain:
     - [**aws_key_id**](#aws_key_id) and [**aws_sec_key**](#aws_sec_key)
     - Environment variables (ex. `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.)
     - Default shared credentials (`default` in `~/.aws/credentials`)
