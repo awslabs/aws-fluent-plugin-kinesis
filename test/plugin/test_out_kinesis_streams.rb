@@ -62,9 +62,25 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     'json' => ['json', '{"a":1,"b":2}'],
     'ltsv' => ['ltsv', "a:1\tb:2"],
   )
-  def test_format(data)
+  def test_format_without_compression(data)
     formatter, expected = data
     d = create_driver(default_config + "formatter #{formatter}")
+    d.emit({"a"=>1,"b"=>2})
+    d.run
+    assert_equal expected, @server.records.first
+  end
+
+  data(
+    'json' => ['json', Zlib::Deflate.deflate('{"a":1,"b":2}')],
+    'ltsv' => ['ltsv', Zlib::Deflate.deflate("a:1\tb:2")],
+  )
+  def test_format_with_compression(data)
+    formatter, expected = data
+    conf = default_config + %[
+      formatter #{formatter}
+      zlib_compression true
+    ]
+    d = create_driver(conf)
     d.emit({"a"=>1,"b"=>2})
     d.run
     assert_equal expected, @server.records.first
