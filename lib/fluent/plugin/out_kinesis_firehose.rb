@@ -1,44 +1,57 @@
 #
-#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-#  Licensed under the Amazon Software License (the "License").
-#  You may not use this file except in compliance with the License.
-#  A copy of the License is located at
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
 #
-#  http://aws.amazon.com/asl/
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  or in the "license" file accompanying this file. This file is distributed
-#  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-#  express or implied. See the License for the specific language governing
-#  permissions and limitations under the License.
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
 
-require 'fluent/plugin/kinesis_helper'
+require 'fluent/plugin/kinesis'
 
 module Fluent
-  class KinesisFirehoseOutput < BufferedOutput
-    include KinesisHelper
+  class KinesisFirehoseOutput < KinesisOutput
     Fluent::Plugin.register_output('kinesis_firehose', self)
-    config_param_for_firehose
+
+    RequestType = :firehose
+    BatchRequestLimitCount = 500
+    BatchRequestLimitSize  = 4 * 1024 * 1024
+    include KinesisHelper::API::BatchRequest
+
+    config_param :delivery_stream_name, :string
+    config_param :append_new_line,      :bool, default: true
+
+    def configure(conf)
+      super
+      if @append_new_line
+        org_data_formatter = @data_formatter
+        @data_formatter = ->(tag, time, record) {
+          org_data_formatter.call(tag, time, record) + "\n"
+        }
+      end
+    end
+
+    def format(tag, time, record)
+      format_for_api do
+        [@data_formatter.call(tag, time, record)]
+      end
+    end
 
     def write(chunk)
-      records = convert_to_records(chunk)
-      split_to_batches(records).each do |batch|
-        batch_request_with_retry(batch)
+      write_records_batch(chunk) do |batch|
+        records = batch.map{|(data)|
+          { data: data }
+        }
+        client.put_record_batch(
+          delivery_stream_name: @delivery_stream_name,
+          records: records,
+        )
       end
-      log.debug("Written #{records.size} records")
-    end
-
-    private
-
-    def convert_format(tag, time, record)
-      { data: data_format(tag, time, record) }
-    end
-
-    def batch_request(batch)
-      client.put_record_batch(
-        delivery_stream_name: @delivery_stream_name,
-        records: batch
-      )
     end
   end
 end
