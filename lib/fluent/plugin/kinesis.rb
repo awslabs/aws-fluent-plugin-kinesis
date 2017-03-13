@@ -54,7 +54,6 @@ module Fluent
 
     def configure(conf)
       super
-      @formatter = formatter_create
       @data_formatter = data_formatter_create
     end
 
@@ -65,20 +64,17 @@ module Fluent
     private
 
     def data_formatter_create
-      @compressor = compressor_create
+      formatter = formatter_create
+      compressor = compressor_create
       if @data_key.nil?
         ->(tag, time, record) {
-          @compressor.call(@formatter.format(tag, time, record).chomp)
+          compressor.call(formatter.format(tag, time, record).chomp)
         }
       else
         ->(tag, time, record) {
-          unless record.is_a? Hash
-            raise InvalidRecordError, record
-          end
-          if record[@data_key].nil?
-            raise KeyNotFoundError.new(@data_key, record)
-          end
-          @compressor.call(record[@data_key].to_s)
+          raise InvalidRecordError, record unless record.is_a? Hash
+          raise KeyNotFoundError.new(@data_key, record) if record[@data_key].nil?
+          compressor.call(record[@data_key].to_s)
         }
       end
     end
