@@ -122,7 +122,7 @@ The credential provider will be choosen by the steps below:
 
 - Use [**shared_credentials**](#shared_credentials) section if you set it
 - Use [**assume_role_credentials**](#assume_role_credentials) section if you set it
-- Otherwise, default provicder chain:
+- Otherwise, default provider chain:
     - [**aws_key_id**](#aws_key_id) and [**aws_sec_key**](#aws_sec_key)
     - Environment variables (ex. `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.)
     - Default shared credentials (`default` in `~/.aws/credentials`)
@@ -135,7 +135,11 @@ AWS access key id.
 AWS secret access key.
 
 ### shared_credentials
-Use this config section to specify shared credential file path and profile name. If you want to use default profile (`default` in `~/.aws/credentials`), you don't have to specify here.
+Use this config section to specify shared credential file path and profile name. If you want to use default profile (`default` in `~/.aws/credentials`), you don't have to specify here. For example, you can specify the config like below:
+
+      <shared_credentials>
+        profile_name "your_profile_name"
+      </shared_credentials>
 
 #### profile_name
 Profile name of the credential file.
@@ -144,7 +148,11 @@ Profile name of the credential file.
 Path for the credential file.
 
 ### assume_role_credentials
-Use this config section for cross account access.
+Use this config section for cross account access. For example, you can specify the config like below:
+
+      <assume_role_credentials>
+        role_arn "your_role_arn_in_cross_account_to_assume"
+      </assume_role_credentials>
 
 #### role_arn
 IAM Role to be assumed with [AssumeRole][assume_role].
