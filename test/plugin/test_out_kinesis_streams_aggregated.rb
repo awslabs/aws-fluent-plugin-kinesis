@@ -13,11 +13,13 @@
 # language governing permissions and limitations under the License.
 
 require_relative '../helper'
-require 'fluent/plugin/out_kinesis_streams'
+require 'fluent/plugin/out_kinesis_streams_aggregated'
 
-class KinesisStreamsOutputTest < Test::Unit::TestCase
+class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   KB = 1024
   MB = 1024 * KB
+  AggregateOffset = 25
+  RecordOffset = 7
 
   def setup
     ENV['AWS_REGION'] = 'ap-northeast-1'
@@ -39,20 +41,19 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
       stream_name test-stream
       log_level error
 
-      retries_on_batch_request 10
       endpoint https://localhost:#{@server.port}
       ssl_verify_peer false
     ]
   end
 
   def create_driver(conf = default_config)
-    Fluent::Test::Driver::Output.new(Fluent::KinesisStreamsOutput) do
+    Fluent::Test::Driver::Output.new(Fluent::KinesisStreamsAggregatedOutput) do
     end.configure(conf)
   end
 
   def self.data_of(size)
-    partition_key_size = 32
-    'a' * (size - partition_key_size)
+    offset_size = RecordOffset
+    'a' * (size - offset_size)
   end
 
   def data_of(size)
@@ -85,17 +86,6 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     assert_equal expected, @server.records.first
   end
 
-  def test_partition_key_not_found
-    d = create_driver(default_config + "partition_key partition_key")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>1})
-    end
-    assert_equal 0, @server.records.size
-    assert_equal 1, d.instance.log.out.logs.size
-  end
-
   def test_data_key
     d = create_driver(default_config + "data_key a")
     d.instance.log.out.flush_logs = false
@@ -109,42 +99,47 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     assert_equal 1, d.instance.log.out.logs.size
   end
 
-  def test_max_record_size
-    d = create_driver(default_config + "data_key a")
+  data(
+    'random' => [nil, AggregateOffset+32*2],
+    'fixed'  => ['k', AggregateOffset+1*2],
+  )
+  def test_max_data_size(data)
+    fixed, expected = data
+    config = 'data_key a'
+    config += "\nfixed_partition_key #{fixed}" unless fixed.nil?
+    d = create_driver(default_config + config)
     d.instance.log.out.flush_logs = false
+    offset = d.instance.offset
+    assert_equal expected, offset
     time = event_time("2011-01-02 13:14:15 UTC")
     d.run(default_tag: "test") do
-      d.feed(time, {"a"=>data_of(1*MB)})
-      d.feed(time, {"a"=>data_of(1*MB+1)}) # exceeded
+      d.feed(time, {"a"=>data_of(1*MB-offset)})
+      d.feed(time, {"a"=>data_of(1*MB-offset+1)}) # exceeded
     end
-    assert_equal 1, @server.records.size
     assert_equal 1, d.instance.log.out.logs.size
+    assert_equal 1, @server.records.size
   end
 
   data(
-    'split_by_count'           => [Array.new(501, data_of(1*KB)),                     [500,1]],
-    'split_by_size'            => [Array.new(257, data_of(20*KB)),                    [256,1]],
-    'split_by_size_with_space' => [Array.new(255, data_of(20*KB))+[data_of(20*KB+1)], [255,1]],
-    'no_split_by_size'         => [Array.new(256, data_of(20*KB)),                    [256]],
+    'random' => [nil, AggregateOffset+32*2],
+    'fixed'  => ['k', AggregateOffset+1*2],
   )
-  def test_batch_request(data)
-    records, expected = data
-    d = create_driver(default_config + "data_key a")
+  def test_aggregated_max_data_size(data)
+    fixed, expected = data
+    config = 'data_key a'
+    config += "\nfixed_partition_key #{fixed}" unless fixed.nil?
+    d = create_driver(default_config + config)
     d.instance.log.out.flush_logs = false
+    offset = d.instance.offset
+    assert_equal expected, offset
     time = event_time("2011-01-02 13:14:15 UTC")
     d.run(default_tag: "test") do
-      records.each do |record|
-        d.feed(time, {'a' => record})
-      end
+      d.feed(time, {"a"=>data_of(512*KB-offset)})
+      d.feed(time, {"a"=>data_of(512*KB+1)}) # can't be aggregated
     end
-    assert_equal records.size, @server.records.size
-    assert_equal expected, @server.count_per_requests
-    @server.size_per_requests.each do |size|
-      assert size <= 5*MB
-    end
-    @server.count_per_requests.each do |count|
-      assert count <= 500
-    end
+    assert_equal 0, d.instance.log.out.logs.size
+    assert_equal 2, @server.records.size
+    assert_equal 2, @server.requests.size
   end
 
   def test_record_count
@@ -152,14 +147,14 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     d = create_driver
     d.instance.log.out.flush_logs = false
     time = event_time("2011-01-02 13:14:15 UTC")
-    count = 10
+    count = 100
     d.run(default_tag: "test") do
       count.times do
         d.feed(time, {"a"=>1})
       end
     end
     assert_equal count, @server.records.size
-    assert @server.failed_count > 0
     assert @server.error_count > 0
+    assert @server.raw_records.size < count
   end
 end

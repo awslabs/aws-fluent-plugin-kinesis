@@ -1,21 +1,24 @@
 #
-#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-#  Licensed under the Amazon Software License (the "License").
-#  You may not use this file except in compliance with the License.
-#  A copy of the License is located at
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
 #
-#  http://aws.amazon.com/asl/
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  or in the "license" file accompanying this file. This file is distributed
-#  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-#  express or implied. See the License for the specific language governing
-#  permissions and limitations under the License.
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
 
 require_relative '../helper'
 require 'fluent/plugin/out_kinesis_firehose'
 
 class KinesisFirehoseOutputTest < Test::Unit::TestCase
+  KB = 1024
+  MB = 1024 * KB
+
   def setup
     ENV['AWS_REGION'] = 'ap-northeast-1'
     ENV['AWS_ACCESS_KEY_ID'] = 'AAAAAAAAAAAAAAAAAAAA'
@@ -43,8 +46,17 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   end
 
   def create_driver(conf = default_config)
-    Fluent::Test::BufferedOutputTestDriver.new(Fluent::KinesisFirehoseOutput) do
+    Fluent::Test::Driver::Output.new(Fluent::KinesisFirehoseOutput) do
     end.configure(conf)
+  end
+
+  def self.data_of(size)
+    new_line_size = 1
+    'a' * (size - new_line_size)
+  end
+
+  def data_of(size)
+    self.class.data_of(size)
   end
 
   def test_configure
@@ -59,15 +71,18 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   end
 
   data(
-    'json' => ['json', '{"a":1,"b":2}'],
-    'ltsv' => ['ltsv', "a:1\tb:2"],
+    'json' => ['json', "{\"a\":1,\"b\":2}\n"],
+    'ltsv' => ['ltsv', "a:1\tb:2\n"],
   )
   def test_format(data)
     formatter, expected = data
-    d = create_driver(default_config + "formatter #{formatter}")
-    d.emit({"a"=>1,"b"=>2})
-    d.run
-    assert_equal expected+"\n", @server.records.first
+    d = create_driver(default_config + "format #{formatter}")
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      d.feed(time, {"a"=>1,"b"=>2})
+    end
+    assert_equal expected, @server.records.first
   end
 
   data(
@@ -76,81 +91,102 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   )
   def test_format_without_append_new_line(data)
     formatter, expected = data
-    d = create_driver(default_config + "formatter #{formatter}\nappend_new_line false")
-    d.emit({"a"=>1,"b"=>2})
-    d.run
+    d = create_driver(default_config + "format #{formatter}\nappend_new_line false")
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      d.feed(time, {"a"=>1,"b"=>2})
+    end
     assert_equal expected, @server.records.first
   end
 
   def test_data_key
     d = create_driver(default_config + "data_key a")
-    d.emit({"a"=>1,"b"=>2})
-    d.emit({"b"=>2})
-    d.run
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      d.feed(time, {"a"=>1,"b"=>2})
+      d.feed(time, {"b"=>2})
+    end
     assert_equal "1\n", @server.records.first
     assert_equal 1, @server.records.size
-    assert_equal 1, d.instance.log.logs.size
+    assert_equal 1, d.instance.log.out.logs.size
   end
 
   def test_data_key_without_append_new_line
     d = create_driver(default_config + "data_key a\nappend_new_line false")
-    d.emit({"a"=>1,"b"=>2})
-    d.emit({"b"=>2})
-    d.run
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      d.feed(time, {"a"=>1,"b"=>2})
+      d.feed(time, {"b"=>2})
+    end
     assert_equal "1", @server.records.first
     assert_equal 1, @server.records.size
-    assert_equal 1, d.instance.log.logs.size
+    assert_equal 1, d.instance.log.out.logs.size
   end
 
   def test_max_record_size
-    d = create_driver
-    d.emit({"a"=>"a"*(1024*1024-'{"a":""}n'.size)})
-    d.emit({"a"=>"a"*(1024*1024-'{"a":""}n'.size+1)}) # exceeded
-    d.run
+    d = create_driver(default_config + "data_key a")
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      d.feed(time, {"a"=>data_of(1*MB)})
+      d.feed(time, {"a"=>data_of(1*MB+1)}) # exceeded
+    end
     assert_equal 1, @server.records.size
-    assert_equal 1, d.instance.log.logs.size
+    assert_equal 1, d.instance.log.out.logs.size
   end
 
   def test_max_record_size_without_append_new_line
-    d = create_driver(default_config + "append_new_line false")
-    d.emit({"a"=>"a"*(1024*1024-'{"a":""}'.size)})
-    d.emit({"a"=>"a"*(1024*1024-'{"a":""}'.size+1)}) # exceeded
-    d.run
+    d = create_driver(default_config + "append_new_line false\ndata_key a")
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      d.feed(time, {"a"=>data_of(1*MB+1)})
+      d.feed(time, {"a"=>data_of(1*MB+2)}) # exceeded
+    end
     assert_equal 1, @server.records.size
-    assert_equal 1, d.instance.log.logs.size
+    assert_equal 1, d.instance.log.out.logs.size
   end
 
-  pad = "{\"data\":\"\"}\n".size
   data(
-    'split_by_count'           => [Array.new(501, {data:'a'}),                                        [500,1]],
-    'split_by_size'            => [Array.new(257, {data:'a'*(16384-pad)}),                            [256,1]],
-    'split_by_size_with_space' => [Array.new(255, {data:'a'*(16384-pad)})+[{data:'a'*(16384-pad+1)}], [255,1]],
-    'no_split_by_size'         => [Array.new(255, {data:'a'*(16384-pad)})+[{data:'a'*(16384-pad)}],   [256]],
+    'split_by_count'           => [Array.new(501, data_of(1*KB)),                     [500,1]],
+    'split_by_size'            => [Array.new(257, data_of(16*KB)),                    [256,1]],
+    'split_by_size_with_space' => [Array.new(255, data_of(16*KB))+[data_of(16*KB+1)], [255,1]],
+    'no_split_by_size'         => [Array.new(256, data_of(16*KB)),                    [256]],
   )
   def test_batch_request(data)
     records, expected = data
-    d = create_driver
-    records.each do |record|
-      d.emit(record)
+    d = create_driver(default_config + "data_key a")
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      records.each do |record|
+        d.feed(time, {'a' => record})
+      end
     end
-    d.run
     assert_equal records.size, @server.records.size
     assert_equal expected, @server.count_per_requests
     @server.size_per_requests.each do |size|
-      assert size <= 4*1024*1024
+      assert size <= 4*MB
+    end
+    @server.count_per_requests.each do |count|
+      assert count <= 500
     end
   end
 
   def test_record_count
     @server.enable_random_error
     d = create_driver
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
     count = 10
-    count.times do
-      d.emit({"a"=>1})
+    d.run(default_tag: "test") do
+      count.times do
+        d.feed(time, {"a"=>1})
+      end
     end
-
-    d.run
-
     assert_equal count, @server.records.size
     assert @server.failed_count > 0
     assert @server.error_count > 0
