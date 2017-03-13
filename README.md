@@ -112,7 +112,6 @@ Add configuration like below:
       try_flush_interval 0.1
       queued_chunk_flush_interval 0.01
       num_threads 15
-      detach_process 5
 
 Note: Each value should be adjusted to your system by yourself.
 
@@ -123,7 +122,7 @@ The credential provider will be choosen by the steps below:
 
 - Use [**shared_credentials**](#shared_credentials) section if you set it
 - Use [**assume_role_credentials**](#assume_role_credentials) section if you set it
-- Otherwise, default provicder chain:
+- Otherwise, default provider chain:
     - [**aws_key_id**](#aws_key_id) and [**aws_sec_key**](#aws_sec_key)
     - Environment variables (ex. `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.)
     - Default shared credentials (`default` in `~/.aws/credentials`)
@@ -136,7 +135,11 @@ AWS access key id.
 AWS secret access key.
 
 ### shared_credentials
-Use this config section to specify shared credential file path and profile name. If you want to use default profile (`default` in `~/.aws/credentials`), you don't have to specify here.
+Use this config section to specify shared credential file path and profile name. If you want to use default profile (`default` in `~/.aws/credentials`), you don't have to specify here. For example, you can specify the config like below:
+
+      <shared_credentials>
+        profile_name "your_profile_name"
+      </shared_credentials>
 
 #### profile_name
 Profile name of the credential file.
@@ -145,7 +148,11 @@ Profile name of the credential file.
 Path for the credential file.
 
 ### assume_role_credentials
-Use this config section for cross account access.
+Use this config section for cross account access. For example, you can specify the config like below:
+
+      <assume_role_credentials>
+        role_arn "your_role_arn_in_cross_account_to_assume"
+      </assume_role_credentials>
 
 #### role_arn
 IAM Role to be assumed with [AssumeRole][assume_role].
@@ -195,7 +202,7 @@ Boolean, default `true`. If enabled, when after retrying, the next retrying chec
 Integer, default 500. The number of max count of making batch request from record chunk. It can't exceed the default value because it's API limit.
 
 ### batch_request_max_size
-Integer, default 5 * 1024*1024. The number of max size of making batch request from record chunk. It can't exceed the default value because it's API limit.
+Integer, default 5 * 1024 * 1024. The number of max size of making batch request from record chunk. It can't exceed the default value because it's API limit.
 
 ### http_proxy
 HTTP proxy for API calling. Default `nil`.
@@ -227,7 +234,16 @@ A key to extract partition key from JSON object. Default `nil`, which means part
 Boolean. Enable if you need to debug Kinesis Producer Library metrics. Default is `false`.
 
 ### kinesis_producer
-This section is configuration for Kinesis Producer Library. Almost all of description comes from [deault_config.propertites of KPL Java Sample Application][default_config.properties].
+This section is configuration for Kinesis Producer Library. Almost all of description comes from [deault_config.propertites of KPL Java Sample Application][default_config.properties]. You should specify configurations below inside `<kinesis_producer>` section like:
+
+    <match your_tag>
+      @type kinesis_producer
+      region us-east-1
+      stream_name your_stream
+      <kinesis_producer>
+        record_max_buffered_time 10
+      </kinesis_producer>
+    </match>
 
 #### aggregation_enabled
 Enable aggregation. With aggregation, multiple user records are packed into a single KinesisRecord. If disabled, each user record is sent in its own KinesisRecord.
@@ -473,53 +489,6 @@ Boolean. Disable if you want to verify ssl conncetion, for testing. Default `tru
 ### debug
 Boolean. Enable if you need to debug Amazon Kinesis Firehose API call. Default is `false`.
 
-## Configuration: Examples
-
-Here are some configuration examles.
-Assume that the JSON object below is coming to with tag 'your_tag'.
-
-    {
-      "name":"foo",
-      "action":"bar"
-    }
-
-### Improving throughput to Amazon Kinesis
-The plugin can also be configured to execute in parallel. `detach_process` and `num_threads` configuration settings control parallelism.
-
-In case of the configuration below, you will spawn 2 processes.
-
-    <match your_tag>
-    type kinesis_*
-
-    stream_name YOUR_STREAM_NAME
-    region us-east-1
-
-    detach_process 2
-    </match>
-
-You can also specify a number of threads to put. The number of threads is bound to each individual processes. So in this case, you will spawn 1 process which has 50 threads.
-
-    <match your_tag>
-    type kinesis_*
-
-    stream_name YOUR_STREAM_NAME
-    region us-east-1
-
-    num_threads 50
-    </match>
-
-Both options can be used together, in the configuration below, you will spawn 2 processes and 50 threads per each processes.
-
-    <match your_tag>
-    type kinesis_*
-
-    stream_name YOUR_STREAM_NAME
-    region us-east-1
-
-    detach_process 2
-    num_threads 50
-    </match>
-
 ## Development
 
 To launch `fluentd` process with this plugin for development, follow the steps below:
@@ -527,15 +496,9 @@ To launch `fluentd` process with this plugin for development, follow the steps b
     git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
     cd aws-fluent-plugin-kinesis
     make # will install gems and download KPL jar file and extract binaries
-    make [stream/firehose/producer]
+    bundle exec fluentd -c /path/to/fluent.conf
 
-Then, in another terminal, run the command below. It will emit one record.
-
-    make hello
-
-Also, you can test streaming log data by `dummer`:
-
-    make dummer # keep writing to /tmp/dummy.log
+If you want to run benchmark, use `make benchmark`.
 
 ## Contributing
 
@@ -558,6 +521,6 @@ Bug reports and pull requests are welcome on [GitHub][github].
 [fluentd_buffer]: http://docs.fluentd.org/articles/buffer-plugin-overview
 [github]: https://github.com/awslabs/aws-fluent-plugin-kinesis
 [formatter.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/formatter.rb
-[default_config.properties]: https://github.com/awslabs/amazon-kinesis-producer/blob/master/java/amazon-kinesis-producer-sample/default_config.properties
+[default_config.properties]: https://github.com/awslabs/amazon-kinesis-producer/blob/v0.10.2/java/amazon-kinesis-producer-sample/default_config.properties
 [old-readme]: https://github.com/awslabs/aws-fluent-plugin-kinesis/blob/master/README-v0.4.md
 [fluentd-doc-kinesis]: http://docs.fluentd.org/articles/kinesis-stream

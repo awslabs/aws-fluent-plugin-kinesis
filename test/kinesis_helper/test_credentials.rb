@@ -1,5 +1,5 @@
 #
-#  Copyright 2014-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #  Licensed under the Amazon Software License (the "License").
 #  You may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ class KinesisHelperCredentialsTest < Test::Unit::TestCase
     WebMock.enable!
     FakeFS.activate!
     @object = Mock.new
+    Aws.shared_config.fresh
   end
 
   def teardown

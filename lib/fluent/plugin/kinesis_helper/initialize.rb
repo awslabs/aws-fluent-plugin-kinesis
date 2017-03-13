@@ -1,5 +1,5 @@
 #
-#  Copyright 2014-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #  Licensed under the Amazon Software License (the "License").
 #  You may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ module Fluent
             include API
           when kpl?
             require 'fluent/plugin/kinesis_helper/kpl'
+            require 'fluent/version'
             if Gem::Version.new(Fluent::VERSION) < Gem::Version.new('0.12.20')
               # Backport from https://github.com/fluent/fluentd/pull/757
               require 'fluent/plugin/patched_detach_process_impl'

@@ -1,5 +1,5 @@
 #
-#  Copyright 2014-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #  Licensed under the Amazon Software License (the "License").
 #  You may not use this file except in compliance with the License.
@@ -27,14 +27,15 @@ end
 
 class DummyServer
   class << self
-    def start(seed = 0, seed_500 = 0)
-      @server ||= DummyServer.new(seed, seed_500).start
+    def start(seed = 0)
+      @server ||= DummyServer.new(seed).start
     end
   end
 
-  def initialize(seed = 0, seed_500 = 0)
+  def initialize(seed = 0)
     @random = Random.new(seed)
-    @random_500 = Random.new(seed_500)
+    @random_500 = Random.new(seed)
+    @random_error = false
     @requests = []
     @accepted_records = []
     @failed_count = 0
@@ -52,6 +53,7 @@ class DummyServer
   end
 
   def clear
+    @random_error = false
     @requests = []
     @accepted_records = []
     @failed_count = 0
@@ -71,8 +73,24 @@ class DummyServer
     @requests
   end
 
+  def count_per_requests
+    @requests.map{|req|JSON.parse(req.body)['Records'].size}
+  end
+
+  def size_per_requests
+    @requests.map{|req|JSON.parse(req.body)['Records'].map{|r|(r['Data'] ? Base64.decode64(r['Data']).size : 0)+(r['PartitionKey'] ? r['PartitionKey'].size : 0)}.inject(:+) || 0}
+  end
+
+  def raw_records
+    @accepted_records
+  end
+
   def records
     flatten_records(@accepted_records)
+  end
+
+  def detailed_records
+    flatten_records(@accepted_records, detailed: true)
   end
 
   def failed_count
@@ -81,6 +99,25 @@ class DummyServer
 
   def error_count
     @error_count
+  end
+
+  def aggregated_count
+    aggregated_count = 0
+    @accepted_records.flat_map do |record|
+      data = Base64.decode64(record[:record]['Data'])
+      if data[0,4] == ['F3899AC2'].pack('H*')
+        aggregated_count += 1
+      end
+    end
+    aggregated_count
+  end
+
+  def enable_random_error
+    @random_error = true
+  end
+
+  def disable_random_error
+    @random_error = false
   end
 
   private
@@ -107,6 +144,9 @@ class DummyServer
                  @error_count += 1
                  res.status = 500
                  {}
+               elsif exceeded?(req, 500, 5*1024*1024)
+                 res.status = 400
+                 {}
                else
                  put_records_boby(req)
                end
@@ -114,6 +154,9 @@ class DummyServer
                if random_error_500
                  @error_count += 1
                  res.status = 500
+                 {}
+               elsif exceeded?(req, 500, 4*1024*1024)
+                 res.status = 400
                  {}
                else
                  put_record_batch_boby(req)
@@ -127,11 +170,13 @@ class DummyServer
   end
 
   def random_fail
+    return false unless @random_error
     return true if failed_count == 0
     @random.rand >= 0.9
   end
 
   def random_error_500
+    return false unless @random_error
     return true if error_count == 0
     @random_500.rand >= 0.9
   end
@@ -161,6 +206,13 @@ class DummyServer
     }
   end
 
+  def exceeded?(req, max_count, max_size)
+    records = JSON.parse(req.body)['Records']
+    count = records.size
+    size = records.map{|r|(r['Data'] ? Base64.decode64(r['Data']).size : 0)+(r['PartitionKey'] ? r['PartitionKey'].size : 0)}.inject(:+) || 0
+    count > max_count or size > max_size
+  end
+
   def put_records_boby(req)
     body = JSON.parse(req.body)
     failed_record_count = 0
@@ -172,7 +224,7 @@ class DummyServer
           "ErrorMessage" => "Rate exceeded for shard shardId-000000000001 in stream exampleStreamName under account 111111111111."
         }
       else
-        @accepted_records << record
+        @accepted_records << {:stream_name => body['StreamName'], :record => record}
         {
           "SequenceNumber" => "49543463076548007577105092703039560359975228518395019266",
           "ShardId" => "shardId-000000000000"
@@ -197,7 +249,7 @@ class DummyServer
           "ErrorMessage" => "Some message"
         }
       else
-        @accepted_records << record
+        @accepted_records << {:stream_name => body['StreamName'], :record => record}
         {
           "RecordId" => "49543463076548007577105092703039560359975228518395019266",
         }
@@ -210,15 +262,24 @@ class DummyServer
     }
   end
 
-  def flatten_records(records)
+  def flatten_records(records, detailed: false)
     records.flat_map do |record|
-      data = Base64.decode64(record['Data'])
+      data = Base64.decode64(record[:record]['Data'])
+      partition_key = record[:record]['PartitionKey']
       if data[0,4] == ['F3899AC2'].pack('H*')
         protobuf = data[4,data.length-20]
         agg = KinesisProducer::Protobuf::AggregatedRecord.decode(protobuf)
-        agg.records.map(&:data)
+        if detailed
+          {:stream_name => record[:stream_name], :data => agg.records.map(&:data), :partition_key => partition_key}
+        else
+          agg.records.map(&:data)
+        end
       else
-        data
+        if detailed
+          {:stream_name => record[:stream_name], :data => data, :partition_key => partition_key}
+        else
+          data
+        end
       end
     end
   end

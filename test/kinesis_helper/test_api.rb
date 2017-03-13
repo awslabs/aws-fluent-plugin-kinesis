@@ -1,5 +1,5 @@
 #
-#  Copyright 2014-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #  Licensed under the Amazon Software License (the "License").
 #  You may not use this file except in compliance with the License.
@@ -84,12 +84,13 @@ class KinesisHelperAPITest < Test::Unit::TestCase
   end
 
   data(
-    'split_by_count' => [Array.new(11, {data:'a'*1}),  [10, 1]],
-    'split_by_size'  => [Array.new(11, {data:'a'*10}), [ 6, 5]],
+    'split_by_count'            => [Array.new(11, {data:'a'*1}),  [10,1]],
+    'split_by_size'             => [Array.new(11, {data:'a'*10}), [2,2,2,2,2,1]],
+    'split_by_size_with_space'  => [Array.new(11, {data:'a'*6}),  [3,3,3,2]],
   )
   def test_batch_by_limit(data)
     records, expected = data
-    result = @object.send(:batch_by_limit, records, 10, 60)
+    result = @object.send(:batch_by_limit, records, 10, 20)
     assert_equal expected, result.map(&:size)
   end
 

@@ -1,5 +1,5 @@
 #
-#  Copyright 2014-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #  Licensed under the Amazon Software License (the "License").
 #  You may not use this file except in compliance with the License.
@@ -45,9 +45,10 @@ module Fluent
 
       def config_param_for_producer
         const_set(:RequestType, :producer)
-        config_param :stream_name,   :string
-        config_param :region,        :string, default: nil
-        config_param :partition_key, :string, default: nil
+        config_param :stream_name,        :string, default: nil
+        config_param :stream_name_prefix, :string, default: nil
+        config_param :region,             :string, default: nil
+        config_param :partition_key,      :string, default: nil
         config_param_for_credentials
         config_param_for_format
         config_param_for_debug
@@ -69,7 +70,7 @@ module Fluent
       end
 
       def config_param_for_sdk
-        config_param :http_proxy,      :string, default: nil
+        config_param :http_proxy,      :string, default: nil, secret: true
         config_param :endpoint,        :string, default: nil
         config_param :ssl_verify_peer, :bool,   default: true
       end

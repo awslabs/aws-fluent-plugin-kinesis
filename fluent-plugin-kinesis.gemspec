@@ -1,6 +1,6 @@
 # coding: utf-8
 #
-#  Copyright 2014-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #  Licensed under the Amazon Software License (the "License").
 #  You may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry-byebug", ">= 3.3.0"
   spec.add_development_dependency "pry-stack_explorer", ">= 0.4.9.2"
   spec.add_development_dependency "net-empty_port", ">= 0.0.2"
-  spec.add_development_dependency "dummer", ">= 0.4.0"
   spec.add_development_dependency "rubyzip", ">= 1.0.0"
   spec.add_development_dependency "mocha", ">= 1.1.0"
   spec.add_development_dependency "webmock", ">= 1.24.2"

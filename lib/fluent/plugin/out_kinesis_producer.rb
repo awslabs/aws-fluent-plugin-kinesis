@@ -1,5 +1,5 @@
 #
-#  Copyright 2014-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #  Licensed under the Amazon Software License (the "License").
 #  You may not use this file except in compliance with the License.
@@ -20,6 +20,16 @@ module Fluent
     Fluent::Plugin.register_output('kinesis_producer', self)
     config_param_for_producer
 
+    def configure(conf)
+      super
+      unless @stream_name or @stream_name_prefix
+        raise Fluent::ConfigError, "'stream_name' or 'stream_name_prefix' is required"
+      end
+      if @stream_name and @stream_name_prefix
+        raise Fluent::ConfigError, "Only one of 'stream_name' or 'stream_name_prefix' is allowed"
+      end
+    end
+
     def write(chunk)
       records = convert_to_records(chunk)
       wait_futures(write_chunk_to_kpl(records))
@@ -31,7 +41,7 @@ module Fluent
       {
         data: data_format(tag, time, record),
         partition_key: key(record),
-        stream_name: @stream_name,
+        stream_name: @stream_name ? @stream_name : @stream_name_prefix + tag,
       }
     end
   end

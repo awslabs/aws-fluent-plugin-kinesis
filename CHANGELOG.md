@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## 1.1.3
+
+- Bug fix - Fix issues with fluentd 0.14.12 [#99](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/99)
+
+## 1.1.2
+
+- Bug fix - Adjust credentials_provider for newer version of aws-ruby-sdk [#93](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/93)
+
+## 1.1.1
+
+- Bug fix - Fix incompatibility for AWS SDK 2.5 [#80](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/80)
+- Bug fix - Fix wrong logic for batch request [#81](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/81)
+
+## 1.1.0
+
+- Feature - Derive stream name from fluentd tag for KPL [#67](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/67)
+- Enhancement - Make http_proxy parameter secret [#64](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/64)
+- Bug fix - Plugin incompatible with new fluentd release 0.14 [#70](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/70)
+- Misc - Fix legacy test and reduce travis tests [#74](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/74)
+- Misc - Some test, benchmark improvement [#74](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/74), [#75](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/75), [#76](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/76)
+
 ## 1.0.1
 
 - Bug fix - Instance profile credentials expiring [#58](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/58)

@@ -12,19 +12,9 @@
 #  express or implied. See the License for the specific language governing
 #  permissions and limitations under the License.
 
-require "bundler/gem_tasks"
+source 'https://rubygems.org'
 
-require 'rake/testtask'
+# Specify your gem's dependencies in fluent-plugin-kinesis.gemspec
+gemspec path: ".."
 
-task default: [:test]
-Rake::TestTask.new do |test|
-  test.libs << 'lib' << 'test'
-  test.test_files = FileList['test/**/test_*.rb']
-  test.options = '-v'
-end
-
-load 'kinesis_producer/tasks/binary.rake'
-Rake::Task[:build].enhance [:binaries]
-Rake::Task[:test].enhance [:binaries]
-
-load 'benchmark/task.rake'
+gem "fluentd", "~> 0.12.26"
