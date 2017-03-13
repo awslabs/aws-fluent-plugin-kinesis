@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 2.0.0
+
+- Feature - Add `kinesis_streams_aggregated` ouput plugin [#107](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/107)
+- Feature - Support fluentd worker model [#104](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/104)
+- Feature - Support AWS SDK for Ruby v3 [#102](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/102)
+- Enhancement - Refactor class design [#103](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/103)
+- Enhancement - More configuration for AssumeRole [#63](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/63)
+- Enhancement - Refactor credentials helper [#94](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/94)
+- Enhancement - Revisit backoff logic [#69](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/69)
+- Enhancement - Support compressing output [#98](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/98)
+- Enhancement - Support nanosecond time_key format [#124](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/124)
+- License - Move back to Apache License Version 2.0
+
 ## 1.3.0
 
 - Feature - Log KPL stdout/err to logger [#129](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/129) [#130](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/130)
