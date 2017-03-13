@@ -12,6 +12,23 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-module FluentPluginKinesis
-  VERSION = '2.0.0.rc.2.0'
+require_relative '../helper'
+require 'fluent/plugin/kinesis_helper/aggregator'
+
+class KinesisHelperAggregatorTest < Test::Unit::TestCase
+  def setup
+    @aggregator = Fluent::KinesisHelper::Aggregator.new
+  end
+
+  def teardown
+  end
+
+  def test_aggregate
+    records = ['foo', 'bar']
+    partition_key = 'key'
+    encoded = @aggregator.aggregate(records, partition_key)
+    decoded = @aggregator.deaggregate(encoded)
+    assert_equal records, decoded[0]
+    assert_equal partition_key, decoded[1]
+  end
 end
