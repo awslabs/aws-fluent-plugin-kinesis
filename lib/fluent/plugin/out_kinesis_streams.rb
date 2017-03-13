@@ -1,48 +1,69 @@
 #
-#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-#  Licensed under the Amazon Software License (the "License").
-#  You may not use this file except in compliance with the License.
-#  A copy of the License is located at
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
 #
-#  http://aws.amazon.com/asl/
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  or in the "license" file accompanying this file. This file is distributed
-#  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-#  express or implied. See the License for the specific language governing
-#  permissions and limitations under the License.
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
 
-require 'fluent/plugin/kinesis_helper'
+require 'fluent/plugin/kinesis'
 
 module Fluent
-  class KinesisStreamsOutput < BufferedOutput
-    include KinesisHelper
+  class KinesisStreamsOutput < KinesisOutput
     Fluent::Plugin.register_output('kinesis_streams', self)
-    config_param_for_streams
+
+    RequestType = :streams
+    BatchRequestLimitCount = 500
+    BatchRequestLimitSize  = 5 * 1024 * 1024
+    include KinesisHelper::API::BatchRequest
+
+    config_param :stream_name,   :string
+    config_param :partition_key, :string,  default: nil
+
+    def configure(conf)
+      super
+      @key_formatter = key_formatter_create
+    end
+
+    def format(tag, time, record)
+      format_for_api do
+        data = @data_formatter.call(tag, time, record)
+        key = @key_formatter.call(record)
+        [data, key]
+      end
+    end
 
     def write(chunk)
-      records = convert_to_records(chunk)
-      split_to_batches(records).each do |batch|
-        next unless batch.size > 0
-        batch_request_with_retry(batch)
+      write_records_batch(chunk) do |batch|
+        records = batch.map{|(data, partition_key)|
+          { data: data, partition_key: partition_key }
+        }
+        client.put_records(
+          stream_name: @stream_name,
+          records: records,
+        )
       end
-      log.debug("Written #{records.size} records")
     end
 
     private
 
-    def convert_format(tag, time, record)
-      {
-        data: data_format(tag, time, record),
-        partition_key: key(record),
-      }
-    end
-
-    def batch_request(batch)
-      client.put_records(
-        stream_name: @stream_name,
-        records: batch,
-      )
+    def key_formatter_create
+      if @partition_key.nil?
+        ->(record) { SecureRandom.hex(16) }
+      else
+        ->(record) {
+          if !record.key?(@partition_key)
+            raise KeyNotFoundError.new(@partition_key, record)
+          end
+          record[@partition_key]
+        }
+      end
     end
   end
 end

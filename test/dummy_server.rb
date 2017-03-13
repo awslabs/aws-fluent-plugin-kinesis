@@ -1,21 +1,21 @@
 #
-#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-#  Licensed under the Amazon Software License (the "License").
-#  You may not use this file except in compliance with the License.
-#  A copy of the License is located at
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
 #
-#  http://aws.amazon.com/asl/
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  or in the "license" file accompanying this file. This file is distributed
-#  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-#  express or implied. See the License for the specific language governing
-#  permissions and limitations under the License.
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
 
 require 'webrick/https'
 require 'net/empty_port'
 require 'base64'
-require 'kinesis_producer'
+require 'fluent/plugin/kinesis_helper/aggregator'
 
 module WEBrick
   class HTTPResponse
@@ -41,6 +41,7 @@ class DummyServer
     @failed_count = 0
     @error_count = 0
     @server, @port = init_server
+    @aggregator = Fluent::KinesisHelper::Aggregator.new
   end
 
   def start
@@ -78,7 +79,11 @@ class DummyServer
   end
 
   def size_per_requests
-    @requests.map{|req|JSON.parse(req.body)['Records'].map{|r|(r['Data'] ? Base64.decode64(r['Data']).size : 0)+(r['PartitionKey'] ? r['PartitionKey'].size : 0)}.inject(:+) || 0}
+    @requests.map{|req|
+      JSON.parse(req.body)['Records'].map{|r|
+        (r['Data'] ? Base64.decode64(r['Data']).size : 0)+(r['PartitionKey'] ? r['PartitionKey'].size : 0)
+      }.inject(:+) || 0
+    }
   end
 
   def raw_records
@@ -139,12 +144,23 @@ class DummyServer
       body = case req['X-Amz-Target']
              when 'Kinesis_20131202.DescribeStream'
                describe_stream_boby(req)
+             when 'Kinesis_20131202.PutRecord'
+               if random_error_500
+                 @error_count += 1
+                 res.status = 500
+                 {}
+               elsif exceeded?(req, 1024*1024)
+                 res.status = 400
+                 {}
+               else
+                 put_record_boby(req)
+               end
              when 'Kinesis_20131202.PutRecords'
                if random_error_500
                  @error_count += 1
                  res.status = 500
                  {}
-               elsif exceeded?(req, 500, 5*1024*1024)
+               elsif batch_exceeded?(req, 500, 5*1024*1024)
                  res.status = 400
                  {}
                else
@@ -155,7 +171,7 @@ class DummyServer
                  @error_count += 1
                  res.status = 500
                  {}
-               elsif exceeded?(req, 500, 4*1024*1024)
+               elsif batch_exceeded?(req, 500, 4*1024*1024)
                  res.status = 400
                  {}
                else
@@ -206,7 +222,22 @@ class DummyServer
     }
   end
 
-  def exceeded?(req, max_count, max_size)
+  def exceeded?(req, max_size)
+    data = Base64.decode64(JSON.parse(req.body)['Data'])
+    data.size > max_size
+  end
+
+  def put_record_boby(req)
+    body = JSON.parse(req.body)
+    record = {'Data' => body['Data'], 'PartitionKey' => body['PartitionKey']}
+    @accepted_records << {:stream_name => body['StreamName'], :record => record}
+    {
+      "SequenceNumber" => "21269319989653637946712965403778482177",
+      "ShardId" => "shardId-000000000001"
+    }
+  end
+
+  def batch_exceeded?(req, max_count, max_size)
     records = JSON.parse(req.body)['Records']
     count = records.size
     size = records.map{|r|(r['Data'] ? Base64.decode64(r['Data']).size : 0)+(r['PartitionKey'] ? r['PartitionKey'].size : 0)}.inject(:+) || 0
@@ -216,27 +247,19 @@ class DummyServer
   def put_records_boby(req)
     body = JSON.parse(req.body)
     failed_record_count = 0
-    records = if body['Records'].empty?
-      @error_count += 1  
-      [{
-        "ErrorCode" => "ValidationException",
-        "ErrorMessage" => "1 validation error detected: Value '[]' at 'records' failed to satisfy constraint: Member must have length greater than or equal to 1"
-      }]
-    else
-      body['Records'].map do |record|
-        if random_fail
-          failed_record_count += 1
-          {
-            "ErrorCode" => "ProvisionedThroughputExceededException",
-            "ErrorMessage" => "Rate exceeded for shard shardId-000000000001 in stream exampleStreamName under account 111111111111."
-          }
-        else
-          @accepted_records << {:stream_name => body['StreamName'], :record => record}
-          {
-            "SequenceNumber" => "49543463076548007577105092703039560359975228518395019266",
-            "ShardId" => "shardId-000000000000"
-          }
-        end
+    records = body['Records'].map do |record|
+      if random_fail
+        failed_record_count += 1
+        {
+          "ErrorCode" => "ProvisionedThroughputExceededException",
+          "ErrorMessage" => "Rate exceeded for shard shardId-000000000001 in stream exampleStreamName under account 111111111111."
+        }
+      else
+        @accepted_records << {:stream_name => body['StreamName'], :record => record}
+        {
+          "SequenceNumber" => "49543463076548007577105092703039560359975228518395019266",
+          "ShardId" => "shardId-000000000000"
+        }
       end
     end
     @failed_count += failed_record_count
@@ -274,13 +297,12 @@ class DummyServer
     records.flat_map do |record|
       data = Base64.decode64(record[:record]['Data'])
       partition_key = record[:record]['PartitionKey']
-      if data[0,4] == ['F3899AC2'].pack('H*')
-        protobuf = data[4,data.length-20]
-        agg = KinesisProducer::Protobuf::AggregatedRecord.decode(protobuf)
+      if @aggregator.aggregated?(data)
+        agg_data = @aggregator.deaggregate(data)[0]
         if detailed
-          {:stream_name => record[:stream_name], :data => agg.records.map(&:data), :partition_key => partition_key}
+          {:stream_name => record[:stream_name], :data => agg_data, :partition_key => partition_key}
         else
-          agg.records.map(&:data)
+          agg_data
         end
       else
         if detailed
