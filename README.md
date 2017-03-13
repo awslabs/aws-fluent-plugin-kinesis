@@ -154,6 +154,10 @@ Use this config section for cross account access. For example, you can specify t
         role_arn "your_role_arn_in_cross_account_to_assume"
       </assume_role_credentials>
 
+    <assume_role_credentials>
+      role_arn "your_role_arn_in_cross_account_to_assume"
+    </assume_role_credentials>
+
 #### role_arn
 IAM Role to be assumed with [AssumeRole][assume_role].
 
