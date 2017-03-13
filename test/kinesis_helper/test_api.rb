@@ -1,27 +1,29 @@
 #
-#  Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2014-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-#  Licensed under the Amazon Software License (the "License").
-#  You may not use this file except in compliance with the License.
-#  A copy of the License is located at
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
 #
-#  http://aws.amazon.com/asl/
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  or in the "license" file accompanying this file. This file is distributed
-#  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-#  express or implied. See the License for the specific language governing
-#  permissions and limitations under the License.
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
 
 require_relative '../helper'
 require 'fluent/plugin/kinesis_helper/api'
-require 'aws-sdk'
+require 'aws-sdk-firehose'
 
 class KinesisHelperAPITest < Test::Unit::TestCase
   class Mock
     include Fluent::KinesisHelper::API
+    include Fluent::KinesisHelper::API::BatchRequest
 
     attr_accessor :retries_on_batch_request, :reset_backoff_if_success
     attr_accessor :failed_scenario, :request_series
+    attr_accessor :batch_request_max_count, :batch_request_max_size
 
     def initialize
       @retries_on_batch_request = 3
@@ -84,13 +86,16 @@ class KinesisHelperAPITest < Test::Unit::TestCase
   end
 
   data(
-    'split_by_count'            => [Array.new(11, {data:'a'*1}),  [10,1]],
-    'split_by_size'             => [Array.new(11, {data:'a'*10}), [2,2,2,2,2,1]],
-    'split_by_size_with_space'  => [Array.new(11, {data:'a'*6}),  [3,3,3,2]],
+    'split_by_count'            => [Array.new(11, ['a'*1]),  [10,1]],
+    'split_by_size'             => [Array.new(11, ['a'*10]), [2,2,2,2,2,1]],
+    'split_by_size_with_space'  => [Array.new(11, ['a'*6]),  [3,3,3,2]],
   )
-  def test_batch_by_limit(data)
+  def test_split_to_batches(data)
     records, expected = data
-    result = @object.send(:batch_by_limit, records, 10, 20)
+    result = []
+    @object.batch_request_max_count = 10
+    @object.batch_request_max_size = 20
+    @object.send(:split_to_batches, records){|batch, size| result << batch }
     assert_equal expected, result.map(&:size)
   end
 
@@ -106,7 +111,7 @@ class KinesisHelperAPITest < Test::Unit::TestCase
     batch = Array.new(5, {})
     @object.failed_scenario = failed_scenario.to_enum
     @object.expects(:give_up_retries).times(completed ? 0 : 1)
-    @object.send(:batch_request_with_retry, batch, backoff: @backoff)
+    @object.send(:batch_request_with_retry, batch, backoff: @backoff) { |batch| @object.batch_request(batch) }
     assert_equal expected, @object.request_series
   end
 
@@ -121,6 +126,6 @@ class KinesisHelperAPITest < Test::Unit::TestCase
     @object.reset_backoff_if_success = reset_backoff
     @object.failed_scenario = failed_scenario.to_enum
     @backoff.expects(:reset).times(expected)
-    @object.send(:batch_request_with_retry, batch, backoff: @backoff)
+    @object.send(:batch_request_with_retry, batch, backoff: @backoff) { |batch| @object.batch_request(batch) }
   end
 end
