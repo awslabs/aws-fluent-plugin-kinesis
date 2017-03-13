@@ -2,12 +2,9 @@ language: ruby
 
 matrix:
   include:
-    - rvm: 2.0.0-p648
-      os: linux
-      gemfile: gemfiles/Gemfile.ruby-2.0
     - rvm: 2.1.10
       os: linux
-      gemfile: gemfiles/Gemfile.ruby-2.1
+      gemfile: Gemfile
     - rvm: 2.2.6
       os: linux
       gemfile: Gemfile
@@ -17,18 +14,6 @@ matrix:
     - rvm: 2.4.0
       os: linux
       gemfile: Gemfile
-    - rvm: 2.3.3
-      os: linux
-      gemfile: gemfiles/Gemfile.fluentd-0.10.58
-    - rvm: 2.3.3
-      os: linux
-      gemfile: gemfiles/Gemfile.fluentd-0.12
-    - rvm: 2.3.3
-      os: linux
-      gemfile: gemfiles/Gemfile.fluentd-0.14.11
-    - rvm: 2.3.3
-      os: linux
-      gemfile: gemfiles/Gemfile.aws-sdk-2.4
 
 script: bundle exec rake test
 
