@@ -176,6 +176,17 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
     end
   end
 
+  def test_multibyte_input
+    d = create_driver(default_config)
+    time = event_time("2011-01-02 13:14:15 UTC")
+    record = {"a" => "てすと"}
+    d.run(default_tag: "test") do
+      d.feed(time, record)
+    end
+    assert_equal 0, d.instance.log.out.logs.size
+    assert_equal record.to_json.b + "\n", @server.records.first
+  end
+
   def test_record_count
     @server.enable_random_error
     d = create_driver

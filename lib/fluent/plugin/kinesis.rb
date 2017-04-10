@@ -68,13 +68,13 @@ module Fluent
       compressor = compressor_create
       if @data_key.nil?
         ->(tag, time, record) {
-          compressor.call(formatter.format(tag, time, record).chomp)
+          compressor.call(formatter.format(tag, time, record).chomp.b)
         }
       else
         ->(tag, time, record) {
           raise InvalidRecordError, record unless record.is_a? Hash
           raise KeyNotFoundError.new(@data_key, record) if record[@data_key].nil?
-          compressor.call(record[@data_key].to_s)
+          compressor.call(record[@data_key].to_s.b)
         }
       end
     end

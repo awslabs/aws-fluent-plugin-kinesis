@@ -80,8 +80,10 @@ class KinesisOutputTest < Test::Unit::TestCase
   end
 
   data(
-    'not_exceeded' => [{"a"=>"a"*30}, ["a"*30].to_msgpack],
-    'exceeded'     => [{"a"=>"a"*31}, ''],
+    'not_exceeded'      => [{"a"=>"a"*30}, ["a".b*30].to_msgpack],
+    'exceeded'          => [{"a"=>"a"*31}, ''],
+    'not_exceeded_utf8' => [{"a"=>"あ"*10}, ["あ".b*10].to_msgpack],
+    'exceeded_utf8'     => [{"a"=>"あ"*11}, ''],
   )
   def test_format_max_record_size(data)
     record, expected = data
