@@ -25,7 +25,7 @@ module Fluent
 
     class ExceedMaxRecordSizeError < SkipRecordError
       def initialize(record)
-        super "Record size limit exceeded for #{record}"
+        super "Record size limit exceeded for #{record.length}-byte record: #{record.splice(0,1024)}...#{record.splice(-1024,1024)}"
       end
     end
 
