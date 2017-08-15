@@ -23,6 +23,7 @@ module Fluent
     def write(chunk)
       records = convert_to_records(chunk)
       split_to_batches(records).each do |batch|
+        next unless batch.size > 0
         batch_request_with_retry(batch)
       end
       log.debug("Written #{records.size} records")

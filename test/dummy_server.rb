@@ -216,19 +216,27 @@ class DummyServer
   def put_records_boby(req)
     body = JSON.parse(req.body)
     failed_record_count = 0
-    records = body['Records'].map do |record|
-      if random_fail
-        failed_record_count += 1
-        {
-          "ErrorCode" => "ProvisionedThroughputExceededException",
-          "ErrorMessage" => "Rate exceeded for shard shardId-000000000001 in stream exampleStreamName under account 111111111111."
-        }
-      else
-        @accepted_records << {:stream_name => body['StreamName'], :record => record}
-        {
-          "SequenceNumber" => "49543463076548007577105092703039560359975228518395019266",
-          "ShardId" => "shardId-000000000000"
-        }
+    records = if body['Records'].empty?
+      @error_count += 1  
+      [{
+        "ErrorCode" => "ValidationException",
+        "ErrorMessage" => "1 validation error detected: Value '[]' at 'records' failed to satisfy constraint: Member must have length greater than or equal to 1"
+      }]
+    else
+      body['Records'].map do |record|
+        if random_fail
+          failed_record_count += 1
+          {
+            "ErrorCode" => "ProvisionedThroughputExceededException",
+            "ErrorMessage" => "Rate exceeded for shard shardId-000000000001 in stream exampleStreamName under account 111111111111."
+          }
+        else
+          @accepted_records << {:stream_name => body['StreamName'], :record => record}
+          {
+            "SequenceNumber" => "49543463076548007577105092703039560359975228518395019266",
+            "ShardId" => "shardId-000000000000"
+          }
+        end
       end
     end
     @failed_count += failed_record_count

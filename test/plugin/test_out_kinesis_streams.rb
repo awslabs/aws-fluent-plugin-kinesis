@@ -97,6 +97,15 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     assert_equal 1, d.instance.log.logs.size
   end
 
+  def test_single_max_record_size
+    d = create_driver
+    d.emit({"a"=>"a"*(1024*1024-'{"a":""}'.size+1)}) # exceeded
+    d.run
+    assert_equal 0, @server.records.size
+    assert_equal 0, @server.error_count
+    assert_equal 1, d.instance.log.logs.size
+  end
+
   pad = 32 + '{"data":""}'.size
   data(
     'split_by_count'           => [Array.new(501, {data:'a'}),                                        [500,1]],
