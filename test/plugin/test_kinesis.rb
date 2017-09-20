@@ -108,4 +108,16 @@ class KinesisOutputTest < Test::Unit::TestCase
     result = d.instance.send(:truncate, "123456789")
     assert_equal expected, result
   end
+
+  def test_reduce_max_size_error_message
+    record = {"a"=>"a"*1025}
+    d = create_driver(default_config + "data_key a\nmax_record_size 1024\nlog_truncate_max_size 100")
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      d.feed(time, record)
+    end
+    assert_equal 1, d.instance.log.out.logs.size
+    assert_operator d.instance.log.out.logs.first.size, :<, record.to_s.size
+  end
 end

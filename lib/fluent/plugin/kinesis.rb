@@ -31,8 +31,8 @@ module Fluent
       end
     end
     class ExceedMaxRecordSizeError < SkipRecordError
-      def initialize(record)
-        super "Record size limit exceeded: #{record.size} B"
+      def initialize(size, record)
+        super "Record size limit exceeded: #{size}-bytes for record #{record}"
       end
     end
     class InvalidRecordError < SkipRecordError
@@ -42,7 +42,7 @@ module Fluent
     end
 
     config_param :data_key,              :string,  default: nil
-    config_param :log_truncate_max_size, :integer, default: 0
+    config_param :log_truncate_max_size, :integer, default: 1024
     config_param :compression,           :string,  default: nil
     config_section :format do
       config_set_default :@type, 'json'
@@ -90,8 +90,9 @@ module Fluent
 
     def format_for_api(&block)
       converted = block.call
-      if size_of_values(converted) > @max_record_size
-        raise ExceedMaxRecordSizeError, converted
+      size = size_of_values(converted)
+      if size > @max_record_size
+        raise ExceedMaxRecordSizeError.new(size, converted)
       end
       converted.to_msgpack
     rescue SkipRecordError => e

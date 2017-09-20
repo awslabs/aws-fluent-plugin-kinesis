@@ -267,7 +267,7 @@ If your record contains a field whose string should be sent to Amazon Kinesis di
 Specifing compression way for data of each record. Current accepted options are `zlib`. Otherwise, no compression will be preformed.
 
 ### log_truncate_max_size
-Integer, default 0. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 (default) means no truncation.
+Integer, default 1024. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 means no truncation.
 
 ## Configuraion: API
 ### region
