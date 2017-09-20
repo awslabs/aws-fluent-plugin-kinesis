@@ -14,8 +14,25 @@
 
 require 'fluent/test'
 require 'fluent/test/helpers'
-require 'fluent/test/log'
-require 'fluent/test/driver/output'
+def fluentd_v0_12?
+  @fluentd_v0_12 ||= Gem.loaded_specs['fluentd'].version < Gem::Version.create('0.14')
+end
+def driver_run(d, records)
+  if fluentd_v0_12?
+    records.each{|record| d.emit(record)}
+    d.run
+  else
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.instance.log.out.flush_logs = false
+    d.run(default_tag: "test") do
+      records.each{|record| d.feed(time, record)}
+    end
+  end
+end
+if !fluentd_v0_12?
+  require 'fluent/test/log'
+  require 'fluent/test/driver/output'
+end
 require 'test/unit'
 require 'mocha/test_unit'
 require 'dummy_server'

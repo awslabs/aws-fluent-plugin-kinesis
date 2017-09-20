@@ -46,8 +46,13 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   end
 
   def create_driver(conf = default_config)
-    Fluent::Test::Driver::Output.new(Fluent::KinesisFirehoseOutput) do
-    end.configure(conf)
+    if fluentd_v0_12?
+      Fluent::Test::BufferedOutputTestDriver.new(Fluent::KinesisFirehoseOutput) do
+      end.configure(conf)
+    else
+      Fluent::Test::Driver::Output.new(Fluent::KinesisFirehoseOutput) do
+      end.configure(conf)
+    end
   end
 
   def self.data_of(size)
@@ -77,11 +82,7 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   def test_format(data)
     formatter, expected = data
     d = create_driver(default_config + "format #{formatter}")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>1,"b"=>2})
-    end
+    driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end
 
@@ -92,22 +93,13 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   def test_format_without_append_new_line(data)
     formatter, expected = data
     d = create_driver(default_config + "format #{formatter}\nappend_new_line false")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>1,"b"=>2})
-    end
+    driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end
 
   def test_data_key
     d = create_driver(default_config + "data_key a")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>1,"b"=>2})
-      d.feed(time, {"b"=>2})
-    end
+    driver_run(d, [{"a"=>1,"b"=>2}, {"b"=>2}])
     assert_equal "1\n", @server.records.first
     assert_equal 1, @server.records.size
     assert_equal 1, d.instance.log.out.logs.size
@@ -115,12 +107,7 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
 
   def test_data_key_without_append_new_line
     d = create_driver(default_config + "data_key a\nappend_new_line false")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>1,"b"=>2})
-      d.feed(time, {"b"=>2})
-    end
+    driver_run(d, [{"a"=>1,"b"=>2}, {"b"=>2}])
     assert_equal "1", @server.records.first
     assert_equal 1, @server.records.size
     assert_equal 1, d.instance.log.out.logs.size
@@ -128,23 +115,19 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
 
   def test_max_record_size
     d = create_driver(default_config + "data_key a")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>data_of(1*MB)})
-      d.feed(time, {"a"=>data_of(1*MB+1)}) # exceeded
-    end
+    driver_run(d, [
+      {"a"=>data_of(1*MB)},
+      {"a"=>data_of(1*MB+1)}, # exceeded
+    ])
     assert_equal 1, @server.records.size
     assert_equal 1, d.instance.log.out.logs.size
   end
 
   def test_single_max_record_size
     d = create_driver(default_config + "data_key a")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>data_of(1*MB+1)}) # exceeded
-    end
+    driver_run(d, [
+      {"a"=>data_of(1*MB+1)}, # exceeded
+    ])
     assert_equal 0, @server.records.size
     assert_equal 0, @server.error_count
     assert_equal 1, d.instance.log.out.logs.size
@@ -152,12 +135,10 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
 
   def test_max_record_size_without_append_new_line
     d = create_driver(default_config + "append_new_line false\ndata_key a")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>data_of(1*MB+1)})
-      d.feed(time, {"a"=>data_of(1*MB+2)}) # exceeded
-    end
+    driver_run(d, [
+      {"a"=>data_of(1*MB+1)},
+      {"a"=>data_of(1*MB+2)}, # exceeded
+    ])
     assert_equal 1, @server.records.size
     assert_equal 1, d.instance.log.out.logs.size
   end
@@ -171,13 +152,7 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   def test_batch_request(data)
     records, expected = data
     d = create_driver(default_config + "data_key a")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      records.each do |record|
-        d.feed(time, {'a' => record})
-      end
-    end
+    driver_run(d, records.map{|record| {'a' => record}})
     assert_equal records.size, @server.records.size
     assert_equal expected, @server.count_per_requests
     @server.size_per_requests.each do |size|
@@ -190,11 +165,8 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
 
   def test_multibyte_input
     d = create_driver(default_config)
-    time = event_time("2011-01-02 13:14:15 UTC")
     record = {"a" => "てすと"}
-    d.run(default_tag: "test") do
-      d.feed(time, record)
-    end
+    driver_run(d, [record])
     assert_equal 0, d.instance.log.out.logs.size
     assert_equal record.to_json.b + "\n", @server.records.first
   end
@@ -202,14 +174,8 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   def test_record_count
     @server.enable_random_error
     d = create_driver
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
     count = 10
-    d.run(default_tag: "test") do
-      count.times do
-        d.feed(time, {"a"=>1})
-      end
-    end
+    driver_run(d, count.times.map{|i|{"a"=>1}})
     assert_equal count, @server.records.size
     assert @server.failed_count > 0
     assert @server.error_count > 0

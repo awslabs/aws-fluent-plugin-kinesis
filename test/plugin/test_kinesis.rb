@@ -56,13 +56,18 @@ class KinesisOutputTest < Test::Unit::TestCase
 
   def default_config
     %[
-      @log_level error
+      log_level error
     ]
   end
 
   def create_driver(conf = default_config)
-    Fluent::Test::Driver::Output.new(Fluent::KinesisFakeOutput) do
-    end.configure(conf)
+    if fluentd_v0_12?
+      Fluent::Test::BufferedOutputTestDriver.new(Fluent::KinesisFakeOutput) do
+      end.configure(conf)
+    else
+      Fluent::Test::Driver::Output.new(Fluent::KinesisFakeOutput) do
+      end.configure(conf)
+    end
   end
 
   data(
@@ -71,12 +76,13 @@ class KinesisOutputTest < Test::Unit::TestCase
   def test_format_compression(data)
     compression, expected = data
     d = create_driver(default_config + "data_key a\ncompression #{compression}")
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>"foo"})
+    driver_run(d, [{"a"=>"foo"}])
+    if fluentd_v0_12?
+      d.expect_format(expected)
+    else
+      result = d.formatted.first
+      assert_equal expected, MessagePack.unpack(result).first
     end
-    result = d.formatted.first
-    assert_equal expected, MessagePack.unpack(result).first
   end
 
   data(
@@ -88,12 +94,12 @@ class KinesisOutputTest < Test::Unit::TestCase
   def test_format_max_record_size(data)
     record, expected = data
     d = create_driver(default_config + "data_key a\nmax_record_size 30")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, record)
+    driver_run(d, [record])
+    if fluentd_v0_12?
+      d.expect_format(expected)
+    else
+      assert_equal expected, d.formatted.first
     end
-    assert_equal expected, d.formatted.first
     assert_equal expected == '' ? 1 : 0, d.instance.log.out.logs.size
   end
 
@@ -112,11 +118,7 @@ class KinesisOutputTest < Test::Unit::TestCase
   def test_reduce_max_size_error_message
     record = {"a"=>"a"*1025}
     d = create_driver(default_config + "data_key a\nmax_record_size 1024\nlog_truncate_max_size 100")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, record)
-    end
+    driver_run(d, [record])
     assert_equal 1, d.instance.log.out.logs.size
     assert_operator d.instance.log.out.logs.first.size, :<, record.to_s.size
   end

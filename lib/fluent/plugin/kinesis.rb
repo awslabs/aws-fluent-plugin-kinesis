@@ -41,6 +41,10 @@ module Fluent
       end
     end
 
+    def self.fluentd_v0_12?
+      @fluentd_v0_12 ||= Gem.loaded_specs['fluentd'].version < Gem::Version.create('0.14')
+    end
+
     config_param :data_key,              :string,  default: nil
     config_param :log_truncate_max_size, :integer, default: 1024
     config_param :compression,           :string,  default: nil
@@ -50,11 +54,15 @@ module Fluent
 
     config_param :debug, :bool, default: false
 
-    helpers :formatter
+    if fluentd_v0_12?
+      config_param :format, :string,  default: 'json'
+    else
+      helpers :formatter
+    end
 
     def configure(conf)
       super
-      @data_formatter = data_formatter_create
+      @data_formatter = data_formatter_create(conf)
     end
 
     def multi_workers_ready?
@@ -63,8 +71,17 @@ module Fluent
 
     private
 
-    def data_formatter_create
-      formatter = formatter_create
+    def fluentd_v0_12?
+      self.class.fluentd_v0_12?
+    end
+
+    def data_formatter_create(conf)
+      if fluentd_v0_12?
+        formatter = Fluent::Plugin.new_formatter(@format)
+        formatter.configure(conf)
+      else
+        formatter = formatter_create
+      end
       compressor = compressor_create
       if @data_key.nil?
         ->(tag, time, record) {
@@ -101,7 +118,11 @@ module Fluent
     end
 
     def write_records_batch(chunk, &block)
-      unique_id = chunk.dump_unique_id_hex(chunk.unique_id)
+      if fluentd_v0_12?
+        unique_id = chunk.unique_id.unpack('H*').first
+      else
+        unique_id = chunk.dump_unique_id_hex(chunk.unique_id)
+      end
       records = chunk.to_enum(:msgpack_each)
       split_to_batches(records) do |batch, size|
         log.debug(sprintf "Write chunk %s / %3d records / %4d KB", unique_id, batch.size, size/1024)

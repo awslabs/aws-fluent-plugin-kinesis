@@ -47,8 +47,13 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   end
 
   def create_driver(conf = default_config)
-    Fluent::Test::Driver::Output.new(Fluent::KinesisStreamsAggregatedOutput) do
-    end.configure(conf)
+    if fluentd_v0_12?
+      Fluent::Test::BufferedOutputTestDriver.new(Fluent::KinesisStreamsAggregatedOutput) do
+      end.configure(conf)
+    else
+      Fluent::Test::Driver::Output.new(Fluent::KinesisStreamsAggregatedOutput) do
+      end.configure(conf)
+    end
   end
 
   def self.data_of(size)
@@ -78,44 +83,33 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   def test_format(data)
     formatter, expected = data
     d = create_driver(default_config + "format #{formatter}")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>1,"b"=>2})
-    end
+    driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end
 
   def test_data_key
     d = create_driver(default_config + "data_key a")
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>1,"b"=>2})
-      d.feed(time, {"b"=>2})
-    end
+    driver_run(d, [{"a"=>1,"b"=>2}, {"b"=>2}])
     assert_equal "1", @server.records.first
     assert_equal 1, @server.records.size
     assert_equal 1, d.instance.log.out.logs.size
   end
 
   data(
-    'random' => [nil, AggregateOffset+32*2],
-    'fixed'  => ['k', AggregateOffset+1*2],
+    'random_partition_key' => [nil, AggregateOffset+32*2],
+    'fixed_partition_key'  => ['k', AggregateOffset+1*2],
   )
   def test_max_data_size(data)
     fixed, expected = data
     config = 'data_key a'
     config += "\nfixed_partition_key #{fixed}" unless fixed.nil?
     d = create_driver(default_config + config)
-    d.instance.log.out.flush_logs = false
     offset = d.instance.offset
     assert_equal expected, offset
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>data_of(1*MB-offset)})
-      d.feed(time, {"a"=>data_of(1*MB-offset+1)}) # exceeded
-    end
+    driver_run(d, [
+      {"a"=>data_of(1*MB-offset)},
+      {"a"=>data_of(1*MB-offset+1)}, # exceeded
+    ])
     assert_equal 1, d.instance.log.out.logs.size
     assert_equal 1, @server.records.size
   end
@@ -129,13 +123,11 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
     config = 'data_key a'
     config += "\nfixed_partition_key #{fixed}" unless fixed.nil?
     d = create_driver(default_config + config)
-    d.instance.log.out.flush_logs = false
     offset = d.instance.offset
     assert_equal expected, offset
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>data_of(1*MB-offset+1)}) # exceeded
-    end
+    driver_run(d, [
+      {"a"=>data_of(1*MB-offset+1)}, # exceeded
+    ])
     assert_equal 0, @server.records.size
     assert_equal 0, @server.error_count
     assert_equal 1, d.instance.log.out.logs.size
@@ -150,14 +142,12 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
     config = 'data_key a'
     config += "\nfixed_partition_key #{fixed}" unless fixed.nil?
     d = create_driver(default_config + config)
-    d.instance.log.out.flush_logs = false
     offset = d.instance.offset
     assert_equal expected, offset
-    time = event_time("2011-01-02 13:14:15 UTC")
-    d.run(default_tag: "test") do
-      d.feed(time, {"a"=>data_of(512*KB-offset)})
-      d.feed(time, {"a"=>data_of(512*KB+1)}) # can't be aggregated
-    end
+    driver_run(d, [
+      {"a"=>data_of(512*KB-offset)},
+      {"a"=>data_of(512*KB+1)}, # can't be aggregated
+    ])
     assert_equal 0, d.instance.log.out.logs.size
     assert_equal 2, @server.records.size
     assert_equal 2, @server.requests.size
@@ -165,11 +155,8 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
 
   def test_multibyte_input
     d = create_driver(default_config)
-    time = event_time("2011-01-02 13:14:15 UTC")
     record = {"a" => "てすと"}
-    d.run(default_tag: "test") do
-      d.feed(time, record)
-    end
+    driver_run(d, [record])
     assert_equal 0, d.instance.log.out.logs.size
     assert_equal record.to_json.b, @server.records.first
   end
@@ -177,14 +164,8 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   def test_record_count
     @server.enable_random_error
     d = create_driver
-    d.instance.log.out.flush_logs = false
-    time = event_time("2011-01-02 13:14:15 UTC")
     count = 100
-    d.run(default_tag: "test") do
-      count.times do
-        d.feed(time, {"a"=>1})
-      end
-    end
+    driver_run(d, count.times.map{|i|{"a"=>1}})
     assert_equal count, @server.records.size
     assert @server.error_count > 0
     assert @server.raw_records.size < count
