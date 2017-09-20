@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   spec.required_ruby_version = '>= 2.1'
 
-  spec.add_dependency "fluentd", ">= 0.14.12", "< 2"
+  spec.add_dependency "fluentd", ">= 0.12.35", "< 2"
   spec.add_dependency "aws-sdk-kinesis", "~> 1"
   spec.add_dependency "aws-sdk-firehose", "~> 1"
   spec.add_dependency "google-protobuf", "~> 3"
