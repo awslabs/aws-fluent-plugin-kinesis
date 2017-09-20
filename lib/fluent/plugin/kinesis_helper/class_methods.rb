@@ -92,6 +92,7 @@ module Fluent
         config_param :formatter,             :string,  default: 'json'
         config_param :data_key,              :string,  default: nil
         config_param :log_truncate_max_size, :integer, default: 0
+        config_param :reduce_max_size_error_message, :bool, default: false
       end
 
       def config_param_for_batch_request

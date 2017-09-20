@@ -24,8 +24,13 @@ module Fluent
     end
 
     class ExceedMaxRecordSizeError < SkipRecordError
-      def initialize(record)
-        super "Record size limit exceeded for #{record}"
+      def initialize(record, reduce_message)
+        if reduce_message == true
+          sampled_record = "#{record.slice(0,1024)}...#{record.slice(-1024,1024)}"
+          super "Record size limit exceeded for #{record.length}-bytes record: #{sampled_record}"
+        else
+          super "Record size limit exceeded for #{record}"
+        end
       end
     end
 
