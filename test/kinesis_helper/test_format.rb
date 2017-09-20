@@ -19,10 +19,11 @@ class KinesisHelperFormatTest < Test::Unit::TestCase
   class Mock
     include Fluent::KinesisHelper::Format
 
-    attr_accessor :log_truncate_max_size
+    attr_accessor :log_truncate_max_size, :reduce_max_size_error_message
 
     def initialize
       @log_truncate_max_size = 0
+      @reduce_max_size_error_message = false
     end
 
     def log
@@ -58,6 +59,19 @@ class KinesisHelperFormatTest < Test::Unit::TestCase
     result = @object.send(:convert_record, '', '', record)
     assert_equal expected, result
     assert_equal result.nil? ? 1 : 0, @object.log.logs.size
+  end
+
+  data(
+    'default' => [false, :>],
+    'reduce'  => [true,  :<],
+  )
+  def test_reduce_max_size_error_message(data)
+    @object.reduce_max_size_error_message, expected = data
+    record = {"a"=>"a"*(1024*1024-'{"a":""}'.size+1)}
+    result = @object.send(:convert_record, '', '', record)
+    assert_equal nil, result
+    assert_equal 1, @object.log.logs.size
+    assert_operator @object.log.logs.first.size, expected, record.to_s.size
   end
 
   data(

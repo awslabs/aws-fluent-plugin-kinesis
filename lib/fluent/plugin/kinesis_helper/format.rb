@@ -64,7 +64,7 @@ module Fluent
         converted = convert_format(tag, time, record)
         converted[:data] += "\n" if @append_new_line
         if converted[:data].size > MaxRecordSize
-          raise ExceedMaxRecordSizeError, converted[:data]
+          raise ExceedMaxRecordSizeError.new(converted[:data], @reduce_max_size_error_message)
         else
           converted
         end
