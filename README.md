@@ -408,7 +408,7 @@ Minimum: 1
 Maximum (inclusive): 9223372036854775807
 
 #### record_max_buffered_time
-Maximum amount of itme (milliseconds) a record may spend being buffered before it gets sent. Records may be sent sooner than this depending on the other buffering limits.
+Maximum amount of time (milliseconds) a record may spend being buffered before it gets sent. Records may be sent sooner than this depending on the other buffering limits.
 
 This setting provides coarse ordering among records - any two records will be reordered by no more than twice this amount (assuming no failures and retries and equal network latency).
 
