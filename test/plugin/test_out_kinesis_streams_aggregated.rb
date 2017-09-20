@@ -124,6 +124,27 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
     'random' => [nil, AggregateOffset+32*2],
     'fixed'  => ['k', AggregateOffset+1*2],
   )
+  def test_single_max_data_size(data)
+    fixed, expected = data
+    config = 'data_key a'
+    config += "\nfixed_partition_key #{fixed}" unless fixed.nil?
+    d = create_driver(default_config + config)
+    d.instance.log.out.flush_logs = false
+    offset = d.instance.offset
+    assert_equal expected, offset
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      d.feed(time, {"a"=>data_of(1*MB-offset+1)}) # exceeded
+    end
+    assert_equal 0, @server.records.size
+    assert_equal 0, @server.error_count
+    assert_equal 1, d.instance.log.out.logs.size
+  end
+
+  data(
+    'random' => [nil, AggregateOffset+32*2],
+    'fixed'  => ['k', AggregateOffset+1*2],
+  )
   def test_aggregated_max_data_size(data)
     fixed, expected = data
     config = 'data_key a'

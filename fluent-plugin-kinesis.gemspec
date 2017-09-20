@@ -31,9 +31,9 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 2.1'
 
   spec.add_dependency "fluentd", ">= 0.14.12", "< 2"
-  spec.add_dependency "aws-sdk-kinesis", ">= 1.0.0.rc1"
-  spec.add_dependency "aws-sdk-firehose", ">= 1.0.0.rc1"
-  spec.add_dependency "google-protobuf", ">= 3.2.0"
+  spec.add_dependency "aws-sdk-kinesis", "~> 1"
+  spec.add_dependency "aws-sdk-firehose", "~> 1"
+  spec.add_dependency "google-protobuf", "~> 3"
 
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"

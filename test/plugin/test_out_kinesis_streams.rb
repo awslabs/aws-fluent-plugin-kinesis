@@ -121,6 +121,18 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     assert_equal 1, d.instance.log.out.logs.size
   end
 
+  def test_single_max_record_size
+    d = create_driver(default_config + "data_key a")
+    d.instance.log.out.flush_logs = false
+    time = event_time("2011-01-02 13:14:15 UTC")
+    d.run(default_tag: "test") do
+      d.feed(time, {"a"=>data_of(1*MB+1)}) # exceeded
+    end
+    assert_equal 0, @server.records.size
+    assert_equal 0, @server.error_count
+    assert_equal 1, d.instance.log.out.logs.size
+  end
+
   data(
     'split_by_count'           => [Array.new(501, data_of(1*KB)),                     [500,1]],
     'split_by_size'            => [Array.new(257, data_of(20*KB)),                    [256,1]],
