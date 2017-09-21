@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.2.0
+- Feature - Add reduce_max_size_error_message configuration [#127](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/127)
+- Bug fix - Fix empty batch error [#125](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/125)
+
 ## 1.1.3
 
 - Bug fix - Fix issues with fluentd 0.14.12 [#99](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/99)
