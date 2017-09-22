@@ -49,6 +49,7 @@ module Fluent
         config_param :stream_name_prefix, :string, default: nil
         config_param :region,             :string, default: nil
         config_param :partition_key,      :string, default: nil
+        config_param :enable_kpl_logging, :bool,   default: false
         config_param_for_credentials
         config_param_for_format
         config_param_for_debug

@@ -48,6 +48,7 @@ module Fluent
           credentials_refresh_delay: @kinesis_producer.credentials_refresh_delay,
           debug: @debug,
           logger: log,
+          enable_kpl_logging: @enable_kpl_logging,
         }
       end
 

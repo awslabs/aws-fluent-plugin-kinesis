@@ -236,6 +236,9 @@ A key to extract partition key from JSON object. Default `nil`, which means part
 ### debug
 Boolean. Enable if you need to debug Kinesis Producer Library metrics. Default is `false`.
 
+### enable_kpl_logging
+Boolean, default `false`. If you want to log KPL binary's stdout/err, make this parameter `true`.
+
 ### kinesis_producer
 This section is configuration for Kinesis Producer Library. Almost all of description comes from [deault_config.propertites of KPL Java Sample Application][default_config.properties]. You should specify configurations below inside `<kinesis_producer>` section like:
 
