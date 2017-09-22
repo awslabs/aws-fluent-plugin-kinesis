@@ -29,6 +29,7 @@ module KinesisProducer
       @credentials_refresh_delay = options[:credentials_refresh_delay] || 5000
       @logger                    = options[:logger]
       @debug                     = options[:debug]
+      @enable_kpl_logging        = options[:enable_kpl_logging]
 
       @executor = Concurrent::CachedThreadPool.new
       @shutdown = Concurrent::AtomicBoolean.new(false)
@@ -127,9 +128,13 @@ module KinesisProducer
       @out_channel = @out_pipe.open('w')
     end
 
+    def enable_kpl_logging?
+      @enable_kpl_logging
+    end
+
     def start_loops
-      start_loop_for(:log_stdout)
-      start_loop_for(:log_stderr)
+      start_loop_for(:log_stdout) if enable_kpl_logging?
+      start_loop_for(:log_stderr) if enable_kpl_logging?
       start_loop_for(:send_message)
       start_loop_for(:receive_message)
       start_loop_for(:return_message)
