@@ -39,7 +39,6 @@ class KinesisProducerOutputTest < Test::Unit::TestCase
         custom_endpoint localhost
         port #{@server.port}
         verify_certificate false
-        log_level error
       </kinesis_producer>
     ]
   end

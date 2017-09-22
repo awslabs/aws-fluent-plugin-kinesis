@@ -99,8 +99,15 @@ module KinesisProducer
     end
 
     def start_child_daemon
+      @child_stdout, stdout = IO.pipe
+      @child_stderr, stderr = IO.pipe
       @pid = Process.fork do
         Process.setsid
+        STDOUT.sync = true
+        $stdout.reopen stdout
+        $stderr.reopen stderr
+        @child_stdout.close
+        @child_stderr.close
         configuration = make_configuration_message
         credentials = make_set_credentials_message
         command = [@binary, @out_pipe.to_path, @in_pipe.to_path, to_hex(configuration), to_hex(credentials)]
@@ -110,6 +117,8 @@ module KinesisProducer
         end
         exec(*command)
       end
+      stdout.close
+      stderr.close
       sleep 1 # TODO
     end
 
@@ -119,6 +128,8 @@ module KinesisProducer
     end
 
     def start_loops
+      start_loop_for(:log_stdout)
+      start_loop_for(:log_stderr)
       start_loop_for(:send_message)
       start_loop_for(:receive_message)
       start_loop_for(:return_message)
@@ -132,6 +143,22 @@ module KinesisProducer
           send(method)
           @meters[method].mark if debug? and @meters.include?(method)
         end
+      end
+    end
+
+    def log_stdout
+      line = @child_stdout.readline.chomp
+      @logger.info(line)
+    end
+
+    def log_stderr
+      line = @child_stderr.readline.chomp
+      if line.include? ' [info] '
+        @logger.info(line)
+      elsif line.include? ' [warn] '
+        @logger.warn(line)
+      else
+        @logger.error(line)
       end
     end
 
