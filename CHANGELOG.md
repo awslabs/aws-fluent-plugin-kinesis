@@ -1,6 +1,11 @@
 # CHANGELOG
 
+## 1.3.0
+
+- Feature - Log KPL stdout/err to logger [#129](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/129) [#130](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/130)
+
 ## 1.2.0
+
 - Feature - Add reduce_max_size_error_message configuration [#127](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/127)
 - Bug fix - Fix empty batch error [#125](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/125)
 
