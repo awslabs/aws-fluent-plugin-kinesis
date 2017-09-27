@@ -11,6 +11,8 @@ that sends events to [Amazon Kinesis Streams][streams] and [Amazon Kinesis Fireh
 
 Also, there is a [documentation on Fluentd official site][fluentd-doc-kinesis].
 
+**Note**: This README is for v2.x. If you use v1.x, see the [old README][v1-readme].
+
 ## Installation
 This fluentd plugin is available as the `fluent-plugin-kinesis` gem from RubyGems.
 
@@ -47,7 +49,7 @@ Or just download specify your Ruby library path. Below is the sample for specify
 
 ## Dependencies
  * Ruby 2.1.0+
- * Fluentd 0.12.35+
+ * Fluentd 0.12.35+ (supporting 0.14.x)
 
 ## Basic Usage
 Here are general procedures for using this plugin:
@@ -401,3 +403,4 @@ Bug reports and pull requests are welcome on [GitHub][github].
 [inject.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/plugin_helper/inject.rb
 [fluentd-doc-kinesis]: http://docs.fluentd.org/articles/kinesis-stream
 [fluent-plugin-s3]: https://github.com/fluent/fluent-plugin-s3
+[v1-readme]: https://github.com/awslabs/aws-fluent-plugin-kinesis/blob/v1/README.md
