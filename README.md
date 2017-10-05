@@ -379,7 +379,7 @@ To launch `fluentd` process with this plugin for development, follow the steps b
 
 To launch using Fluentd v0.12, use `BUNDLE_GEMFILE` environment variable:
 
-    BUNDLE_GEMFILE=$PWD/gemfiles/Gemfile.fluentd-0.12 bundle exec fluentd -c /path/to/fluent.conf
+    BUNDLE_GEMFILE=$PWD/gemfiles/Gemfile.td-agent-2.3.5 bundle exec fluentd -c /path/to/fluent.conf
 
 ## Contributing
 

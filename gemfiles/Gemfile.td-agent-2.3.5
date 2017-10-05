@@ -17,4 +17,9 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in fluent-plugin-kinesis.gemspec
 gemspec path: ".."
 
-gem "fluentd", ">= 0.12.35", "< 0.14"
+# Specify related gems for td-agent v2.3.5
+# https://github.com/treasure-data/omnibus-td-agent/blob/release-2.3.5/config/projects/td-agent2.rb#L23
+gem "fluentd", "0.12.35"
+# https://github.com/treasure-data/omnibus-td-agent/blob/release-2.3.5/plugin_gems.rb#L13-L15
+gem "fluent-plugin-s3", "0.8.2"
+gem "aws-sdk", "2.9.9"
