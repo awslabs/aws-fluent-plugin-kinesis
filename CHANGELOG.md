@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.0.1
+
+- Bug - Fix AWS SDK conflict with s3 plugin [#131](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/131)
+
 ## 2.0.0
 
 - Feature - Add `kinesis_streams_aggregated` ouput plugin [#107](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/107)
