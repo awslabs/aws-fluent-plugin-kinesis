@@ -14,8 +14,6 @@
 
 require_relative '../helper'
 require 'fluent/plugin/kinesis_helper/client'
-require 'aws-sdk-core'
-require 'aws-sdk-firehose'
 
 class KinesisHelperClientTest < Test::Unit::TestCase
   class Mock

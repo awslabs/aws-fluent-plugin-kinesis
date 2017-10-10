@@ -7,7 +7,7 @@ matrix:
       gemfile: Gemfile
     - rvm: 2.1.10
       os: linux
-      gemfile: gemfiles/Gemfile.fluentd-0.12
+      gemfile: gemfiles/Gemfile.td-agent-2.3.5
 
 script: bundle exec rake test
 
