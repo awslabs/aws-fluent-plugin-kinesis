@@ -104,10 +104,10 @@ For more detail, see [Configuration: kinesis_streams_aggregated](#configuration-
 Add configuration like below:
 
       flush_interval 1
-      buffer_chunk_limit 1m
-      try_flush_interval 0.1
-      queued_chunk_flush_interval 0.01
-      num_threads 15
+      chunk_limit_size 1m
+      flush_thread_interval 0.1
+      flush_thread_burst_interval 0.01
+      flush_thread_count 15
 
 Note: Each value should be adjusted to your system by yourself.
 
