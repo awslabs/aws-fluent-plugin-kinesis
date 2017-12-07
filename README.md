@@ -175,6 +175,13 @@ is set to 3600 seconds.
 A unique identifier that is used by third parties when assuming roles in
 their customers' accounts.
 
+**sts_http_proxy**
+
+Proxy url for proxying requests to amazon sts service api. This needs to be  set up independently from global http_proxy parameter
+for the use case in which requests to kinesis api are going via kinesis vpc endpoint but requests to sts api have to go via http proxy. 
+It should be added to assume_role_credentials configuration stanza in the next format:
+    sts_http_proxy http://[username:password]@hostname:port
+
 ### instance_profile_credentials
 
 Retrieve temporary security credentials via HTTP request. This is useful on
