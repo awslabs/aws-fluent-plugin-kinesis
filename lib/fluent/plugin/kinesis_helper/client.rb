@@ -38,6 +38,8 @@ module Fluent
           config_param :duration_seconds, :integer, default: nil
           desc "A unique identifier that is used by third parties when assuming roles in their customers' accounts."
           config_param :external_id, :string, default: nil, secret: true
+          desc "A http proxy url for requests to aws sts service"
+          config_param :sts_http_proxy, :string, default: nil, secret: true
         end
         config_section :instance_profile_credentials, multi: false do
           desc "Number of times to retry when retrieving credentials"
@@ -129,8 +131,12 @@ module Fluent
           credentials_options[:policy] = c.policy if c.policy
           credentials_options[:duration_seconds] = c.duration_seconds if c.duration_seconds
           credentials_options[:external_id] = c.external_id if c.external_id
-          if @region
-            credentials_options[:client] = Aws::STS::Client.new(region: @region)
+          if c.sts_http_proxy and @region
+              credentials_options[:client] = Aws::STS::Client.new(region: @region, http_proxy: c.sts_http_proxy)
+          elsif @region
+              credentials_options[:client] = Aws::STS::Client.new(region: @region)
+          elsif c.sts_http_proxy
+              credentials_options[:client] = Aws::STS::Client.new(http_proxy: c.sts_http_proxy)
           end
           options[:credentials] = Aws::AssumeRoleCredentials.new(credentials_options)
         when @instance_profile_credentials
