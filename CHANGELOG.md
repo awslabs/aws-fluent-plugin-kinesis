@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.1.0
+
+- Feature - Added sts_http_proxy parameter to assume_role_credentials configuration [#136](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/136)
+
 ## 2.0.1
 
 - Bug - Fix AWS SDK conflict with s3 plugin [#131](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/131)
