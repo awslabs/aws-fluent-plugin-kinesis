@@ -13,6 +13,7 @@
 # language governing permissions and limitations under the License.
 
 require 'fluent/configurable'
+require 'aws-sdk-core'
 
 module Fluent
   module KinesisHelper
