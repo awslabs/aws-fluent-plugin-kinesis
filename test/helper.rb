@@ -12,6 +12,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+require 'aws-sdk-core'
 require 'fluent/test'
 require 'fluent/test/helpers'
 def fluentd_v0_12?
