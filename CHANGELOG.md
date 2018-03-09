@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.1.1
+
+- Bug - Fix require aws-sdk-core before requiring the aws related libraries [#140](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/140)
+
 ## 2.1.0
 
 - Feature - Added sts_http_proxy parameter to assume_role_credentials configuration [#136](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/136)
