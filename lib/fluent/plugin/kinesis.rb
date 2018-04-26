@@ -105,7 +105,7 @@ module Fluent
           unless fluentd_v0_12?
             record = inject_values_to_record(tag, time, record)
           end
-          compressor.call(formatter.format(tag, time, record).chomp.b)
+          compressor.call(formatter.format(tag, time, record).b)
         }
       else
         ->(tag, time, record) {
