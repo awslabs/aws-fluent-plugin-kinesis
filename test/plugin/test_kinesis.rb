@@ -76,7 +76,7 @@ class KinesisOutputTest < Test::Unit::TestCase
     record = {"a"=>"foo"}
     time = event_time("2011-01-02 13:14:15.161718190 UTC")
     if fluentd_v0_12?
-      d.expect_format([record.merge("time"=>"2011-01-02T13:14:15Z").to_json.b].to_msgpack)
+      d.expect_format(["#{record.merge("time"=>"2011-01-02T13:14:15Z").to_json}\n".b].to_msgpack)
       driver_run(d, [record], time: time)
     else
       driver_run(d, [record], time: time)
