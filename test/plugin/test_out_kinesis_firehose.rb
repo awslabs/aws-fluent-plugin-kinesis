@@ -86,6 +86,53 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
     assert_equal expected, @server.records.first
   end
 
+  def test_delivery_stream_name_key
+    expected = ["{\"a\":1,\"b\":2,\"stream_name\":\"first_stream\"}\n",
+                "{\"e\":1,\"f\":2,\"stream_name\":\"first_stream\"}\n",
+                "{\"c\":1,\"d\":2,\"stream_name\":\"second_stream\"}\n"]
+    my_config = %[
+      delivery_stream_name_key stream_name
+      log_level error
+      format json
+      retries_on_batch_request 10
+      endpoint https://localhost:#{@server.port}
+      ssl_verify_peer false
+    ]
+    d = create_driver(my_config)
+    driver_run(d, [{"a"=>1,"b"=>2, "stream_name"=>"first_stream"},{"c"=>1,"d"=>2, "stream_name"=>"second_stream"},{"e"=>1,"f"=>2, "stream_name"=>"first_stream"}])
+    assert_equal 2, JSON.parse(@server.requests[0].body)['Records'].size
+    assert_equal "first_stream", JSON.parse(@server.requests[0].body)['DeliveryStreamName']
+    assert_equal 1, JSON.parse(@server.requests[1].body)['Records'].size
+    assert_equal "second_stream", JSON.parse(@server.requests[1].body)['DeliveryStreamName']
+    assert_equal expected[0], @server.records[0]
+    assert_equal expected[1], @server.records[1]
+    assert_equal expected[2], @server.records[2]
+  end
+
+  def test_delivery_stream_name_key_and_suffix
+    expected = ["{\"a\":1,\"b\":2,\"stream_name\":\"first_stream\"}\n",
+                "{\"e\":1,\"f\":2,\"stream_name\":\"first_stream\"}\n",
+                "{\"c\":1,\"d\":2,\"stream_name\":\"second_stream\"}\n"]
+    my_config = %[
+      delivery_stream_name_key stream_name
+      delivery_stream_name_suffix -my_suffix
+      log_level error
+      format json
+      retries_on_batch_request 10
+      endpoint https://localhost:#{@server.port}
+      ssl_verify_peer false
+    ]
+    d = create_driver(my_config)
+    driver_run(d, [{"a"=>1,"b"=>2, "stream_name"=>"first_stream"},{"c"=>1,"d"=>2, "stream_name"=>"second_stream"},{"e"=>1,"f"=>2, "stream_name"=>"first_stream"}])
+    assert_equal 2, JSON.parse(@server.requests[0].body)['Records'].size
+    assert_equal "first_stream-my_suffix", JSON.parse(@server.requests[0].body)['DeliveryStreamName']
+    assert_equal 1, JSON.parse(@server.requests[1].body)['Records'].size
+    assert_equal "second_stream-my_suffix", JSON.parse(@server.requests[1].body)['DeliveryStreamName']
+    assert_equal expected[0], @server.records[0]
+    assert_equal expected[1], @server.records[1]
+    assert_equal expected[2], @server.records[2]
+  end
+
   data(
     'json' => ['json', '{"a":1,"b":2}'],
     'ltsv' => ['ltsv', "a:1\tb:2"],

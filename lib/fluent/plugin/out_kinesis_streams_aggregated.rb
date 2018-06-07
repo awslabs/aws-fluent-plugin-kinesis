@@ -42,7 +42,7 @@ module Fluent
     end
 
     def write(chunk)
-      write_records_batch(chunk) do |batch|
+      write_records_batch(chunk, nil) do |batch|
         key = @partition_key_generator.call
         records = batch.map{|(data)|data}
         client.put_records(

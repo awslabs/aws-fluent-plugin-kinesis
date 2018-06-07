@@ -40,7 +40,7 @@ module Fluent
     end
 
     def write(chunk)
-      write_records_batch(chunk) do |batch|
+      write_records_batch(chunk, nil) do |batch|
         records = batch.map{|(data, partition_key)|
           { data: data, partition_key: partition_key }
         }
