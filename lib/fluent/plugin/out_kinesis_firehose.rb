@@ -24,6 +24,7 @@ module Fluent
     include KinesisHelper::API::BatchRequest
 
     config_param :delivery_stream_name, :string
+    config_param :delivery_stream_pool_size, :integer, :default => nil
     config_param :append_new_line,      :bool, default: true
 
     def configure(conf)
@@ -47,10 +48,25 @@ module Fluent
         records = batch.map{|(data)|
           { data: data }
         }
-        client.put_record_batch(
-          delivery_stream_name: @delivery_stream_name,
-          records: records,
-        )
+        unless delivery_stream_pool_size.nil?
+          random_stream_number = rand(0..delivery_stream_pool_size-1)
+          delivery_stream_name_in_use = @delivery_stream_name + "-" + random_stream_number.to_s
+        else
+          delivery_stream_name_in_use = @delivery_stream_name
+        end
+        begin
+          puts "stream name " + delivery_stream_name_in_use
+          client.put_record_batch(
+            delivery_stream_name: delivery_stream_name_in_use,
+            records: records,
+          )
+        rescue Aws::Firehose::Errors::ResourceNotFoundException => err
+          log.error "AWS ResourceNotFoundException - discarding logs because firehose stream does not exist", {
+              "error" => err,
+              "stream" => stream_name,
+          }
+          next
+        end
       end
     end
   end
