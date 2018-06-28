@@ -31,15 +31,12 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 2.1'
 
   spec.add_dependency "fluentd", ">= 0.12.35", "< 2"
-  spec.add_dependency "aws-sdk", ">= 2.9.9", "< 4"
-  # TODO: fluent-plugin-s3 depends on v2 only.
-  # https://github.com/fluent/fluent-plugin-s3/issues/208
-  #
-  # This plugin is sometimes used with s3 plugin.
-  # Unless s3 plugin is updated to be available with v3,
-  # this plugin should depend on v2 only.
-  # spec.add_dependency "aws-sdk-kinesis", "~> 1"
-  # spec.add_dependency "aws-sdk-firehose", "~> 1"
+
+  # This plugin is sometimes used with s3 plugin, so watch out for conflicts
+  # https://rubygems.org/gems/fluent-plugin-s3
+  spec.add_dependency "aws-sdk-kinesis", "~> 1"
+  spec.add_dependency "aws-sdk-firehose", "~> 1"
+
   spec.add_dependency "google-protobuf", "~> 3"
 
   spec.add_development_dependency "bundler", "~> 1.10"

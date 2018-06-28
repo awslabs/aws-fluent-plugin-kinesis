@@ -1,14 +1,12 @@
 language: ruby
+os: linux
+sudo: false
 
 matrix:
   include:
     - rvm: 2.4.1
-      os: linux
       gemfile: Gemfile
-    - rvm: 2.1.10
-      os: linux
-      gemfile: gemfiles/Gemfile.td-agent-2.3.5
+    - rvm: 2.4.4 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.2.0/config/projects/td-agent3.rb#L22
+      gemfile: gemfiles/Gemfile.td-agent-3.2.0
 
 script: bundle exec rake test
-
-sudo: false
