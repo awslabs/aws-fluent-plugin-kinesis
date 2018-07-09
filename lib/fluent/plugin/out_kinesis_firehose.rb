@@ -23,6 +23,8 @@ module Fluent
     BatchRequestLimitSize  = 4 * 1024 * 1024
     include KinesisHelper::API::BatchRequest
 
+    @@streamNumber = -1
+
     config_param :delivery_stream_name, :string
     config_param :delivery_stream_pool_size, :integer, :default => nil
     config_param :number_of_retries, :integer, :default => 5
@@ -55,8 +57,8 @@ module Fluent
 
     def get_stream_name()
       unless delivery_stream_pool_size.nil?
-        random_stream_number = rand(0..delivery_stream_pool_size-1)
-        delivery_stream_name_in_use = @delivery_stream_name + "-" + random_stream_number.to_s
+        @@streamNumber = (@@streamNumber+1)%delivery_stream_pool_size
+        delivery_stream_name_in_use = @delivery_stream_name + "-" + @@streamNumber.to_s
       else
         delivery_stream_name_in_use = @delivery_stream_name
       end
