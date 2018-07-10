@@ -23,7 +23,11 @@ module Fluent
     BatchRequestLimitSize  = 4 * 1024 * 1024
     include KinesisHelper::API::BatchRequest
 
+    @@streamNumber = -1
+
     config_param :delivery_stream_name, :string
+    config_param :delivery_stream_pool_size, :integer, :default => nil
+    config_param :number_of_retries, :integer, :default => 5
     config_param :append_new_line,      :bool, default: true
 
     def configure(conf)
@@ -47,11 +51,42 @@ module Fluent
         records = batch.map{|(data)|
           { data: data }
         }
-        client.put_record_batch(
-          delivery_stream_name: @delivery_stream_name,
-          records: records,
-        )
+        put_records(records, 0)
       end
     end
+
+    def get_stream_name()
+      unless delivery_stream_pool_size.nil?
+        @@streamNumber = (@@streamNumber+1)%delivery_stream_pool_size
+        delivery_stream_name_in_use = @delivery_stream_name + "-" + @@streamNumber.to_s
+      else
+        delivery_stream_name_in_use = @delivery_stream_name
+      end
+      return delivery_stream_name_in_use
+    end
+
+    def put_records(records, retry_count)
+      delivery_stream_name = get_stream_name()
+      begin
+        client.put_record_batch(
+          delivery_stream_name: delivery_stream_name,
+          records: records,
+        )
+      rescue Aws::Firehose::Errors::ResourceNotFoundException => err
+        unless delivery_stream_pool_size.nil? && retry_count < @number_of_retries
+          log.info "AWS ResourceNotFoundException - retry #{retry_count}, send to another firehose stream", {
+              "error" => err,
+              "stream" => delivery_stream_name,
+          }
+          put_records(records, retry_count+1)
+        else
+          log.error "AWS ResourceNotFoundException - discarding logs because firehose stream does not exist", {
+              "error" => err,
+              "stream" => delivery_stream_name,
+          }
+        end
+      end
+    end
+
   end
 end

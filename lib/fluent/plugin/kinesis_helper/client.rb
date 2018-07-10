@@ -105,7 +105,7 @@ module Fluent
       def client_options
         options = setup_credentials
         options.update(
-          user_agent_suffix: "fluent-plugin-kinesis/#{request_type}/#{FluentPluginKinesis::VERSION}"
+          user_agent_suffix: "fluent-plugin-kinesis-pool/#{request_type}/#{FluentPluginKinesis::VERSION}"
         )
         options.update(region:          @region)          unless @region.nil?
         options.update(http_proxy:      @http_proxy)      unless @http_proxy.nil?
