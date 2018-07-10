@@ -78,7 +78,7 @@ module Fluent
               "error" => err,
               "stream" => delivery_stream_name,
           }
-          put_record(records, retry_count+1)
+          put_records(records, retry_count+1)
         else
           log.error "AWS ResourceNotFoundException - discarding logs because firehose stream does not exist", {
               "error" => err,
