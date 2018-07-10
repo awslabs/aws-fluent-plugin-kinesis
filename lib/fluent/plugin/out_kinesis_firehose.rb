@@ -14,7 +14,6 @@
 
 require 'fluent/plugin/kinesis'
 require 'json'
-require 'aws-sdk-core'
 
 module Fluent
   class KinesisFirehoseOutput < KinesisOutput
@@ -69,18 +68,10 @@ module Fluent
           records_to_send = batch.map{|(data)|
             { data: data }
           }
-          begin
-            client.put_record_batch(
-              delivery_stream_name: stream_name,
-              records: records_to_send,
-            )
-          rescue Aws::Firehose::Errors::ResourceNotFoundException => err
-            log.error "AWS ResourceNotFoundException - discarding logs because firehose stream does not exist", {
-                "error" => err,
-                "stream" => stream_name,
-            }
-            next
-          end
+          client.put_record_batch(
+            delivery_stream_name: stream_name,
+            records: records_to_send,
+          )
         end
       end
     end
