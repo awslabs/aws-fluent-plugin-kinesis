@@ -49,7 +49,7 @@ Or just download specify your Ruby library path. Below is the sample for specify
 
 ## Dependencies
  * Ruby 2.1.0+
- * Fluentd 0.14.0+
+ * Fluentd 0.14.10+
 
 ## Basic Usage
 Here are general procedures for using this plugin:
