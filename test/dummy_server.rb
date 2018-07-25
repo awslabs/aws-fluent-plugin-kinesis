@@ -41,7 +41,7 @@ class DummyServer
     @failed_count = 0
     @error_count = 0
     @server, @port = init_server(port)
-    @aggregator = Fluent::KinesisHelper::Aggregator.new
+    @aggregator = Fluent::Plugin::KinesisHelper::Aggregator.new
     @recording = true
   end
 

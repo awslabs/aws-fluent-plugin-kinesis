@@ -15,28 +15,18 @@
 require 'aws-sdk-core'
 require 'fluent/test'
 require 'fluent/test/helpers'
-def fluentd_v0_12?
-  @fluentd_v0_12 ||= Gem.loaded_specs['fluentd'].version < Gem::Version.create('0.14')
-end
 def aws_sdk_v2?
   @aws_sdk_v2 ||= Gem.loaded_specs['aws-sdk-core'].version < Gem::Version.create('3')
 end
 def driver_run(d, records, time: nil)
   time ||= event_time("2011-01-02 13:14:15 UTC")
-  if fluentd_v0_12?
-    records.each{|record| d.emit(record, time)}
-    d.run
-  else
-    d.instance.log.out.flush_logs = false
-    d.run(default_tag: "test") do
-      records.each{|record| d.feed(time, record)}
-    end
+  d.instance.log.out.flush_logs = false
+  d.run(default_tag: "test") do
+    records.each{|record| d.feed(time, record)}
   end
 end
-if !fluentd_v0_12?
-  require 'fluent/test/log'
-  require 'fluent/test/driver/output'
-end
+require 'fluent/test/log'
+require 'fluent/test/driver/output'
 if aws_sdk_v2?
   require 'aws-sdk'
 else

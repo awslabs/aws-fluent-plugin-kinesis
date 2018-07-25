@@ -17,7 +17,7 @@ require 'fluent/plugin/kinesis_helper/client'
 
 class KinesisHelperClientTest < Test::Unit::TestCase
   class Mock
-    include Fluent::KinesisHelper::Client
+    include Fluent::Plugin::KinesisHelper::Client
 
     def initialize
       @region = 'us-east-1'
