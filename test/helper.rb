@@ -49,3 +49,13 @@ require 'fakefs/safe'
 require 'webmock/test_unit'
 WebMock.disable!
 include Fluent::Test::Helpers
+
+def localize_method(klass, method, &block)
+	unbound = klass.instance_method(method)
+	klass.send(:define_method, method) do |*args|
+		block.call(unbound.bind(self), *args)
+	end
+	lambda {
+		klass.send(:define_method, method, unbound)
+	}
+end
