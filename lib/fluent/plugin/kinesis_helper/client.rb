@@ -80,25 +80,13 @@ module Fluent
 
         private
 
-        def aws_sdk_v2?
-          @aws_sdk_v2 ||= Gem.loaded_specs['aws-sdk-core'].version < Gem::Version.create('3')
-        end
-
         def client_class
           case request_type
           when :streams, :streams_aggregated
-            if aws_sdk_v2?
-              require 'aws-sdk'
-            else
-              require 'aws-sdk-kinesis'
-            end
+            require 'aws-sdk-kinesis'
             Aws::Kinesis::Client
           when :firehose
-            if aws_sdk_v2?
-              require 'aws-sdk'
-            else
-              require 'aws-sdk-firehose'
-            end
+            require 'aws-sdk-firehose'
             Aws::Firehose::Client
           end
         end
