@@ -235,10 +235,9 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
           d.feed("test", events)
         end
       end
-      # puts d.logs
 
-      # FIXME: Enable this test case and pass it to fix the issue
-      # d.logs.each { |log_record| assert_not_match(/NoMethodError/, log_record) }
+      puts d.logs
+      d.logs.each { |log_record| assert_not_match(/NoMethodError/, log_record) }
     ensure
       release.call
     end
