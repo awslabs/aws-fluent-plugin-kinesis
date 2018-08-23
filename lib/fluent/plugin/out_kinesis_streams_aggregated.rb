@@ -16,60 +16,62 @@ require 'fluent/plugin/kinesis'
 require 'fluent/plugin/kinesis_helper/aggregator'
 
 module Fluent
-  class KinesisStreamsAggregatedOutput < KinesisOutput
-    Fluent::Plugin.register_output('kinesis_streams_aggregated', self)
-    include KinesisHelper::Aggregator::Mixin
+  module Plugin
+    class KinesisStreamsAggregatedOutput < KinesisOutput
+      Fluent::Plugin.register_output('kinesis_streams_aggregated', self)
+      include KinesisHelper::Aggregator::Mixin
 
-    RequestType = :streams_aggregated
-    BatchRequestLimitCount = 100_000
-    BatchRequestLimitSize  = 1024 * 1024
-    include KinesisHelper::API::BatchRequest
+      RequestType = :streams_aggregated
+      BatchRequestLimitCount = 100_000
+      BatchRequestLimitSize  = 1024 * 1024
+      include KinesisHelper::API::BatchRequest
 
-    config_param :stream_name, :string
-    config_param :fixed_partition_key, :string, default: nil
+      config_param :stream_name, :string
+      config_param :fixed_partition_key, :string, default: nil
 
-    def configure(conf)
-      super
-      @partition_key_generator = create_partition_key_generator
-      @batch_request_max_size -= offset
-      @max_record_size -= offset
-    end
-
-    def format(tag, time, record)
-      format_for_api do
-        [@data_formatter.call(tag, time, record)]
+      def configure(conf)
+        super
+        @partition_key_generator = create_partition_key_generator
+        @batch_request_max_size -= offset
+        @max_record_size -= offset
       end
-    end
 
-    def write(chunk)
-      write_records_batch(chunk) do |batch|
-        key = @partition_key_generator.call
-        records = batch.map{|(data)|data}
-        client.put_records(
-          stream_name: @stream_name,
-          records: [{
-            partition_key: key,
-            data: aggregator.aggregate(records, key),
-          }],
-        )
+      def format(tag, time, record)
+        format_for_api do
+          [@data_formatter.call(tag, time, record)]
+        end
       end
-    end
 
-    def offset
-      @offset ||= AggregateOffset + @partition_key_generator.call.size*2
-    end
+      def write(chunk)
+        write_records_batch(chunk) do |batch|
+          key = @partition_key_generator.call
+          records = batch.map{|(data)|data}
+          client.put_records(
+            stream_name: @stream_name,
+            records: [{
+              partition_key: key,
+              data: aggregator.aggregate(records, key),
+            }],
+          )
+        end
+      end
 
-    private
+      def offset
+        @offset ||= AggregateOffset + @partition_key_generator.call.size*2
+      end
 
-    def size_of_values(record)
-      super(record) + RecordOffset
-    end
+      private
 
-    def create_partition_key_generator
-      if @fixed_partition_key.nil?
-        ->() { SecureRandom.hex(16) }
-      else
-        ->() { @fixed_partition_key }
+      def size_of_values(record)
+        super(record) + RecordOffset
+      end
+
+      def create_partition_key_generator
+        if @fixed_partition_key.nil?
+          ->() { SecureRandom.hex(16) }
+        else
+          ->() { @fixed_partition_key }
+        end
       end
     end
   end

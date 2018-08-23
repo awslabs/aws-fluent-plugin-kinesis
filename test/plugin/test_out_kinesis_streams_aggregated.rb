@@ -18,8 +18,8 @@ require 'fluent/plugin/out_kinesis_streams_aggregated'
 class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   KB = 1024
   MB = 1024 * KB
-  AggregateOffset = Fluent::KinesisHelper::Aggregator::Mixin::AggregateOffset
-  RecordOffset = Fluent::KinesisHelper::Aggregator::Mixin::RecordOffset
+  AggregateOffset = Fluent::Plugin::KinesisHelper::Aggregator::Mixin::AggregateOffset
+  RecordOffset = Fluent::Plugin::KinesisHelper::Aggregator::Mixin::RecordOffset
 
   def setup
     ENV['AWS_REGION'] = 'ap-northeast-1'
@@ -47,13 +47,8 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   end
 
   def create_driver(conf = default_config)
-    if fluentd_v0_12?
-      Fluent::Test::BufferedOutputTestDriver.new(Fluent::KinesisStreamsAggregatedOutput) do
-      end.configure(conf)
-    else
-      Fluent::Test::Driver::Output.new(Fluent::KinesisStreamsAggregatedOutput) do
-      end.configure(conf)
-    end
+    Fluent::Test::Driver::Output.new(Fluent::Plugin::KinesisStreamsAggregatedOutput) do
+    end.configure(conf)
   end
 
   def self.data_of(size, char = 'a')
@@ -82,7 +77,7 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   )
   def test_format(data)
     formatter, expected = data
-    d = create_driver(default_config + "format #{formatter}")
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>")
     driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end
@@ -204,5 +199,47 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
     assert_equal count, @server.records.size
     assert @server.error_count > 0
     assert @server.raw_records.size < count
+  end
+
+  # Debug test case for the issue that it fails to flush the buffer
+  # https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133
+  def test_chunk_limit_size_for_debug
+    config = <<~CONF
+      log_level warn
+      <buffer>
+        chunk_limit_size "1m"
+      </buffer>
+    CONF
+    d = create_driver(default_config + config)
+
+    begin
+      # Override Aws::Kinesis::Client.put_records to simple dummy method temporarily
+      # since wait_flush_completion is hard coded as 10s in Fluent::Test::Driver::Output class.
+      # See https://github.com/fluent/fluentd/blob/master/lib/fluent/test/driver/output.rb
+      release = localize_method(Aws::Kinesis::Client, :put_records) do |original|
+        OpenStruct.new(
+          failed_record_count: 0,
+          records: [
+            OpenStruct.new(
+              sequence_number: "21269319989653637946712965403778482177",
+              shard_id: "shardId-000000000001"
+            )
+          ]
+        )
+      end
+
+      d.run(wait_flush_completion: true, force_flush_retry: true) do
+        10.times do
+          time = Fluent::EventTime.now
+          events = Array.new(Kernel.rand(3000..5000)).map { [time, { msg: "x" * 256 }] }
+          d.feed("test", events)
+        end
+      end
+
+      puts d.logs
+      d.logs.each { |log_record| assert_not_match(/NoMethodError/, log_record) }
+    ensure
+      release.call
+    end
   end
 end

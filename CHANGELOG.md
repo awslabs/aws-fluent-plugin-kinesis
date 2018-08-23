@@ -1,8 +1,17 @@
 # CHANGELOG
 
+## 3.0.0
+
+Update dependent Fluentd and AWS SDK for Ruby to fix issues due to backward compatibility.
+
+- Enhancement - Support Fluentd v1.x with td-agent v3.x [#147](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/147)
+- Bug fix - Fix failure to flush the buffer with error_class=NoMethodError error="undefined method 'compact'" [#133](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133)
+- Breaking change - Remove support for fluentd v0.12 and use new Plugin API [#156](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/156)
+- Breaking change - Remove support for AWS SDK for Ruby v2 since fluent-plugin-s3 also uses it [#152](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/152)
+
 ## 2.1.1
 
-- Bug - Fix require aws-sdk-core before requiring the aws related libraries [#140](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/140)
+- Bug fix - Fix require aws-sdk-core before requiring the aws related libraries [#140](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/140)
 
 ## 2.1.0
 
@@ -10,7 +19,7 @@
 
 ## 2.0.1
 
-- Bug - Fix AWS SDK conflict with s3 plugin [#131](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/131)
+- Bug fix - Fix AWS SDK conflict with s3 plugin [#131](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/131)
 
 ## 2.0.0
 

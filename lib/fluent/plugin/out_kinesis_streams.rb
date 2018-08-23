@@ -15,54 +15,56 @@
 require 'fluent/plugin/kinesis'
 
 module Fluent
-  class KinesisStreamsOutput < KinesisOutput
-    Fluent::Plugin.register_output('kinesis_streams', self)
+  module Plugin
+    class KinesisStreamsOutput < KinesisOutput
+      Fluent::Plugin.register_output('kinesis_streams', self)
 
-    RequestType = :streams
-    BatchRequestLimitCount = 500
-    BatchRequestLimitSize  = 5 * 1024 * 1024
-    include KinesisHelper::API::BatchRequest
+      RequestType = :streams
+      BatchRequestLimitCount = 500
+      BatchRequestLimitSize  = 5 * 1024 * 1024
+      include KinesisHelper::API::BatchRequest
 
-    config_param :stream_name,   :string
-    config_param :partition_key, :string,  default: nil
+      config_param :stream_name,   :string
+      config_param :partition_key, :string,  default: nil
 
-    def configure(conf)
-      super
-      @key_formatter = key_formatter_create
-    end
-
-    def format(tag, time, record)
-      format_for_api do
-        data = @data_formatter.call(tag, time, record)
-        key = @key_formatter.call(record)
-        [data, key]
+      def configure(conf)
+        super
+        @key_formatter = key_formatter_create
       end
-    end
 
-    def write(chunk)
-      write_records_batch(chunk) do |batch|
-        records = batch.map{|(data, partition_key)|
-          { data: data, partition_key: partition_key }
-        }
-        client.put_records(
-          stream_name: @stream_name,
-          records: records,
-        )
+      def format(tag, time, record)
+        format_for_api do
+          data = @data_formatter.call(tag, time, record)
+          key = @key_formatter.call(record)
+          [data, key]
+        end
       end
-    end
 
-    private
+      def write(chunk)
+        write_records_batch(chunk) do |batch|
+          records = batch.map{|(data, partition_key)|
+            { data: data, partition_key: partition_key }
+          }
+          client.put_records(
+            stream_name: @stream_name,
+            records: records,
+          )
+        end
+      end
 
-    def key_formatter_create
-      if @partition_key.nil?
-        ->(record) { SecureRandom.hex(16) }
-      else
-        ->(record) {
-          if !record.key?(@partition_key)
-            raise KeyNotFoundError.new(@partition_key, record)
-          end
-          record[@partition_key]
-        }
+      private
+
+      def key_formatter_create
+        if @partition_key.nil?
+          ->(record) { SecureRandom.hex(16) }
+        else
+          ->(record) {
+            if !record.key?(@partition_key)
+              raise KeyNotFoundError.new(@partition_key, record)
+            end
+            record[@partition_key]
+          }
+        end
       end
     end
   end

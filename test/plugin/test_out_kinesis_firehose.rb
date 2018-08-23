@@ -46,13 +46,8 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   end
 
   def create_driver(conf = default_config)
-    if fluentd_v0_12?
-      Fluent::Test::BufferedOutputTestDriver.new(Fluent::KinesisFirehoseOutput) do
-      end.configure(conf)
-    else
-      Fluent::Test::Driver::Output.new(Fluent::KinesisFirehoseOutput) do
-      end.configure(conf)
-    end
+    Fluent::Test::Driver::Output.new(Fluent::Plugin::KinesisFirehoseOutput) do
+    end.configure(conf)
   end
 
   def self.data_of(size, char = 'a')
@@ -81,7 +76,7 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   )
   def test_format(data)
     formatter, expected = data
-    d = create_driver(default_config + "format #{formatter}")
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>")
     driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end
@@ -92,7 +87,7 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   )
   def test_format_without_append_new_line(data)
     formatter, expected = data
-    d = create_driver(default_config + "format #{formatter}\nappend_new_line false")
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>\nappend_new_line false")
     driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end
@@ -189,5 +184,46 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
     assert_equal count, @server.records.size
     assert @server.failed_count > 0
     assert @server.error_count > 0
+  end
+
+  # Debug test case for the issue that it fails to flush the buffer
+  # https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133
+  def test_chunk_limit_size_for_debug
+    config = <<~CONF
+      log_level warn
+      <buffer>
+        chunk_limit_size "1m"
+      </buffer>
+    CONF
+    d = create_driver(default_config + config)
+
+    begin
+      # Override Aws::Firehose::Client.put_record_batch to simple dummy method temporarily
+      # since wait_flush_completion is hard coded as 10s in Fluent::Test::Driver::Output class.
+      # See https://github.com/fluent/fluentd/blob/master/lib/fluent/test/driver/output.rb
+      release = localize_method(Aws::Firehose::Client, :put_record_batch) do |original|
+        OpenStruct.new(
+          failed_put_count: 0,
+          request_responses: [
+            OpenStruct.new(
+              record_id: "49543463076548007577105092703039560359975228518395019266"
+            )
+          ]
+        )
+      end
+
+      d.run(wait_flush_completion: true, force_flush_retry: true) do
+        10.times do
+          time = Fluent::EventTime.now
+          events = Array.new(Kernel.rand(3000..5000)).map { [time, { msg: "x" * 256 }] }
+          d.feed("test", events)
+        end
+      end
+
+      puts d.logs
+      d.logs.each { |log_record| assert_not_match(/NoMethodError/, log_record) }
+    ensure
+      release.call
+    end
   end
 end

@@ -16,24 +16,26 @@ require_relative '../helper'
 require 'fluent/plugin/kinesis'
 
 module Fluent
-  class KinesisFakeOutput < KinesisOutput
-    RequestType = :fake
-    BatchRequestLimitCount = 500
-    BatchRequestLimitSize  = 4*1024*1024
-    include KinesisHelper::API::BatchRequest
+  module Plugin
+    class KinesisFakeOutput < KinesisOutput
+      RequestType = :fake
+      BatchRequestLimitCount = 500
+      BatchRequestLimitSize  = 4*1024*1024
+      include KinesisHelper::API::BatchRequest
 
-    def client
-      @client ||= Aws::FakeClient.new
-    end
-
-    def format(tag, time, record)
-      format_for_api do
-        [@data_formatter.call(tag, time, record)]
+      def client
+        @client ||= Aws::FakeClient.new
       end
-    end
 
-    def write(chunk)
+      def format(tag, time, record)
+        format_for_api do
+          [@data_formatter.call(tag, time, record)]
+        end
+      end
 
+      def write(chunk)
+
+      end
     end
   end
 end
@@ -61,28 +63,17 @@ class KinesisOutputTest < Test::Unit::TestCase
   end
 
   def create_driver(conf = default_config)
-    if fluentd_v0_12?
-      Fluent::Test::BufferedOutputTestDriver.new(Fluent::KinesisFakeOutput) do
-      end.configure(conf)
-    else
-      Fluent::Test::Driver::Output.new(Fluent::KinesisFakeOutput) do
-      end.configure(conf)
-    end
+    Fluent::Test::Driver::Output.new(Fluent::Plugin::KinesisFakeOutput) do
+    end.configure(conf)
   end
 
   def test_time_key
-    config = fluentd_v0_12? ? "include_time_key true\nlocaltime false" : "<inject>\ntime_key time\nutc true\n</inject>"
-    d = create_driver(default_config + config)
+    d = create_driver(default_config + "<inject>\ntime_key time\nutc true\n</inject>")
     record = {"a"=>"foo"}
     time = event_time("2011-01-02 13:14:15.161718190 UTC")
-    if fluentd_v0_12?
-      d.expect_format([record.merge("time"=>"2011-01-02T13:14:15Z").to_json.b].to_msgpack)
-      driver_run(d, [record], time: time)
-    else
-      driver_run(d, [record], time: time)
-      result = JSON.parse(MessagePack.unpack(d.formatted.first).first)
-      assert_equal record.merge("time"=> "2011-01-02T13:14:15.161718190+0000"), result
-    end
+    driver_run(d, [record], time: time)
+    result = JSON.parse(MessagePack.unpack(d.formatted.first).first)
+    assert_equal record.merge("time"=> "2011-01-02T13:14:15.161718190+0000"), result
   end
 
   data(
@@ -91,14 +82,9 @@ class KinesisOutputTest < Test::Unit::TestCase
   def test_format_compression(data)
     compression, expected = data
     d = create_driver(default_config + "data_key a\ncompression #{compression}")
-    if fluentd_v0_12?
-      d.expect_format([expected].to_msgpack)
-      driver_run(d, [{"a"=>"foo"}])
-    else
-      driver_run(d, [{"a"=>"foo"}])
-      result = d.formatted.first
-      assert_equal expected, MessagePack.unpack(result).first
-    end
+    driver_run(d, [{"a"=>"foo"}])
+    result = d.formatted.first
+    assert_equal expected, MessagePack.unpack(result).first
   end
 
   data(
@@ -110,13 +96,8 @@ class KinesisOutputTest < Test::Unit::TestCase
   def test_format_max_record_size(data)
     record, expected = data
     d = create_driver(default_config + "data_key a\nmax_record_size 30")
-    if fluentd_v0_12?
-      d.expect_format(expected)
-      driver_run(d, [record])
-    else
-      driver_run(d, [record])
-      assert_equal expected, d.formatted.first
-    end
+    driver_run(d, [record])
+    assert_equal expected, d.formatted.first
     assert_equal expected == '' ? 1 : 0, d.instance.log.out.logs.size
   end
 

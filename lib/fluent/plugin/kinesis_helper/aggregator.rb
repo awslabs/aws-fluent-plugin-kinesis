@@ -34,64 +34,66 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
 end
 
 module Fluent
-  module KinesisHelper
-    class Aggregator
-      AggregatedRecord = Google::Protobuf::DescriptorPool.generated_pool.lookup("AggregatedRecord").msgclass
-      Tag = Google::Protobuf::DescriptorPool.generated_pool.lookup("Tag").msgclass
-      Record = Google::Protobuf::DescriptorPool.generated_pool.lookup("Record").msgclass
+  module Plugin
+    module KinesisHelper
+      class Aggregator
+        AggregatedRecord = Google::Protobuf::DescriptorPool.generated_pool.lookup("AggregatedRecord").msgclass
+        Tag = Google::Protobuf::DescriptorPool.generated_pool.lookup("Tag").msgclass
+        Record = Google::Protobuf::DescriptorPool.generated_pool.lookup("Record").msgclass
 
-      class InvalidEncodingError < ::StandardError; end
+        class InvalidEncodingError < ::StandardError; end
 
-      MagicNumber = ['F3899AC2'].pack('H*')
+        MagicNumber = ['F3899AC2'].pack('H*')
 
-      def aggregate(records, partition_key)
-        message = AggregatedRecord.encode(AggregatedRecord.new(
-          partition_key_table: ['a', partition_key],
-          records: records.map{|data|
-            Record.new(partition_key_index: 1, data: data)
-          },
-        ))
-        [MagicNumber, message, Digest::MD5.digest(message)].pack("A4A*A16")
-      end
-
-      def deaggregate(encoded)
-        unless aggregated?(encoded)
-          raise InvalidEncodingError, "Invalid MagicNumber #{encoded[0..3]}}"
-        end
-        message, digest = encoded[4..encoded.length-17], encoded[encoded.length-16..-1]
-        if Digest::MD5.digest(message) != digest
-          raise InvalidEncodingError, "Digest mismatch #{digest}"
-        end
-        decoded = AggregatedRecord.decode(message)
-        records = decoded.records.map(&:data)
-        partition_key = decoded.partition_key_table[1]
-        [records, partition_key]
-      end
-
-      def aggregated?(encoded)
-        encoded[0..3] == MagicNumber
-      end
-
-      def aggregated_size_offset(partition_key)
-        data = 'd'
-        encoded = aggregate([record(data)], partition_key)
-        finalize(encoded).size - data.size
-      end
-
-      module Mixin
-        AggregateOffset = 25
-        RecordOffset = 10
-
-        module Params
-          include Fluent::Configurable
+        def aggregate(records, partition_key)
+          message = AggregatedRecord.encode(AggregatedRecord.new(
+            partition_key_table: ['a', partition_key],
+            records: records.map{|data|
+              Record.new(partition_key_index: 1, data: data)
+            },
+          ))
+          [MagicNumber, message, Digest::MD5.digest(message)].pack("A4A*A16")
         end
 
-        def self.included(mod)
-          mod.include Params
+        def deaggregate(encoded)
+          unless aggregated?(encoded)
+            raise InvalidEncodingError, "Invalid MagicNumber #{encoded[0..3]}}"
+          end
+          message, digest = encoded[4..encoded.length-17], encoded[encoded.length-16..-1]
+          if Digest::MD5.digest(message) != digest
+            raise InvalidEncodingError, "Digest mismatch #{digest}"
+          end
+          decoded = AggregatedRecord.decode(message)
+          records = decoded.records.map(&:data)
+          partition_key = decoded.partition_key_table[1]
+          [records, partition_key]
         end
 
-        def aggregator
-          @aggregator ||= Aggregator.new
+        def aggregated?(encoded)
+          encoded[0..3] == MagicNumber
+        end
+
+        def aggregated_size_offset(partition_key)
+          data = 'd'
+          encoded = aggregate([record(data)], partition_key)
+          finalize(encoded).size - data.size
+        end
+
+        module Mixin
+          AggregateOffset = 25
+          RecordOffset = 10
+
+          module Params
+            include Fluent::Configurable
+          end
+
+          def self.included(mod)
+            mod.include Params
+          end
+
+          def aggregator
+            @aggregator ||= Aggregator.new
+          end
         end
       end
     end
