@@ -78,11 +78,11 @@ class KinesisBenchmark
   def create_driver(type, conf = default_config)
     klass = case type
             when :streams
-              Fluent::KinesisStreamsOutput
+              Fluent::Plugin::KinesisStreamsOutput
             when :streams_aggregated
-              Fluent::KinesisStreamsAggregatedOutput
+              Fluent::Plugin::KinesisStreamsAggregatedOutput
             when :firehose
-              Fluent::KinesisFirehoseOutput
+              Fluent::Plugin::KinesisFirehoseOutput
             end
     conf += case type
             when :streams, :streams_aggregated
@@ -90,13 +90,9 @@ class KinesisBenchmark
             when :firehose
               "delivery_stream_name fluent-plugin-test"
             end
-    if fluentd_v0_12?
-      Fluent::Test::BufferedOutputTestDriver.new(klass) do
-      end.configure(conf)
-    else
-      Fluent::Test::Driver::Output.new(klass) do
-      end.configure(conf)
-    end
+
+    Fluent::Test::Driver::Output.new(klass) do
+    end.configure(conf)
   end
 
   def benchmark(size, count)

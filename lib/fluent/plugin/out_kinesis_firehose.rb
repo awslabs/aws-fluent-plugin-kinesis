@@ -15,42 +15,44 @@
 require 'fluent/plugin/kinesis'
 
 module Fluent
-  class KinesisFirehoseOutput < KinesisOutput
-    Fluent::Plugin.register_output('kinesis_firehose', self)
+  module Plugin
+    class KinesisFirehoseOutput < KinesisOutput
+      Fluent::Plugin.register_output('kinesis_firehose', self)
 
-    RequestType = :firehose
-    BatchRequestLimitCount = 500
-    BatchRequestLimitSize  = 4 * 1024 * 1024
-    include KinesisHelper::API::BatchRequest
+      RequestType = :firehose
+      BatchRequestLimitCount = 500
+      BatchRequestLimitSize  = 4 * 1024 * 1024
+      include KinesisHelper::API::BatchRequest
 
-    config_param :delivery_stream_name, :string
-    config_param :append_new_line,      :bool, default: true
+      config_param :delivery_stream_name, :string
+      config_param :append_new_line,      :bool, default: true
 
-    def configure(conf)
-      super
-      if @append_new_line
-        org_data_formatter = @data_formatter
-        @data_formatter = ->(tag, time, record) {
-          org_data_formatter.call(tag, time, record) + "\n"
-        }
+      def configure(conf)
+        super
+        if @append_new_line
+          org_data_formatter = @data_formatter
+          @data_formatter = ->(tag, time, record) {
+            org_data_formatter.call(tag, time, record) + "\n"
+          }
+        end
       end
-    end
 
-    def format(tag, time, record)
-      format_for_api do
-        [@data_formatter.call(tag, time, record)]
+      def format(tag, time, record)
+        format_for_api do
+          [@data_formatter.call(tag, time, record)]
+        end
       end
-    end
 
-    def write(chunk)
-      write_records_batch(chunk) do |batch|
-        records = batch.map{|(data)|
-          { data: data }
-        }
-        client.put_record_batch(
-          delivery_stream_name: @delivery_stream_name,
-          records: records,
-        )
+      def write(chunk)
+        write_records_batch(chunk) do |batch|
+          records = batch.map{|(data)|
+            { data: data }
+          }
+          client.put_record_batch(
+            delivery_stream_name: @delivery_stream_name,
+            records: records,
+          )
+        end
       end
     end
   end

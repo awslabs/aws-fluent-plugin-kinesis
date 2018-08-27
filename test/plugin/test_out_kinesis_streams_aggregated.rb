@@ -18,8 +18,8 @@ require 'fluent/plugin/out_kinesis_streams_aggregated'
 class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   KB = 1024
   MB = 1024 * KB
-  AggregateOffset = Fluent::KinesisHelper::Aggregator::Mixin::AggregateOffset
-  RecordOffset = Fluent::KinesisHelper::Aggregator::Mixin::RecordOffset
+  AggregateOffset = Fluent::Plugin::KinesisHelper::Aggregator::Mixin::AggregateOffset
+  RecordOffset = Fluent::Plugin::KinesisHelper::Aggregator::Mixin::RecordOffset
 
   def setup
     ENV['AWS_REGION'] = 'ap-northeast-1'
@@ -47,13 +47,8 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   end
 
   def create_driver(conf = default_config)
-    if fluentd_v0_12?
-      Fluent::Test::BufferedOutputTestDriver.new(Fluent::KinesisStreamsAggregatedOutput) do
-      end.configure(conf)
-    else
-      Fluent::Test::Driver::Output.new(Fluent::KinesisStreamsAggregatedOutput) do
-      end.configure(conf)
-    end
+    Fluent::Test::Driver::Output.new(Fluent::Plugin::KinesisStreamsAggregatedOutput) do
+    end.configure(conf)
   end
 
   def self.data_of(size, char = 'a')
@@ -82,7 +77,7 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
   )
   def test_format(data)
     formatter, expected = data
-    d = create_driver(default_config + "format #{formatter}")
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>")
     driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end

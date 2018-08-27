@@ -46,13 +46,8 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
   end
 
   def create_driver(conf = default_config)
-    if fluentd_v0_12?
-      Fluent::Test::BufferedOutputTestDriver.new(Fluent::KinesisStreamsOutput) do
-      end.configure(conf)
-    else
-      Fluent::Test::Driver::Output.new(Fluent::KinesisStreamsOutput) do
-      end.configure(conf)
-    end
+    Fluent::Test::Driver::Output.new(Fluent::Plugin::KinesisStreamsOutput) do
+    end.configure(conf)
   end
 
   def self.data_of(size, char = 'a')
@@ -81,7 +76,7 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
   )
   def test_format(data)
     formatter, expected = data
-    d = create_driver(default_config + "format #{formatter}")
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>")
     driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end

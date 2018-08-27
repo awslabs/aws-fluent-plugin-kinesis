@@ -6,6 +6,8 @@ matrix:
   include:
     - rvm: 2.4.1
       gemfile: Gemfile
+    - rvm: 2.4.1
+      gemfile: gemfiles/Gemfile.fluentd-0.14.10
     - rvm: 2.4.4 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.2.0/config/projects/td-agent3.rb#L22
       gemfile: gemfiles/Gemfile.td-agent-3.2.0
 

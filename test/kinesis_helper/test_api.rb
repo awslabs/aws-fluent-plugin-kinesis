@@ -17,8 +17,8 @@ require 'fluent/plugin/kinesis_helper/api'
 
 class KinesisHelperAPITest < Test::Unit::TestCase
   class Mock
-    include Fluent::KinesisHelper::API
-    include Fluent::KinesisHelper::API::BatchRequest
+    include Fluent::Plugin::KinesisHelper::API
+    include Fluent::Plugin::KinesisHelper::API::BatchRequest
 
     attr_accessor :retries_on_batch_request, :reset_backoff_if_success
     attr_accessor :failed_scenario, :request_series

@@ -16,11 +16,11 @@ require_relative '../helper'
 require 'fluent/plugin/kinesis_helper/aggregator'
 
 class KinesisHelperAggregatorTest < Test::Unit::TestCase
-  AggregateOffset = Fluent::KinesisHelper::Aggregator::Mixin::AggregateOffset
-  RecordOffset = Fluent::KinesisHelper::Aggregator::Mixin::RecordOffset
+  AggregateOffset = Fluent::Plugin::KinesisHelper::Aggregator::Mixin::AggregateOffset
+  RecordOffset = Fluent::Plugin::KinesisHelper::Aggregator::Mixin::RecordOffset
 
   def setup
-    @aggregator = Fluent::KinesisHelper::Aggregator.new
+    @aggregator = Fluent::Plugin::KinesisHelper::Aggregator.new
   end
 
   def teardown
