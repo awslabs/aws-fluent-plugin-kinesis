@@ -86,6 +86,20 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
     assert_equal expected, @server.records.first
   end
 
+  def test_delivery_stream_pool
+    my_config = %[
+      delivery_stream_name test-stream
+      delivery_stream_pool_size 1
+      log_level error
+      retries_on_batch_request 10
+      endpoint https://localhost:#{@server.port}
+      ssl_verify_peer false
+    ]
+    d = create_driver(my_config)
+    driver_run(d, [{"a"=>1,"b"=>2}])
+    assert_equal "test-stream-0", JSON.parse(@server.requests[0].body)['DeliveryStreamName']
+  end
+
   data(
     'json' => ['json', '{"a":1,"b":2}'],
     'ltsv' => ['ltsv', "a:1\tb:2"],

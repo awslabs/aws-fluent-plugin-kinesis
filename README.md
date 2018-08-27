@@ -1,6 +1,6 @@
 # Fluent plugin for Amazon Kinesis
 
-[![Gitter](https://badges.gitter.im/awslabs/aws-fluent-plugin-kinesis.svg)](https://gitter.im/awslabs/aws-fluent-plugin-kinesis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Build Status](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis)
+[![Gitter](https://badges.gitter.im/awslabs/aws-fluent-plugin-kinesis.svg)](https://gitter.im/awslabs/aws-fluent-plugin-kinesis-pool?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Build Status](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis)
 
 [Fluentd][fluentd] output plugin
 that sends events to [Amazon Kinesis Streams][streams] and [Amazon Kinesis Firehose][firehose]. Also it supports [KPL Aggregated record format][kpl]. This gem includes three output plugins respectively:
@@ -14,38 +14,38 @@ Also, there is a [documentation on Fluentd official site][fluentd-doc-kinesis].
 **Note**: This README is for v2.x. If you use v1.x, see the [old README][v1-readme].
 
 ## Installation
-This fluentd plugin is available as the `fluent-plugin-kinesis` gem from RubyGems.
+This fluentd plugin is available as the `fluent-plugin-kinesis-pool` gem from RubyGems.
 
-    gem install fluent-plugin-kinesis
+    gem install fluent-plugin-kinesis-pool
 
 Or you can install this plugin for [td-agent][td-agent] as:
 
-    td-agent-gem install fluent-plugin-kinesis
+    td-agent-gem install fluent-plugin-kinesis-pool
 
 If you would like to build by yourself and install, please see the section below. Your need [bundler][bundler] for this.
 
 In case of using with Fluentd: Fluentd will be also installed via the process below.
 
-    git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
-    cd aws-fluent-plugin-kinesis
+    git clone https://github.com/Scout24/aws-fluent-plugin-kinesis-pool.git
+    cd aws-fluent-plugin-kinesis-pool
     bundle install
     bundle exec rake build
     bundle exec rake install
 
 Also, you can use this plugin with td-agent: You have to install td-agent before installing this plugin.
 
-    git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
-    cd aws-fluent-plugin-kinesis
+    git clone https://github.com/Scout24/aws-fluent-plugin-kinesis-pool.git
+    cd aws-fluent-plugin-kinesis-pool
     bundle install
     bundle exec rake build
-    fluent-gem install pkg/fluent-plugin-kinesis
+    fluent-gem install pkg/fluent-plugin-kinesis-pool
 
 Or just download specify your Ruby library path. Below is the sample for specifying your library path via RUBYLIB.
 
-    git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
-    cd aws-fluent-plugin-kinesis
+    git clone https://github.com/Scout24/aws-fluent-plugin-kinesis-pool.git
+    cd aws-fluent-plugin-kinesis-pool
     bundle install
-    export RUBYLIB=$RUBYLIB:/path/to/aws-fluent-plugin-kinesis/lib
+    export RUBYLIB=$RUBYLIB:/path/to/aws-fluent-plugin-kinesis-pool/lib
 
 ## Dependencies
  * Ruby 2.1.0+
@@ -379,8 +379,8 @@ Note: if you specified this option, all records go to a single shard.
 
 To launch `fluentd` process with this plugin for development, follow the steps below:
 
-    git clone https://github.com/awslabs/aws-fluent-plugin-kinesis.git
-    cd aws-fluent-plugin-kinesis
+    git clone https://github.com/awslabs/aws-fluent-plugin-kinesis-pool.git
+    cd aws-fluent-plugin-kinesis-pool
     make # will install gems dependency
     bundle exec fluentd -c /path/to/fluent.conf
 
@@ -405,9 +405,9 @@ Bug reports and pull requests are welcome on [GitHub][github].
 [bundler]: http://bundler.io/
 [region]: http://docs.aws.amazon.com/general/latest/gr/rande.html#ak_region
 [fluentd_buffer]: http://docs.fluentd.org/articles/buffer-plugin-overview
-[github]: https://github.com/awslabs/aws-fluent-plugin-kinesis
+[github]: https://github.com/awslabs/aws-fluent-plugin-kinesis-pool
 [formatter.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/formatter.rb
 [inject.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/plugin_helper/inject.rb
 [fluentd-doc-kinesis]: http://docs.fluentd.org/articles/kinesis-stream
 [fluent-plugin-s3]: https://github.com/fluent/fluent-plugin-s3
-[v1-readme]: https://github.com/awslabs/aws-fluent-plugin-kinesis/blob/v1/README.md
+[v1-readme]: https://github.com/awslabs/aws-fluent-plugin-kinesis-pool/blob/v1/README.md

@@ -14,5 +14,5 @@
 
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in fluent-plugin-kinesis.gemspec
+# Specify your gem's dependencies in fluent-plugin-kinesis-pool.gemspec
 gemspec
