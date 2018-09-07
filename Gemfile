@@ -16,3 +16,9 @@ source 'https://rubygems.org'
 
 # Specify your gem's dependencies in fluent-plugin-kinesis.gemspec
 gemspec
+
+# Use specified version of aws-sdk-kinesis and aws-sdk-firehose
+unless ENV['AWS_SDK_VERSION'].nil? or ENV['AWS_SDK_VERSION'] == 'DEFAULT'
+  gem "aws-sdk-kinesis", "#{ENV['AWS_SDK_VERSION']}"
+  gem "aws-sdk-firehose", "#{ENV['AWS_SDK_VERSION']}"
+end

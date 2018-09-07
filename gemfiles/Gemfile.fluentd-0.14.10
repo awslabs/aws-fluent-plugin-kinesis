@@ -18,3 +18,9 @@ source 'https://rubygems.org'
 gemspec path: ".."
 
 gem "fluentd", "0.14.10"
+
+# Use specified version of aws-sdk-kinesis and aws-sdk-firehose
+unless ENV['AWS_SDK_VERSION'].nil? or ENV['AWS_SDK_VERSION'] == 'DEFAULT'
+  gem "aws-sdk-kinesis", "#{ENV['AWS_SDK_VERSION']}"
+  gem "aws-sdk-firehose", "#{ENV['AWS_SDK_VERSION']}"
+end
