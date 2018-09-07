@@ -20,7 +20,6 @@ require 'zlib'
 module Fluent
   module Plugin
     class KinesisOutput < Fluent::Plugin::Output
-      include Fluent::MessagePackFactory::Mixin
       include KinesisHelper::Client
       include KinesisHelper::API
 
@@ -78,6 +77,10 @@ module Fluent
         true
       end
 
+      def formatted_to_msgpack_binary?
+        true
+      end
+
       private
 
       def data_formatter_create(conf)
@@ -120,13 +123,11 @@ module Fluent
 
       def write_records_batch(chunk, &block)
         unique_id = chunk.dump_unique_id_hex(chunk.unique_id)
-        chunk.open do |io|
-          records = msgpack_unpacker(io).to_enum
-          split_to_batches(records) do |batch, size|
-            log.debug(sprintf "Write chunk %s / %3d records / %4d KB", unique_id, batch.size, size/1024)
-            batch_request_with_retry(batch, &block)
-            log.debug("Finish writing chunk")
-          end
+        records = chunk.to_enum(:msgpack_each)
+        split_to_batches(records) do |batch, size|
+          log.debug(sprintf "Write chunk %s / %3d records / %4d KB", unique_id, batch.size, size/1024)
+          batch_request_with_retry(batch, &block)
+          log.debug("Finish writing chunk")
         end
       end
 
