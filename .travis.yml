@@ -11,14 +11,11 @@ gemfile:
 env:
   - AWS_SDK_VERSION=DEFAULT
   - AWS_SDK_VERSION=1.3
-  - AWS_SDK_VERSION=1.4
 
 matrix:
   exclude:
     - gemfile: Gemfile
       env: AWS_SDK_VERSION=1.3
-    - gemfile: Gemfile
-      env: AWS_SDK_VERSION=1.4
   include:
     - rvm: 2.4.1
       gemfile: gemfiles/Gemfile.fluentd-0.14.10
@@ -28,7 +25,6 @@ matrix:
       gemfile: gemfiles/Gemfile.td-agent-3.2.0
   allow_failures:
     - env: AWS_SDK_VERSION=1.3
-    - env: AWS_SDK_VERSION=1.4
   fast_finish: true
 
 script: bundle exec rake test

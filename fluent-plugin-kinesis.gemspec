@@ -34,8 +34,8 @@ Gem::Specification.new do |spec|
 
   # This plugin is sometimes used with s3 plugin, so watch out for conflicts
   # https://rubygems.org/gems/fluent-plugin-s3
-  spec.add_dependency "aws-sdk-kinesis", "~> 1"
-  spec.add_dependency "aws-sdk-firehose", "~> 1"
+  spec.add_dependency "aws-sdk-kinesis", "~> 1", "< 1.4"
+  spec.add_dependency "aws-sdk-firehose", "~> 1", "< 1.4"
 
   spec.add_dependency "google-protobuf", "~> 3"
 
