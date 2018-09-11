@@ -14,6 +14,7 @@
 
 require 'fluent_plugin_kinesis/version'
 require 'fluent/configurable'
+require 'benchmark'
 
 module Fluent
   module Plugin
@@ -79,7 +80,7 @@ module Fluent
                 yield(batch, size)
                 batch = []
                 size = 0
-        end
+              end
               batch << record
               size += record_size
             end
@@ -96,15 +97,23 @@ module Fluent
                 wait_second = backoff.next
                 msg = 'Retrying to request batch. Retry count: %3d, Retry records: %3d, Wait seconds %3.2f' % [retry_count+1, failed_records.size, wait_second]
                 log.warn(truncate msg)
-                # TODO: sleep() doesn't wait the given seconds sometime.
-                # The root cause is unknown so far, so I'd like to add debug print only. It should be fixed in the future.
-                log.debug("#{Thread.current.object_id} sleep start")
-                sleep(wait_second)
-                log.debug("#{Thread.current.object_id} sleep finish")
+                reliable_sleep(wait_second)
                 batch_request_with_retry(retry_records(failed_records), retry_count+1, backoff: backoff, &block)
               else
                 give_up_retries(failed_records)
               end
+            end
+          end
+
+          # Sleep seems to not sleep as long as we ask it, our guess is that something wakes up the thread,
+          # so we keep on going to sleep if that happens.
+          # TODO: find out who is causing the sleep to be too short and try to make them stop it instead
+          def reliable_sleep(wait_second)
+            loop do
+              actual = Benchmark.realtime { sleep(wait_second) }
+              break if actual >= wait_second
+              log.error("#{Thread.current.object_id} sleep failed expected #{wait_second} but slept #{actual}")
+              wait_second -= actual
             end
           end
 

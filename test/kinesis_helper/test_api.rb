@@ -14,6 +14,7 @@
 
 require_relative '../helper'
 require 'fluent/plugin/kinesis_helper/api'
+require 'benchmark'
 
 class KinesisHelperAPITest < Test::Unit::TestCase
   class Mock
@@ -112,6 +113,16 @@ class KinesisHelperAPITest < Test::Unit::TestCase
     @object.expects(:give_up_retries).times(completed ? 0 : 1)
     @object.send(:batch_request_with_retry, batch, backoff: @backoff) { |batch| @object.batch_request(batch) }
     assert_equal expected, @object.request_series
+  end
+
+  def test_reliable_sleep
+    time = Benchmark.realtime do
+      t = Thread.new { @object.send(:reliable_sleep, 0.2) }
+      sleep 0.1
+      t.run
+      t.join
+    end
+    assert_operator time, :>, 0.15
   end
 
   data(
