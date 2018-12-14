@@ -29,6 +29,7 @@ module Fluent
 
           config_param :aws_key_id,  :string, default: nil, secret: true
           config_param :aws_sec_key, :string, default: nil, secret: true
+          config_param :aws_ses_token, :string, default: nil, secret: true
           config_section :assume_role_credentials, multi: false do
             desc "The Amazon Resource Name (ARN) of the role to assume"
             config_param :role_arn, :string, secret: true
@@ -123,6 +124,10 @@ module Fluent
           options = {}
           credentials_options = {}
           case
+          when @aws_key_id && @aws_sec_key && @aws_ses_token
+            options[:access_key_id] = @aws_key_id
+            options[:secret_access_key] = @aws_sec_key
+            options[:session_token] = @aws_ses_token  
           when @aws_key_id && @aws_sec_key
             options[:access_key_id] = @aws_key_id
             options[:secret_access_key] = @aws_sec_key
