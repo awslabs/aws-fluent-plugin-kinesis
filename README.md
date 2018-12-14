@@ -114,7 +114,7 @@ Note: Each value should be adjusted to your system by yourself.
 ## Configuration: Credentials
 To put records into Amazon Kinesis Streams or Firehose, you need to provide AWS security credentials somehow. Without specifiying credentials in config file, this plugin automatically fetch credential just following AWS SDK for Ruby does (environment variable, shared profile, and instance profile).
 
-This plugin uses the same configuration in [fluent-plugin-s3][fluent-plugin-s3].
+This plugin uses the same configuration in [fluent-plugin-s3][fluent-plugin-s3], but also supports aws session tokens for temporary credentials. 
 
 **aws_key_id**
 
@@ -126,6 +126,10 @@ sure to configure `instance_profile_credentials`. Usage can be found below.
 
 AWS secret key. This parameter is required when your agent is not running
 on EC2 instance with an IAM Role.
+
+**aws_ses_token**
+
+AWS session token. This parameter is optional, but can be provided if using MFA or temporary credentials when your agent is not running on EC2 instance with an IAM Role. 
 
 **aws_iam_retries**
 
