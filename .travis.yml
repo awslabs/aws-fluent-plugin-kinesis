@@ -7,6 +7,8 @@ gemfile:
   - gemfiles/Gemfile.fluentd-0.14.10
   - gemfiles/Gemfile.td-agent-3.1.1
   - gemfiles/Gemfile.td-agent-3.2.0
+  - gemfiles/Gemfile.td-agent-3.2.1
+  - gemfiles/Gemfile.td-agent-3.3.0
 
 env:
   - AWS_SDK_VERSION=DEFAULT
@@ -23,6 +25,10 @@ matrix:
       gemfile: gemfiles/Gemfile.td-agent-3.1.1
     - rvm: 2.4.4 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.2.0/config/projects/td-agent3.rb#L22
       gemfile: gemfiles/Gemfile.td-agent-3.2.0
+    - rvm: 2.4.4 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.2.1/config/projects/td-agent3.rb#L22
+      gemfile: gemfiles/Gemfile.td-agent-3.2.1
+    - rvm: 2.4.5 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.3.0/config/projects/td-agent3.rb#L22
+      gemfile: gemfiles/Gemfile.td-agent-3.3.0
   allow_failures:
     - env: AWS_SDK_VERSION=1.3
   fast_finish: true
