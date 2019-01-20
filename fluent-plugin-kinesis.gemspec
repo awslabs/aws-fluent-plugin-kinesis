@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
   # Exclude aws-sdk-kinesis v1.4 to avoid aws-sdk-core dependency problem with td-agent v3.1.1
   #   NoMethodError: undefined method `event=' for #<Seahorse::Model::Shapes::ShapeRef:*>
   #   https://github.com/aws/aws-sdk-ruby/commit/03d60f9d3d821e645bd2a3efca066f37350ef906#diff-c69f15af8ea3eb9ab152659476e04608R401
-  #   https://github.com/aws/aws-sdk-ruby/commit/571c2d0e5ff9c24ff72893a08a74790db591fb57#diff-a55155f04aa6559460a0814e264eb0cdR13
+  #   https://github.com/aws/aws-sdk-ruby/commit/571c2d0e5ff9c24ff72893a08a74790db591fb57#diff-a55155f04aa6559460a0814e264eb0cdR43
   spec.add_dependency "aws-sdk-kinesis", "~> 1", "!= 1.4", "!= 1.5"
   # Exclude aws-sdk-firehose v1.9 to avoid aws-sdk-core dependency problem with td-agent v3.2.1
   #   LoadError: cannot load such file -- aws-sdk-core/plugins/endpoint_discovery.rb
