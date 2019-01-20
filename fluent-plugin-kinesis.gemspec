@@ -33,14 +33,24 @@ Gem::Specification.new do |spec|
   spec.add_dependency "fluentd", ">= 0.14.0", "< 2"
 
   # This plugin is sometimes used with s3 plugin, so watch out for conflicts
-  # https://rubygems.org/gems/fluent-plugin-s3
-  spec.add_dependency "aws-sdk-kinesis", "~> 1", "< 1.4"
-  spec.add_dependency "aws-sdk-firehose", "~> 1", "< 1.4"
+  #   https://rubygems.org/gems/fluent-plugin-s3
+  # Exclude v1.5 to avoid aws-sdk dependency problem due to this issue
+  #   https://github.com/aws/aws-sdk-ruby/issues/1872
+  # Exclude aws-sdk-kinesis v1.4 to avoid aws-sdk-core dependency problem with td-agent v3.1.1
+  #   NoMethodError: undefined method `event=' for #<Seahorse::Model::Shapes::ShapeRef:*>
+  #   https://github.com/aws/aws-sdk-ruby/commit/03d60f9d3d821e645bd2a3efca066f37350ef906#diff-c69f15af8ea3eb9ab152659476e04608R401
+  #   https://github.com/aws/aws-sdk-ruby/commit/571c2d0e5ff9c24ff72893a08a74790db591fb57#diff-a55155f04aa6559460a0814e264eb0cdR43
+  spec.add_dependency "aws-sdk-kinesis", "~> 1", "!= 1.4", "!= 1.5"
+  # Exclude aws-sdk-firehose v1.9 to avoid aws-sdk-core dependency problem with td-agent v3.2.1
+  #   LoadError: cannot load such file -- aws-sdk-core/plugins/endpoint_discovery.rb
+  #   https://github.com/aws/aws-sdk-ruby/commit/85d8538a62255e58d9e176ee524a9f94354b51a0#diff-d51486091a10ada65b308b7f45966af1R18
+  #   https://github.com/aws/aws-sdk-ruby/commit/7c9584bc6473100df9aec9333ab491ad4faeeca8#diff-be94f87e58e00329a6c0e03e43d5c292
+  spec.add_dependency "aws-sdk-firehose", "~> 1", "!= 1.5", "!= 1.9"
 
   spec.add_dependency "google-protobuf", "~> 3"
 
-  spec.add_development_dependency "bundler", "~> 1.10"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "bundler", ">= 1.10"
+  spec.add_development_dependency "rake", ">= 10.0"
   spec.add_development_dependency "test-unit", ">= 3.0.8"
   spec.add_development_dependency "test-unit-rr", ">= 1.0.3"
   spec.add_development_dependency "pry", ">= 0.10.1"

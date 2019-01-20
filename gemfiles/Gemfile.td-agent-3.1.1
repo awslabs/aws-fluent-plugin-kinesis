@@ -29,9 +29,3 @@ gem "aws-sdk-kms", "1.3.0"
 gem "aws-sdk-sqs", "1.3.0"
 gem "aws-sdk-s3", "1.8.0"
 gem "fluent-plugin-s3", "1.1.0"
-
-# Use specified version of aws-sdk-kinesis and aws-sdk-firehose
-unless ENV['AWS_SDK_VERSION'].nil? or ENV['AWS_SDK_VERSION'] == 'DEFAULT'
-  gem "aws-sdk-kinesis", "#{ENV['AWS_SDK_VERSION']}"
-  gem "aws-sdk-firehose", "#{ENV['AWS_SDK_VERSION']}"
-end
