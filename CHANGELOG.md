@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 3.0.0.rc.1.0
+
+- Enhancement - Use modularized AWS SDK v3 since fluent-plugin-s3 also supports it : [#152](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/152)
+- Enhancement - Remove support for fluentd v0.12 and use new Plugin API : [#156](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/156) (also fix [#133](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133))
+- Bug - Fix undefined method error in flushing buffers : [#133](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133)
+- Bug - Fix dependency problem on AWS SDK : [#161](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/161)
+
 ## 2.1.1
 
 - Bug - Fix require aws-sdk-core before requiring the aws related libraries [#140](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/140)
