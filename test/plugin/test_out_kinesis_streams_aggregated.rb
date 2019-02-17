@@ -82,6 +82,17 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
     assert_equal (expected + "\n").b, @server.records.first
   end
 
+  data(
+    'json' => ['json', '{"a":1,"b":2}'],
+    'ltsv' => ['ltsv', "a:1\tb:2"],
+  )
+  def test_format_with_chomp_record(data)
+    formatter, expected = data
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>\nchomp_record true")
+    driver_run(d, [{"a"=>1,"b"=>2}])
+    assert_equal expected.b, @server.records.first
+  end
+
   def test_data_key
     d = create_driver(default_config + "data_key a")
     driver_run(d, [{"a"=>1,"b"=>2}, {"b"=>2}])

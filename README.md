@@ -289,6 +289,10 @@ Specifing compression way for data of each record. Current accepted options are 
 ### log_truncate_max_size
 Integer, default 1024. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 means no truncation.
 
+### chomp_record
+Boolean. Default `false`. If it is enabled, formatter calls chomp and removes separator from the end of each record. This option is for compatible format with plugin v2.
+See [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142) for more details.
+
 ## Configuraion: API
 ### region
 AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. Refer to [Regions and Endpoints in AWS General Reference][region] for supported regions.
@@ -351,7 +355,7 @@ Here are `kinesis_firehose` specific configurations.
 Name of the delivery stream to put data.
 
 ### append_new_line
-Boolean. Default `true`. If it is enabled, the plugin add new line character (`\n`) to each serialized record.
+Boolean. Default `true`. If it is enabled, the plugin add new line character (`\n`) to each serialized record. At first, the overridden formatter in the plugin calls chomp and removes separator from the end of each record. Then, it appends `\n` to each record.
 
 ## Configuration: kinesis_streams_aggregated
 Here are `kinesis_streams_aggregated` specific configurations.
