@@ -78,7 +78,7 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     formatter, expected = data
     d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>")
     driver_run(d, [{"a"=>1,"b"=>2}])
-    assert_equal expected, @server.records.first
+    assert_equal expected + "\n", @server.records.first
   end
 
   def test_partition_key_not_found
@@ -151,7 +151,7 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     record = {"a" => "てすと"}
     driver_run(d, [record])
     assert_equal 0, d.instance.log.out.logs.size
-    assert_equal record.to_json.b, @server.records.first
+    assert_equal (record.to_json + "\n").b, @server.records.first 
   end
 
   def test_record_count

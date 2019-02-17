@@ -86,7 +86,9 @@ module Fluent
         if @data_key.nil?
           ->(tag, time, record) {
             record = inject_values_to_record(tag, time, record)
-            compressor.call(formatter.format(tag, time, record).chomp.b)
+            # TODO Make option to chomp as compatible format with v2
+            # compressor.call(formatter.format(tag, time, record).chomp.b)
+            compressor.call(formatter.format(tag, time, record).b)
           }
         else
           ->(tag, time, record) {
