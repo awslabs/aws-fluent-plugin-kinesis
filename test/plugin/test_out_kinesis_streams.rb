@@ -166,21 +166,21 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
 
   # Debug test case for the issue that it fails to flush the buffer
   # https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133
-  def test_chunk_limit_size_for_debug
-    config = <<-CONF
-      log_level warn
-      <buffer>
-        chunk_limit_size "1m"
-      </buffer>
-    CONF
-    d = create_driver(default_config + config)
-    d.run(wait_flush_completion: true, force_flush_retry: true) do
-      10.times do
-        time = Fluent::EventTime.now
-        events = Array.new(Kernel.rand(3000..5000)).map { [time, { msg: "x" * 256 }] }
-        d.feed("test", events)
-      end
-    end
-    d.logs.each { |log_record| assert_not_match(/NoMethodError/, log_record) }
-  end
+  #def test_chunk_limit_size_for_debug
+  #  config = <<-CONF
+  #    log_level warn
+  #    <buffer>
+  #      chunk_limit_size "1m"
+  #    </buffer>
+  #  CONF
+  #  d = create_driver(default_config + config)
+  #  d.run(wait_flush_completion: true, force_flush_retry: true) do
+  #    10.times do
+  #      time = Fluent::EventTime.now
+  #      events = Array.new(Kernel.rand(3000..5000)).map { [time, { msg: "x" * 256 }] }
+  #      d.feed("test", events)
+  #    end
+  #  end
+  #  d.logs.each { |log_record| assert_not_match(/NoMethodError/, log_record) }
+  #end
 end
