@@ -357,7 +357,7 @@ Here are `kinesis_firehose` specific configurations.
 Name of the delivery stream to put data.
 
 ### append_new_line
-Boolean. Default `true`. If it is enabled, the plugin add new line character (`\n`) to each serialized record.  
+Boolean. Default `true`. If it is enabled, the plugin adds new line character (`\n`) to each serialized record.  
 Before appending `\n`, plugin calls chomp and removes separator from the end of each record as [chomp_record](#chomp_record) is `true`. Therefore, you don't need to enable [chomp_record](#chomp_record) option when you use [kinesis_firehose](#kinesis_firehose) output with default configuration ([append_new_line](#append_new_line) is `true`). If you want to set [append_new_line](#append_new_line) `false`, you can choose [chomp_record](#chomp_record) `false` (default) or `true` (compatible format with plugin v2).
 
 ## Configuration: kinesis_streams_aggregated
