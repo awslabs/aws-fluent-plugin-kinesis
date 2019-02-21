@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 3.0.0.rc.2.0
+
+- Enhancement / Breaking change - Remove *chomp* method from internal formatter : [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142) [#144](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/144)
+- Enhancement - Add *chomp_record* option for compatible format with plugin v2 : [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142)
+- Enhancement - Update Fluentd dependency to *>=0.14.10* as documented and tested
+
 ## 3.0.0.rc.1.0
 
 - Enhancement - Use modularized AWS SDK v3 since fluent-plugin-s3 also supports it : [#152](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/152)
