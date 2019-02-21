@@ -78,6 +78,17 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     formatter, expected = data
     d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>")
     driver_run(d, [{"a"=>1,"b"=>2}])
+    assert_equal expected + "\n", @server.records.first
+  end
+
+  data(
+    'json' => ['json', '{"a":1,"b":2}'],
+    'ltsv' => ['ltsv', "a:1\tb:2"],
+  )
+  def test_format_with_chomp_record(data)
+    formatter, expected = data
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>\nchomp_record true")
+    driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end
 
@@ -151,7 +162,7 @@ class KinesisStreamsOutputTest < Test::Unit::TestCase
     record = {"a" => "てすと"}
     driver_run(d, [record])
     assert_equal 0, d.instance.log.out.logs.size
-    assert_equal record.to_json.b, @server.records.first
+    assert_equal (record.to_json + "\n").b, @server.records.first
   end
 
   def test_record_count
