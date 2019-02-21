@@ -291,6 +291,10 @@ Specifing compression way for data of each record. Current accepted options are 
 ### log_truncate_max_size
 Integer, default 1024. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 means no truncation.
 
+### chomp_record
+Boolean. Default `false`. If it is enabled, the plugin calls chomp and removes separator from the end of each record. This option is for compatible format with plugin v2. See [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142) for more details.  
+When you use [kinesis_firehose](#kinesis_firehose) output, [append_new_line](#append_new_line) option is `true` as default. If [append_new_line](#append_new_line) is enabled, the plugin calls chomp as [chomp_record](#chomp_record) is `true` before appending `\n` to each record. Therefore, you don't need to enable [chomp_record](#chomp_record) option when you use [kinesis_firehose](#kinesis_firehose) with default configuration. If you want to set [append_new_line](#append_new_line) `false`, you can choose [chomp_record](#chomp_record) `false` (default) or `true` (compatible format with plugin v2).
+
 ## Configuraion: API
 ### region
 AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. Refer to [Regions and Endpoints in AWS General Reference][region] for supported regions.
@@ -353,7 +357,8 @@ Here are `kinesis_firehose` specific configurations.
 Name of the delivery stream to put data.
 
 ### append_new_line
-Boolean. Default `true`. If it is enabled, the plugin add new line character (`\n`) to each serialized record.
+Boolean. Default `true`. If it is enabled, the plugin add new line character (`\n`) to each serialized record.  
+Before appending `\n`, plugin calls chomp and removes separator from the end of each record as [chomp_record](#chomp_record) is `true`. Therefore, you don't need to enable [chomp_record](#chomp_record) option when you use [kinesis_firehose](#kinesis_firehose) output with default configuration ([append_new_line](#append_new_line) is `true`). If you want to set [append_new_line](#append_new_line) `false`, you can choose [chomp_record](#chomp_record) `false` (default) or `true` (compatible format with plugin v2).
 
 ## Configuration: kinesis_streams_aggregated
 Here are `kinesis_streams_aggregated` specific configurations.

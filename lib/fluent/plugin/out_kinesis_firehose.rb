@@ -32,7 +32,7 @@ module Fluent
         if @append_new_line
           org_data_formatter = @data_formatter
           @data_formatter = ->(tag, time, record) {
-            org_data_formatter.call(tag, time, record) + "\n"
+            org_data_formatter.call(tag, time, record).chomp + "\n"
           }
         end
       end
