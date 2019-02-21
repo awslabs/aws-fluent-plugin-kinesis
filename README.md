@@ -1,6 +1,8 @@
 # Fluent plugin for Amazon Kinesis
 
-[![Gitter](https://badges.gitter.im/awslabs/aws-fluent-plugin-kinesis.svg)](https://gitter.im/awslabs/aws-fluent-plugin-kinesis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Build Status](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis)
+[![Gitter](https://badges.gitter.im/awslabs/aws-fluent-plugin-kinesis.svg)](https://gitter.im/awslabs/aws-fluent-plugin-kinesis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis)
+[![Gem Version](https://badge.fury.io/rb/fluent-plugin-kinesis.svg)](https://rubygems.org/gems/fluent-plugin-kinesis)
 
 [Fluentd][fluentd] output plugin
 that sends events to [Amazon Kinesis Data Streams][streams] and [Amazon Kinesis Data Firehose][firehose]. Also it supports [KPL Aggregated record format][kpl]. This gem includes three output plugins respectively:
