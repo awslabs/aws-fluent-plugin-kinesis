@@ -43,11 +43,12 @@ module Fluent
       end
 
       def write(chunk)
+        stream_name = extract_placeholders(@stream_name, chunk)
         write_records_batch(chunk) do |batch|
           key = @partition_key_generator.call
           records = batch.map{|(data)|data}
           client.put_records(
-            stream_name: @stream_name,
+            stream_name: stream_name,
             records: [{
               partition_key: key,
               data: aggregator.aggregate(records, key),
