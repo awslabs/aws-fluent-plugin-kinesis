@@ -1,9 +1,11 @@
 # Fluent plugin for Amazon Kinesis
 
-[![Gitter](https://badges.gitter.im/awslabs/aws-fluent-plugin-kinesis.svg)](https://gitter.im/awslabs/aws-fluent-plugin-kinesis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Build Status](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis)
+[![Gitter](https://badges.gitter.im/awslabs/aws-fluent-plugin-kinesis.svg)](https://gitter.im/awslabs/aws-fluent-plugin-kinesis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis)
+[![Gem Version](https://badge.fury.io/rb/fluent-plugin-kinesis.svg)](https://rubygems.org/gems/fluent-plugin-kinesis)
 
 [Fluentd][fluentd] output plugin
-that sends events to [Amazon Kinesis Streams][streams] and [Amazon Kinesis Firehose][firehose]. Also it supports [KPL Aggregated record format][kpl]. This gem includes three output plugins respectively:
+that sends events to [Amazon Kinesis Data Streams][streams] and [Amazon Kinesis Data Firehose][firehose]. Also it supports [KPL Aggregated record format][kpl]. This gem includes three output plugins respectively:
 
 - `kinesis_streams`
 - `kinesis_firehose`
@@ -11,7 +13,7 @@ that sends events to [Amazon Kinesis Streams][streams] and [Amazon Kinesis Fireh
 
 Also, there is a [documentation on Fluentd official site][fluentd-doc-kinesis].
 
-**Note**: This README is for v2.x. If you use v1.x, see the [old README][v1-readme].
+**Note**: This README is for v3. Plugin v3 is almost compatible with v2. If you use v1, see the [old README][v1-readme].
 
 ## Installation
 This fluentd plugin is available as the `fluent-plugin-kinesis` gem from RubyGems.
@@ -112,26 +114,21 @@ Add configuration like below:
 Note: Each value should be adjusted to your system by yourself.
 
 ## Configuration: Credentials
-To put records into Amazon Kinesis Streams or Firehose, you need to provide AWS security credentials somehow. Without specifiying credentials in config file, this plugin automatically fetch credential just following AWS SDK for Ruby does (environment variable, shared profile, and instance profile).
+To put records into Amazon Kinesis Data Streams or Firehose, you need to provide AWS security credentials somehow. Without specifying credentials in config file, this plugin automatically fetch credential just following AWS SDK for Ruby does (environment variable, shared profile, and instance profile).
 
 This plugin uses the same configuration in [fluent-plugin-s3][fluent-plugin-s3].
 
 **aws_key_id**
 
-AWS access key id. This parameter is required when your agent is not
-running on EC2 instance with an IAM Role. When using an IAM role, make 
-sure to configure `instance_profile_credentials`. Usage can be found below.
+AWS access key id. This parameter is required when your agent is not running on EC2 instance with an IAM Role. When using an IAM role, make sure to configure `instance_profile_credentials`. Usage can be found below.
 
 **aws_sec_key**
 
-AWS secret key. This parameter is required when your agent is not running
-on EC2 instance with an IAM Role.
+AWS secret key. This parameter is required when your agent is not running on EC2 instance with an IAM Role.
 
 **aws_iam_retries**
 
-The number of attempts to make (with exponential backoff) when loading
-instance profile credentials from the EC2 metadata service using an IAM
-role. Defaults to 5 retries.
+The number of attempts to make (with exponential backoff) when loading instance profile credentials from the EC2 metadata service using an IAM role. Defaults to 5 retries.
 
 ### assume_role_credentials
 Typically, you use AssumeRole for cross-account access or federation.
@@ -166,26 +163,21 @@ An IAM policy in JSON format.
 
 **duration_seconds**
 
-The duration, in seconds, of the role session. The value can range from
-900 seconds (15 minutes) to 3600 seconds (1 hour). By default, the value
-is set to 3600 seconds.
+The duration, in seconds, of the role session. The value can range from 900 seconds (15 minutes) to 3600 seconds (1 hour). By default, the value is set to 3600 seconds.
 
 **external_id**
 
-A unique identifier that is used by third parties when assuming roles in
-their customers' accounts.
+A unique identifier that is used by third parties when assuming roles in their customers' accounts.
 
 **sts_http_proxy**
 
-Proxy url for proxying requests to amazon sts service api. This needs to be  set up independently from global http_proxy parameter
-for the use case in which requests to kinesis api are going via kinesis vpc endpoint but requests to sts api have to go via http proxy. 
+Proxy url for proxying requests to amazon sts service api. This needs to be  set up independently from global http_proxy parameter for the use case in which requests to kinesis api are going via kinesis vpc endpoint but requests to sts api have to go via http proxy.
 It should be added to assume_role_credentials configuration stanza in the next format:
     sts_http_proxy http://[username:password]@hostname:port
 
 ### instance_profile_credentials
 
-Retrieve temporary security credentials via HTTP request. This is useful on
-EC2 instance.
+Retrieve temporary security credentials via HTTP request. This is useful on EC2 instance.
 
     <match *>
       @type kinesis_streams
@@ -226,8 +218,7 @@ Default is 5.
 
 ### shared_credentials
 
-This loads AWS access credentials from local ini file. This is useful for
-local developing.
+This loads AWS access credentials from local ini file. This is useful for local developing.
 
     <match *>
       @type kinesis_streams
@@ -300,6 +291,10 @@ Specifing compression way for data of each record. Current accepted options are 
 ### log_truncate_max_size
 Integer, default 1024. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 means no truncation.
 
+### chomp_record
+Boolean. Default `false`. If it is enabled, the plugin calls chomp and removes separator from the end of each record. This option is for compatible format with plugin v2. See [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142) for more details.  
+When you use [kinesis_firehose](#kinesis_firehose) output, [append_new_line](#append_new_line) option is `true` as default. If [append_new_line](#append_new_line) is enabled, the plugin calls chomp as [chomp_record](#chomp_record) is `true` before appending `\n` to each record. Therefore, you don't need to enable [chomp_record](#chomp_record) option when you use [kinesis_firehose](#kinesis_firehose) with default configuration. If you want to set [append_new_line](#append_new_line) `false`, you can choose [chomp_record](#chomp_record) `false` (default) or `true` (compatible format with plugin v2).
+
 ## Configuraion: API
 ### region
 AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. Refer to [Regions and Endpoints in AWS General Reference][region] for supported regions.
@@ -319,11 +314,11 @@ API endpoint URL, for testing. Defalut `nil`.
 Boolean. Disable if you want to verify ssl conncetion, for testing. Default `true`.
 
 ### debug
-Boolean. Enable if you need to debug Amazon Kinesis Firehose API call. Default is `false`.
+Boolean. Enable if you need to debug Amazon Kinesis Data Firehose API call. Default is `false`.
 
 ## Configuration: Batch request
 ### retries_on_batch_request
-Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Streams in batches using PutRecords. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecords. Failed records will be retried **retries_on_batch_request** times. If a record fails all retries an error log will be emitted.
+Integer, default is 3. The plugin will put multiple records to Amazon Kinesis Data Streams in batches using PutRecords. A set of records in a batch may fail for reasons documented in the Kinesis Service API Reference for PutRecords. Failed records will be retried **retries_on_batch_request** times. If a record fails all retries an error log will be emitted.
 
 ### reset_backoff_if_success
 Boolean, default `true`. If enabled, when after retrying, the next retrying checks the number of succeeded records on the former batch request and reset exponential backoff if there is any success. Because batch request could be composed by requests across shards, simple exponential backoff for the batch request wouldn't work some cases.
@@ -362,7 +357,8 @@ Here are `kinesis_firehose` specific configurations.
 Name of the delivery stream to put data.
 
 ### append_new_line
-Boolean. Default `true`. If it is enabled, the plugin add new line character (`\n`) to each serialized record.
+Boolean. Default `true`. If it is enabled, the plugin adds new line character (`\n`) to each serialized record.  
+Before appending `\n`, plugin calls chomp and removes separator from the end of each record as [chomp_record](#chomp_record) is `true`. Therefore, you don't need to enable [chomp_record](#chomp_record) option when you use [kinesis_firehose](#kinesis_firehose) output with default configuration ([append_new_line](#append_new_line) is `true`). If you want to set [append_new_line](#append_new_line) `false`, you can choose [chomp_record](#chomp_record) `false` (default) or `true` (compatible format with plugin v2).
 
 ## Configuration: kinesis_streams_aggregated
 Here are `kinesis_streams_aggregated` specific configurations.
@@ -384,9 +380,9 @@ To launch `fluentd` process with this plugin for development, follow the steps b
     make # will install gems dependency
     bundle exec fluentd -c /path/to/fluent.conf
 
-To launch using Fluentd v0.12, use `BUNDLE_GEMFILE` environment variable:
+To launch using specified version of Fluentd, use `BUNDLE_GEMFILE` environment variable:
 
-    BUNDLE_GEMFILE=$PWD/gemfiles/Gemfile.td-agent-2.3.5 bundle exec fluentd -c /path/to/fluent.conf
+    BUNDLE_GEMFILE=$PWD/gemfiles/Gemfile.td-agent-3.3.0 bundle exec fluentd -c /path/to/fluent.conf
 
 ## Contributing
 
@@ -394,8 +390,8 @@ Bug reports and pull requests are welcome on [GitHub][github].
 
 ## Related Resources
 
-* [Amazon Kinesis Streams Developer Guide](http://docs.aws.amazon.com/kinesis/latest/dev/introduction.html)
-* [Amazon Kinesis Firehose Developer Guide](http://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html)
+* [Amazon Kinesis Data Streams Developer Guide](http://docs.aws.amazon.com/kinesis/latest/dev/introduction.html)
+* [Amazon Kinesis Data Firehose Developer Guide](http://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html)
 
 [fluentd]: http://fluentd.org/
 [streams]: https://aws.amazon.com/kinesis/streams/

@@ -71,14 +71,14 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   end
 
   data(
-    'json' => ['json', "{\"a\":1,\"b\":2}\n"],
-    'ltsv' => ['ltsv', "a:1\tb:2\n"],
+    'json' => ['json', "{\"a\":1,\"b\":2}"],
+    'ltsv' => ['ltsv', "a:1\tb:2"],
   )
   def test_format(data)
     formatter, expected = data
     d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>")
     driver_run(d, [{"a"=>1,"b"=>2}])
-    assert_equal expected, @server.records.first
+    assert_equal (expected + "\n").b, @server.records.first
   end
 
   data(
@@ -88,6 +88,28 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
   def test_format_without_append_new_line(data)
     formatter, expected = data
     d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>\nappend_new_line false")
+    driver_run(d, [{"a"=>1,"b"=>2}])
+    assert_equal (expected + "\n").b, @server.records.first
+  end
+
+  data(
+    'json' => ['json', '{"a":1,"b":2}'],
+    'ltsv' => ['ltsv', "a:1\tb:2"],
+  )
+  def test_format_with_chomp_record(data)
+    formatter, expected = data
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>\nchomp_record true")
+    driver_run(d, [{"a"=>1,"b"=>2}])
+    assert_equal (expected + "\n").b, @server.records.first
+  end
+
+  data(
+    'json' => ['json', '{"a":1,"b":2}'],
+    'ltsv' => ['ltsv', "a:1\tb:2"],
+  )
+  def test_format_with_chomp_record_without_append_new_line(data)
+    formatter, expected = data
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>\nchomp_record true\nappend_new_line false")
     driver_run(d, [{"a"=>1,"b"=>2}])
     assert_equal expected, @server.records.first
   end
@@ -188,21 +210,21 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
 
   # Debug test case for the issue that it fails to flush the buffer
   # https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133
-  def test_chunk_limit_size_for_debug
-    config = <<-CONF
-      log_level warn
-      <buffer>
-        chunk_limit_size "1m"
-      </buffer>
-    CONF
-    d = create_driver(default_config + config)
-    d.run(wait_flush_completion: true, force_flush_retry: true) do
-      10.times do
-        time = Fluent::EventTime.now
-        events = Array.new(Kernel.rand(3000..5000)).map { [time, { msg: "x" * 256 }] }
-        d.feed("test", events)
-      end
-    end
-    d.logs.each { |log_record| assert_not_match(/NoMethodError/, log_record) }
-  end
+  #def test_chunk_limit_size_for_debug
+  #  config = <<-CONF
+  #    log_level warn
+  #    <buffer>
+  #      chunk_limit_size "1m"
+  #    </buffer>
+  #  CONF
+  #  d = create_driver(default_config + config)
+  #  d.run(wait_flush_completion: true, force_flush_retry: true) do
+  #    10.times do
+  #      time = Fluent::EventTime.now
+  #      events = Array.new(Kernel.rand(3000..5000)).map { [time, { msg: "x" * 256 }] }
+  #      d.feed("test", events)
+  #    end
+  #  end
+  #  d.logs.each { |log_record| assert_not_match(/NoMethodError/, log_record) }
+  #end
 end
