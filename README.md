@@ -241,7 +241,7 @@ Path to the shared file. Defaults to "#{Dir.home}/.aws/credentials".
 
 Defaults to 'default' or `[ENV]('AWS_PROFILE')`.
 
-## Configuraion: Format
+## Configuration: Format
 
 ### format (section)
 This plugin use `Fluent::TextFormatter` to serialize record to string. For more detail, see [formatter.rb]. By default, it uses `json` formatter same as specific like below:
@@ -295,7 +295,7 @@ Integer, default 1024. When emitting the log entry, the message will be truncate
 Boolean. Default `false`. If it is enabled, the plugin calls chomp and removes separator from the end of each record. This option is for compatible format with plugin v2. See [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142) for more details.  
 When you use [kinesis_firehose](#kinesis_firehose) output, [append_new_line](#append_new_line) option is `true` as default. If [append_new_line](#append_new_line) is enabled, the plugin calls chomp as [chomp_record](#chomp_record) is `true` before appending `\n` to each record. Therefore, you don't need to enable [chomp_record](#chomp_record) option when you use [kinesis_firehose](#kinesis_firehose) with default configuration. If you want to set [append_new_line](#append_new_line) `false`, you can choose [chomp_record](#chomp_record) `false` (default) or `true` (compatible format with plugin v2).
 
-## Configuraion: API
+## Configuration: API
 ### region
 AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. Refer to [Regions and Endpoints in AWS General Reference][region] for supported regions.
 
