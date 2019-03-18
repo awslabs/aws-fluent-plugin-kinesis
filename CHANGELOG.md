@@ -15,7 +15,7 @@
 
 ## 2.1.1
 
-- Bug - Fix require aws-sdk-core before requiring the aws related libraries [#140](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/140)
+- Bug - Fix require aws-sdk-core before requiring the AWS related libraries [#140](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/140)
 
 ## 2.1.0
 
@@ -27,8 +27,8 @@
 
 ## 2.0.0
 
-- Feature - Add `kinesis_streams_aggregated` ouput plugin [#107](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/107)
-- Feature - Support fluentd worker model [#104](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/104)
+- Feature - Add `kinesis_streams_aggregated` output plugin [#107](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/107)
+- Feature - Support Fluentd worker model [#104](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/104)
 - Feature - Support AWS SDK for Ruby v3 [#102](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/102)
 - Enhancement - Refactor class design [#103](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/103)
 - Enhancement - More configuration for AssumeRole [#63](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/63)
@@ -49,7 +49,7 @@
 
 ## 1.1.3
 
-- Bug fix - Fix issues with fluentd 0.14.12 [#99](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/99)
+- Bug fix - Fix issues with Fluentd 0.14.12 [#99](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/99)
 
 ## 1.1.2
 
@@ -62,9 +62,9 @@
 
 ## 1.1.0
 
-- Feature - Derive stream name from fluentd tag for KPL [#67](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/67)
+- Feature - Derive stream name from Fluentd tag for KPL [#67](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/67)
 - Enhancement - Make http_proxy parameter secret [#64](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/64)
-- Bug fix - Plugin incompatible with new fluentd release 0.14 [#70](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/70)
+- Bug fix - Plugin incompatible with new Fluentd release 0.14 [#70](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/70)
 - Misc - Fix legacy test and reduce travis tests [#74](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/74)
 - Misc - Some test, benchmark improvement [#74](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/74), [#75](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/75), [#76](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/76)
 
@@ -89,7 +89,7 @@ Note: We introduced [Semantic Versioning](http://semver.org/) here.
 
 ## 0.3.6
 
-- **Cross account access support**: Added support for cross account access for Amazon Kinesis stream. With this update, you can put reocrds to streams those are owned by other AWS account. This feature is achieved by [AssumeRole](http://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
+- **Cross account access support**: Added support for cross account access for Amazon Kinesis stream. With this update, you can put records to streams those are owned by other AWS account. This feature is achieved by [AssumeRole](http://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
 
 ## 0.3.5
 
