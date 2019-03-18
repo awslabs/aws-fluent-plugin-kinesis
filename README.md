@@ -16,7 +16,7 @@ Also, there is a [documentation on Fluentd official site][fluentd-doc-kinesis].
 **Note**: This README is for v3. Plugin v3 is almost compatible with v2. If you use v1, see the [old README][v1-readme].
 
 ## Installation
-This fluentd plugin is available as the `fluent-plugin-kinesis` gem from RubyGems.
+This Fluentd plugin is available as the `fluent-plugin-kinesis` gem from RubyGems.
 
     gem install fluent-plugin-kinesis
 
@@ -241,7 +241,7 @@ Path to the shared file. Defaults to "#{Dir.home}/.aws/credentials".
 
 Defaults to 'default' or `[ENV]('AWS_PROFILE')`.
 
-## Configuraion: Format
+## Configuration: Format
 
 ### format (section)
 This plugin use `Fluent::TextFormatter` to serialize record to string. For more detail, see [formatter.rb]. By default, it uses `json` formatter same as specific like below:
@@ -268,7 +268,7 @@ For example, the config below will add `time` field whose value is eventtime wit
       </inject>
     </match>
 
-By default, `time_type string` and `time_format %Y-%m-%dT%H:%M:%S.%N%z` are already set to be applicable to Elasticsearch subsecond format. Although, you can use any configuration.
+By default, `time_type string` and `time_format %Y-%m-%dT%H:%M:%S.%N%z` are already set to be applicable to Elasticsearch sub-second format. Although, you can use any configuration.
 
 Also, there are some format related options below:
 
@@ -283,7 +283,7 @@ Defalut `false`. If you want to include `time` field in your record, set `true`.
 Defalut `false`. If you want to include `tag` field in your record, set `true`.
 
 ### data_key
-If your record contains a field whose string should be sent to Amazon Kinesis directly (without formatter), use this parameter to specify the field. In that case, other fileds than **data_key** are thrown away and never sent to Amazon Kinesis. Default `nil`, which means whole record will be formatted and sent.
+If your record contains a field whose string should be sent to Amazon Kinesis directly (without formatter), use this parameter to specify the field. In that case, other fields than **data_key** are thrown away and never sent to Amazon Kinesis. Default `nil`, which means whole record will be formatted and sent.
 
 ### compression
 Specifing compression way for data of each record. Current accepted options are `zlib`. Otherwise, no compression will be preformed.
@@ -295,7 +295,7 @@ Integer, default 1024. When emitting the log entry, the message will be truncate
 Boolean. Default `false`. If it is enabled, the plugin calls chomp and removes separator from the end of each record. This option is for compatible format with plugin v2. See [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142) for more details.  
 When you use [kinesis_firehose](#kinesis_firehose) output, [append_new_line](#append_new_line) option is `true` as default. If [append_new_line](#append_new_line) is enabled, the plugin calls chomp as [chomp_record](#chomp_record) is `true` before appending `\n` to each record. Therefore, you don't need to enable [chomp_record](#chomp_record) option when you use [kinesis_firehose](#kinesis_firehose) with default configuration. If you want to set [append_new_line](#append_new_line) `false`, you can choose [chomp_record](#chomp_record) `false` (default) or `true` (compatible format with plugin v2).
 
-## Configuraion: API
+## Configuration: API
 ### region
 AWS region of your stream. It should be in form like `us-east-1`, `us-west-2`. Refer to [Regions and Endpoints in AWS General Reference][region] for supported regions.
 
@@ -308,10 +308,10 @@ The upper limit of size of each record. Default is 1 MB which is the limitation 
 HTTP proxy for API calling. Default `nil`.
 
 ### endpoint
-API endpoint URL, for testing. Defalut `nil`.
+API endpoint URL, for testing. Default `nil`.
 
 ### ssl_verify_peer
-Boolean. Disable if you want to verify ssl conncetion, for testing. Default `true`.
+Boolean. Disable if you want to verify ssl connection, for testing. Default `true`.
 
 ### debug
 Boolean. Enable if you need to debug Amazon Kinesis Data Firehose API call. Default is `false`.
