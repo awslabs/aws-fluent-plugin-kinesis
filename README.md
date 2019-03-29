@@ -241,6 +241,27 @@ Path to the shared file. Defaults to "#{Dir.home}/.aws/credentials".
 
 Defaults to 'default' or `[ENV]('AWS_PROFILE')`.
 
+### process_credentials
+
+This loads AWS access credentials from an external process.
+
+    <match *>
+      @type kinesis_streams
+
+      <process_credentials>
+        process CMD
+      </process_credentials>
+    </match>
+
+See also:
+
+*   [Aws::ProcessCredentials](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/ProcessCredentials.html)
+*   [Sourcing Credentials From External Processes](https://docs.aws.amazon.com/cli/latest/topic/config-vars.html#sourcing-credentials-from-external-processes)
+
+**process (required)**
+
+Command to be executed as an external process.
+
 ## Configuration: Format
 
 ### format (section)
