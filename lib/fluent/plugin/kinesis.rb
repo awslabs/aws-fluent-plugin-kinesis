@@ -57,6 +57,11 @@ module Fluent
       config_param :data_key,              :string,  default: nil
       config_param :log_truncate_max_size, :integer, default: 1024
       config_param :compression,           :string,  default: nil
+
+      desc "Formatter calls chomp and removes separator from the end of each record. This option is for compatible format with plugin v2. (default: false)"
+      # https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142
+      config_param :chomp_record,          :bool,    default: false
+
       config_section :format do
         config_set_default :@type, 'json'
       end
@@ -84,10 +89,20 @@ module Fluent
         formatter = formatter_create
         compressor = compressor_create
         if @data_key.nil?
-          ->(tag, time, record) {
-            record = inject_values_to_record(tag, time, record)
-            compressor.call(formatter.format(tag, time, record).chomp.b)
-          }
+          if @chomp_record
+            ->(tag, time, record) {
+              record = inject_values_to_record(tag, time, record)
+              # Formatter calls chomp and removes separator from the end of each record.
+              # This option is for compatible format with plugin v2.
+              # https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142
+              compressor.call(formatter.format(tag, time, record).chomp.b)
+            }
+          else
+            ->(tag, time, record) {
+              record = inject_values_to_record(tag, time, record)
+              compressor.call(formatter.format(tag, time, record).b)
+            }
+          end
         else
           ->(tag, time, record) {
             raise InvalidRecordError, record unless record.is_a? Hash

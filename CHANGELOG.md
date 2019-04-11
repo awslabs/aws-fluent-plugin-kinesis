@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 3.0.0
+
+Plugin v3 is almost compatible with v2. You can use v3 with the same configuration as v2. For more details, please see [README](README.md).
+
+- Enhancement - Use modularized AWS SDK v3 since fluent-plugin-s3 also supports it : [#152](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/152)
+- Enhancement - Remove support for Fluentd v0.12 and use new Plugin API : [#156](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/156) (also fix [#133](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133))
+- Enhancement / Breaking change - Remove *chomp* method from internal formatter : [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142) [#144](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/144)
+- Enhancement - Add *chomp_record* option for compatible format with plugin v2 : [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142)
+- Bug - Fix undefined method error in flushing buffers : [#133](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133)
+- Bug - Fix dependency problem on AWS SDK : [#161](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/161)
+
 ## 2.1.1
 
 - Bug - Fix require aws-sdk-core before requiring the aws related libraries [#140](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/140)

@@ -15,9 +15,6 @@
 require 'aws-sdk-core'
 require 'fluent/test'
 require 'fluent/test/helpers'
-def aws_sdk_v2?
-  @aws_sdk_v2 ||= Gem.loaded_specs['aws-sdk-core'].version < Gem::Version.create('3')
-end
 def driver_run(d, records, time: nil)
   time ||= event_time("2011-01-02 13:14:15 UTC")
   d.instance.log.out.flush_logs = false
@@ -27,11 +24,7 @@ def driver_run(d, records, time: nil)
 end
 require 'fluent/test/log'
 require 'fluent/test/driver/output'
-if aws_sdk_v2?
-  require 'aws-sdk'
-else
-  require 'aws-sdk-firehose'
-end
+require 'aws-sdk-firehose'
 require_relative './dummy_server'
 require 'test/unit'
 require 'mocha/test_unit'
