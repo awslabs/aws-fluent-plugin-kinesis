@@ -79,7 +79,7 @@ module Fluent
                 yield(batch, size)
                 batch = []
                 size = 0
-        end
+              end
               batch << record
               size += record_size
             end
