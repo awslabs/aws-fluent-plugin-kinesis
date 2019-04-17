@@ -63,6 +63,10 @@ module Fluent
             desc "Profile name. Default to 'default' or ENV['AWS_PROFILE']"
             config_param :profile_name, :string, default: nil
           end
+          config_section :process_credentials, multi: false do
+            desc "External process to execute."
+            config_param :process, :string
+          end
         end
 
         def self.included(mod)
@@ -146,6 +150,13 @@ module Fluent
             credentials_options[:path] = c.path if c.path
             credentials_options[:profile_name] = c.profile_name if c.profile_name
             options[:credentials] = Aws::SharedCredentials.new(credentials_options)
+          when @process_credentials
+            if Gem::Version.new(Aws::CORE_GEM_VERSION) < Gem::Version.new('3.24.0')
+              raise Fluent::ConfigError, "Config process_credentials requires aws-sdk-core >= 3.24.0. Found aws-sdk-core #{Aws::CORE_GEM_VERSION} instead."
+            end
+            c = @process_credentials
+            process = c.process
+            options[:credentials] = Aws::ProcessCredentials.new(process)
           else
             # Use default credentials
             # See http://docs.aws.amazon.com/sdkforruby/api/Aws/S3/Client.html
