@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.1.0
+
+- Feature - Add process_credentials configuration : [#178](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/178)
+
 ## 3.0.0
 
 Plugin v3 is almost compatible with v2. You can use v3 with the same configuration as v2. For more details, please see [README](README.md).
