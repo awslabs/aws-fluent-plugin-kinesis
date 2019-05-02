@@ -151,8 +151,8 @@ module Fluent
             credentials_options[:profile_name] = c.profile_name if c.profile_name
             options[:credentials] = Aws::SharedCredentials.new(credentials_options)
           when @process_credentials
-            if Gem::Version.new(Aws::CORE_GEM_VERSION) < Gem::Version.new('3.24.0')
-              raise Fluent::ConfigError, "Config process_credentials requires aws-sdk-core >= 3.24.0. Found aws-sdk-core #{Aws::CORE_GEM_VERSION} instead."
+            if Gem::Version.new(Aws::CORE_GEM_VERSION) < Gem::Version.new('3.48.6')
+              raise Fluent::ConfigError, "Config process_credentials requires aws-sdk-core >= 3.48.6. Found aws-sdk-core #{Aws::CORE_GEM_VERSION} instead."
             end
             c = @process_credentials
             process = c.process

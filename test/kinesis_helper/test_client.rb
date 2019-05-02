@@ -90,7 +90,7 @@ class KinesisHelperClientTest < Test::Unit::TestCase
   end
 
   def test_process_credentials
-    omit_if(Gem::Version.new(Aws::CORE_GEM_VERSION) < Gem::Version.new('3.24.0'))
+    omit_if(Gem::Version.new(Aws::CORE_GEM_VERSION) < Gem::Version.new('3.48.6'))
     credentials = MockClientProcessCredentials.new.client.config.credentials
     assert_equal 'akid',          credentials.credentials.access_key_id
     assert_equal 'secret',        credentials.credentials.secret_access_key
@@ -98,7 +98,7 @@ class KinesisHelperClientTest < Test::Unit::TestCase
   end
 
   def test_process_credentials_config_error
-    omit_if(Gem::Version.new(Aws::CORE_GEM_VERSION) >= Gem::Version.new('3.24.0'))
+    omit_if(Gem::Version.new(Aws::CORE_GEM_VERSION) >= Gem::Version.new('3.48.6'))
     assert_raise(Fluent::ConfigError) do
       MockClientProcessCredentials.new.client.config.credentials
     end
