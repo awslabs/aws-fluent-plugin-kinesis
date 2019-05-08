@@ -82,7 +82,7 @@ Assume you use Amazon EC2 instances with Instance profile. If you want to use sp
       stream_name your_stream
       partition_key key  # Otherwise, use random partition key
     </match>
-For more detail, see [Configuration: kinesis_streams](#configuration-kinesis_streams)
+For more details, see [Configuration: kinesis_streams](#configuration-kinesis_streams).
 
 ### kinesis_firehose
     <match your_tag>
@@ -90,7 +90,7 @@ For more detail, see [Configuration: kinesis_streams](#configuration-kinesis_str
       region us-east-1
       delivery_stream_name your_stream
     </match>
-For more detail, see [Configuration: kinesis_firehose](#configuration-kinesis_firehose)
+For more details, see [Configuration: kinesis_firehose](#configuration-kinesis_firehose).
 
 ### kinesis_streams_aggregated
     <match your_tag>
@@ -100,16 +100,18 @@ For more detail, see [Configuration: kinesis_firehose](#configuration-kinesis_fi
       # Unlike kinesis_streams, there is no way to use dynamic partition key.
       # fixed_partition_key or random.
     </match>
-For more detail, see [Configuration: kinesis_streams_aggregated](#configuration-kinesis_streams_aggregated)
+For more details, see [Configuration: kinesis_streams_aggregated](#configuration-kinesis_streams_aggregated).
 
 ### For better throughput
-Add configuration like below:
+Add configurations like below:
 
       flush_interval 1
       chunk_limit_size 1m
       flush_thread_interval 0.1
       flush_thread_burst_interval 0.01
       flush_thread_count 15
+
+When you use Fluent v1.0 (td-agent3), write these configurations in buffer section. For more details, see [Buffer section configurations](https://docs.fluentd.org/articles/buffer-section).
 
 Note: Each value should be adjusted to your system by yourself.
 
@@ -131,7 +133,7 @@ AWS secret key. This parameter is required when your agent is not running on EC2
 The number of attempts to make (with exponential backoff) when loading instance profile credentials from the EC2 metadata service using an IAM role. Defaults to 5 retries.
 
 ### assume_role_credentials
-Typically, you use AssumeRole for cross-account access or federation.
+Typically, you can use AssumeRole for cross-account access or federation.
 
     <match *>
       @type kinesis_streams
@@ -265,7 +267,7 @@ Command to be executed as an external process.
 ## Configuration: Format
 
 ### format (section)
-This plugin use `Fluent::TextFormatter` to serialize record to string. For more detail, see [formatter.rb]. By default, it uses `json` formatter same as specific like below:
+This plugin uses `Fluent::TextFormatter` to serialize record to string. See [formatter.rb] for more details. By default, it uses `json` formatter same as specific like below:
 
     <match *>
       @type kinesis_streams
@@ -275,10 +277,12 @@ This plugin use `Fluent::TextFormatter` to serialize record to string. For more 
       </format>
     </match>
 
-### inject (section)
-This plugin use `Fluent::TimeFormatter` and other injection configurations. For more detail, see [inject.rb]. This section only works with Fluentd v0.14.
+For other configurations of `json` formatter, see [json Formatter Plugin](https://docs.fluentd.org/articles/formatter_json).
 
-For example, the config below will add `time` field whose value is eventtime with nanosecond and `tag` field whose value is its tag. (Mostly same as `include_time key true` and `include_tag_key true`)
+### inject (section)
+This plugin uses `Fluent::TimeFormatter` and other injection configurations. See [inject.rb] for more details.
+
+For example, the config below will add `time` field whose value is event time with nanosecond and `tag` field whose value is its tag.
 
     <match *>
       @type kinesis_streams
@@ -292,16 +296,6 @@ For example, the config below will add `time` field whose value is eventtime wit
 By default, `time_type string` and `time_format %Y-%m-%dT%H:%M:%S.%N%z` are already set to be applicable to Elasticsearch sub-second format. Although, you can use any configuration.
 
 Also, there are some format related options below:
-
-### include_time_key
-**Notice** With Fluentd v0.14, you should use inject section.
-
-Defalut `false`. If you want to include `time` field in your record, set `true`.
-
-### include_tag_key
-**Notice** With Fluentd v0.14, you should use inject section.
-
-Defalut `false`. If you want to include `tag` field in your record, set `true`.
 
 ### data_key
 If your record contains a field whose string should be sent to Amazon Kinesis directly (without formatter), use this parameter to specify the field. In that case, other fields than **data_key** are thrown away and never sent to Amazon Kinesis. Default `nil`, which means whole record will be formatted and sent.
