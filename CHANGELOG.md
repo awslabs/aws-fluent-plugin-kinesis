@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.2.0
+
+- Bug - Update protobuf dependendy to fix breaking v2 plugin issue [#183](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/183)
+
 ## 2.1.1
 
 - Bug - Fix require aws-sdk-core before requiring the aws related libraries [#140](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/140)
