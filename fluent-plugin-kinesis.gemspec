@@ -40,7 +40,7 @@ Gem::Specification.new do |spec|
   # this plugin should depend on v2 only.
   # spec.add_dependency "aws-sdk-kinesis", "~> 1"
   # spec.add_dependency "aws-sdk-firehose", "~> 1"
-  spec.add_dependency "google-protobuf", "~> 3"
+  spec.add_dependency "google-protobuf", "~> 3", "< 3.7"
 
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
