@@ -42,6 +42,8 @@ module Fluent
             config_param :external_id, :string, default: nil, secret: true
             desc "A http proxy url for requests to aws sts service"
             config_param :sts_http_proxy, :string, default: nil, secret: true
+            desc "A URL for a regional STS API endpoint, the default is global"
+            config_param :sts_endpoint_url, :string, default: nil
           end
           config_section :instance_profile_credentials, multi: false do
             desc "Number of times to retry when retrieving credentials"
@@ -125,12 +127,15 @@ module Fluent
             credentials_options[:policy] = c.policy if c.policy
             credentials_options[:duration_seconds] = c.duration_seconds if c.duration_seconds
             credentials_options[:external_id] = c.external_id if c.external_id
+            credentials_options[:sts_endpoint_url] = c.sts_endpoint_url if c.sts_endpoint_url
             if c.sts_http_proxy and @region
                 credentials_options[:client] = Aws::STS::Client.new(region: @region, http_proxy: c.sts_http_proxy)
-            elsif @region
-                credentials_options[:client] = Aws::STS::Client.new(region: @region)
+            elsif @region and c.sts_endpoint_url
+                credentials_options[:client] = Aws::STS::Client.new(region: @region, endpoint: c.sts_endpoint_url)
             elsif c.sts_http_proxy
                 credentials_options[:client] = Aws::STS::Client.new(http_proxy: c.sts_http_proxy)
+            elsif c.sts_endpoint_url
+                credentials_options[:client] = Aws::STS::Client.new(endpoint: c.sts_endpoint_url)
             end
             options[:credentials] = Aws::AssumeRoleCredentials.new(credentials_options)
           when @instance_profile_credentials
