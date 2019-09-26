@@ -419,6 +419,6 @@ Bug reports and pull requests are welcome on [GitHub][github].
 [github]: https://github.com/awslabs/aws-fluent-plugin-kinesis
 [formatter.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/formatter.rb
 [inject.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/plugin_helper/inject.rb
-[fluentd-doc-kinesis]: http://docs.fluentd.org/articles/kinesis-stream
+[fluentd-doc-kinesis]: https://docs.fluentd.org/how-to-guides/kinesis-stream
 [fluent-plugin-s3]: https://github.com/fluent/fluent-plugin-s3
 [v1-readme]: https://github.com/awslabs/aws-fluent-plugin-kinesis/blob/v1/README.md
