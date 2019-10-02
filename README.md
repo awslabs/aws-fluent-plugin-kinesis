@@ -181,6 +181,10 @@ Proxy url for proxying requests to amazon sts service api. This needs to be  set
 It should be added to assume_role_credentials configuration stanza in the next format:
     sts_http_proxy http://[username:password]@hostname:port
 
+**sts_endpoint_url**
+
+STS API endpoint url. This can be used to override the default global STS API endpoint of sts.amazonaws.com. Using regional endpoints may be preferred to reduce latency, and are required if utilizing a PrivateLink VPC Endpoint for STS API calls.
+
 ### instance_profile_credentials
 
 Retrieve temporary security credentials via HTTP request. This is useful on EC2 instance.
