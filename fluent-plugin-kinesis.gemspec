@@ -40,12 +40,20 @@ Gem::Specification.new do |spec|
   #   NoMethodError: undefined method `event=' for #<Seahorse::Model::Shapes::ShapeRef:*>
   #   https://github.com/aws/aws-sdk-ruby/commit/03d60f9d3d821e645bd2a3efca066f37350ef906#diff-c69f15af8ea3eb9ab152659476e04608R401
   #   https://github.com/aws/aws-sdk-ruby/commit/571c2d0e5ff9c24ff72893a08a74790db591fb57#diff-a55155f04aa6559460a0814e264eb0cdR43
-  spec.add_dependency "aws-sdk-kinesis", "~> 1", "!= 1.4", "!= 1.5"
+  # Exclude aws-sdk-kinesis v1.14 to avoid aws-sdk-core dependency problem with td-agent v3.4.1
+  #   LoadError: cannot load such file -- aws-sdk-core/plugins/transfer_encoding.rb
+  #   https://github.com/aws/aws-sdk-ruby/commit/bb61ed0a2fabc6b1f90b757f13f37d5aeae48d8a#diff-b493e941d32289cd2df7eebc3fc5be2cR26
+  #   https://github.com/aws/aws-sdk-ruby/commit/e26577d2a426a4be79cd2d9edc1a4a4176e388ba#diff-10f50e27b30c3dc522b3c25db5782e2e
+  spec.add_dependency "aws-sdk-kinesis", "~> 1", "!= 1.4", "!= 1.5", "!= 1.14"
   # Exclude aws-sdk-firehose v1.9 to avoid aws-sdk-core dependency problem with td-agent v3.2.1
   #   LoadError: cannot load such file -- aws-sdk-core/plugins/endpoint_discovery.rb
   #   https://github.com/aws/aws-sdk-ruby/commit/85d8538a62255e58d9e176ee524a9f94354b51a0#diff-d51486091a10ada65b308b7f45966af1R18
   #   https://github.com/aws/aws-sdk-ruby/commit/7c9584bc6473100df9aec9333ab491ad4faeeca8#diff-be94f87e58e00329a6c0e03e43d5c292
-  spec.add_dependency "aws-sdk-firehose", "~> 1", "!= 1.5", "!= 1.9"
+  # Exclude aws-sdk-firehose v1.15 to avoid aws-sdk-core dependency problem with td-agent v3.4.1
+  #   LoadError: cannot load such file -- aws-sdk-core/plugins/transfer_encoding.rb
+  #   https://github.com/aws/aws-sdk-ruby/commit/bb61ed0a2fabc6b1f90b757f13f37d5aeae48d8a#diff-d51486091a10ada65b308b7f45966af1R26
+  #   https://github.com/aws/aws-sdk-ruby/commit/e26577d2a426a4be79cd2d9edc1a4a4176e388ba#diff-10f50e27b30c3dc522b3c25db5782e2e
+  spec.add_dependency "aws-sdk-firehose", "~> 1", "!= 1.5", "!= 1.9", "!= 1.15"
 
   spec.add_dependency "google-protobuf", "~> 3"
 
