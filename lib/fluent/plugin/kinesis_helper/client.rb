@@ -21,15 +21,15 @@ module Fluent
       module Client
         module ClientParams
           include Fluent::Configurable
-          config_param :region, :string,  default: nil
+          config_param :region,          :string,  default: nil
 
           config_param :http_proxy,      :string, default: nil, secret: true
           config_param :endpoint,        :string, default: nil
           config_param :ssl_verify_peer, :bool,   default: true
 
-          config_param :aws_key_id,  :string, default: nil, secret: true
-          config_param :aws_sec_key, :string, default: nil, secret: true
-          config_param :aws_ses_token, :string, default: nil, secret: true
+          config_param :aws_key_id,      :string, default: nil, secret: true
+          config_param :aws_sec_key,     :string, default: nil, secret: true
+          config_param :aws_ses_token,   :string, default: nil, secret: true
           config_section :assume_role_credentials, multi: false do
             desc "The Amazon Resource Name (ARN) of the role to assume"
             config_param :role_arn, :string, secret: true
@@ -135,7 +135,7 @@ module Fluent
             credentials_options[:sts_endpoint_url] = c.sts_endpoint_url if c.sts_endpoint_url
             if c.sts_http_proxy and c.sts_endpoint_url
                 credentials_options[:client] = Aws::STS::Client.new(http_proxy: c.sts_http_proxy, endpoint: c.sts_endpoint_url)
-            elsif c.sts_http_proxy and @region
+            elsif @region and c.sts_http_proxy
                 credentials_options[:client] = Aws::STS::Client.new(region: @region, http_proxy: c.sts_http_proxy)
             elsif @region and c.sts_endpoint_url
                 credentials_options[:client] = Aws::STS::Client.new(region: @region, endpoint: c.sts_endpoint_url)
