@@ -50,7 +50,7 @@ Or just download specify your Ruby library path. Below is the sample for specify
     export RUBYLIB=$RUBYLIB:/path/to/aws-fluent-plugin-kinesis/lib
 
 ## Dependencies
- * Ruby 2.1.0+
+ * Ruby 2.3.0+
  * Fluentd 0.14.10+
 
 ## Basic Usage
