@@ -4,7 +4,7 @@ sudo: false
 
 gemfile:
   - Gemfile
-  - gemfiles/Gemfile.td-agent-3.3.0
+  - gemfiles/Gemfile.td-agent-3.5.0
 
 # Test with supported td-agent versions
 # https://support.treasuredata.com/hc/en-us/articles/360001479187-The-td-agent-ChangeLog
@@ -12,6 +12,8 @@ matrix:
   include:
     - rvm: 2.4.1
       gemfile: gemfiles/Gemfile.fluentd-0.14.10
+    - rvm: 2.4.2 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.1.0/config/projects/td-agent3.rb#L20
+      gemfile: gemfiles/Gemfile.td-agent-3.1.0
     - rvm: 2.4.2 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.1.1/config/projects/td-agent3.rb#L17
       gemfile: gemfiles/Gemfile.td-agent-3.1.1
     - rvm: 2.4.4 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.2.0/config/projects/td-agent3.rb#L22
@@ -20,6 +22,10 @@ matrix:
       gemfile: gemfiles/Gemfile.td-agent-3.2.1
     - rvm: 2.4.5 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.3.0/config/projects/td-agent3.rb#L22
       gemfile: gemfiles/Gemfile.td-agent-3.3.0
+    - rvm: 2.4.6 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.4.1/config/projects/td-agent3.rb#L22
+      gemfile: gemfiles/Gemfile.td-agent-3.4.1
+    - rvm: 2.4.6 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.5.0/config/projects/td-agent3.rb#L22
+      gemfile: gemfiles/Gemfile.td-agent-3.5.0
   fast_finish: true
 
 script: bundle exec rake test
