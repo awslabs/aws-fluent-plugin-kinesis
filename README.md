@@ -111,7 +111,7 @@ Add configurations like below:
       flush_thread_burst_interval 0.01
       flush_thread_count 15
 
-When you use Fluent v1.0 (td-agent3), write these configurations in buffer section. For more details, see [Buffer section configurations](https://docs.fluentd.org/articles/buffer-section).
+When you use Fluent v1.0 (td-agent3), write these configurations in buffer section. For more details, see [Buffer section configurations](https://docs.fluentd.org/configuration/buffer-section).
 
 Note: Each value should be adjusted to your system by yourself.
 
@@ -281,7 +281,7 @@ This plugin uses `Fluent::TextFormatter` to serialize record to string. See [for
       </format>
     </match>
 
-For other configurations of `json` formatter, see [json Formatter Plugin](https://docs.fluentd.org/articles/formatter_json).
+For other configurations of `json` formatter, see [json Formatter Plugin](https://docs.fluentd.org/formatter/json).
 
 ### inject (section)
 This plugin uses `Fluent::TimeFormatter` and other injection configurations. See [inject.rb] for more details.
@@ -419,7 +419,7 @@ Bug reports and pull requests are welcome on [GitHub][github].
 [td-agent]: https://github.com/treasure-data/td-agent
 [bundler]: http://bundler.io/
 [region]: http://docs.aws.amazon.com/general/latest/gr/rande.html#ak_region
-[fluentd_buffer]: http://docs.fluentd.org/articles/buffer-plugin-overview
+[fluentd_buffer]: https://docs.fluentd.org/buffer
 [github]: https://github.com/awslabs/aws-fluent-plugin-kinesis
 [formatter.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/formatter.rb
 [inject.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/plugin_helper/inject.rb
