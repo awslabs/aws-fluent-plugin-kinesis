@@ -5,7 +5,7 @@
 [![Gem Version](https://badge.fury.io/rb/fluent-plugin-kinesis.svg)](https://rubygems.org/gems/fluent-plugin-kinesis)
 
 [Fluentd][fluentd] output plugin
-that sends events to [Amazon Kinesis Data Streams][streams] and [Amazon Kinesis Data Firehose][firehose]. Also it supports [KPL Aggregated record format][kpl]. This gem includes three output plugins respectively:
+that sends events to [Amazon Kinesis Data Streams][streams] and [Amazon Kinesis Data Firehose][firehose]. Also it supports [KPL Aggregated Record Format][kpl]. This gem includes three output plugins respectively:
 
 - `kinesis_streams`
 - `kinesis_firehose`
@@ -111,7 +111,7 @@ Add configurations like below:
       flush_thread_burst_interval 0.01
       flush_thread_count 15
 
-When you use Fluent v1.0 (td-agent3), write these configurations in buffer section. For more details, see [Buffer section configurations](https://docs.fluentd.org/configuration/buffer-section).
+When you use Fluent v1.0 (td-agent3), write these configurations in buffer section. For more details, see [Config: Buffer Section][fluentd-buffer-section].
 
 Note: Each value should be adjusted to your system by yourself.
 
@@ -151,9 +151,9 @@ Typically, you can use AssumeRole for cross-account access or federation.
 See also:
 
 *   [Using IAM Roles - AWS Identity and Access
-    Management](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html)
-*   [Aws::STS::Client](http://docs.aws.amazon.com/sdkforruby/api/Aws/STS/Client.html)
-*   [Aws::AssumeRoleCredentials](http://docs.aws.amazon.com/sdkforruby/api/Aws/AssumeRoleCredentials.html)
+    Management](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html)
+*   [Aws::STS::Client](https://docs.aws.amazon.com/sdkforruby/api/Aws/STS/Client.html)
+*   [Aws::AssumeRoleCredentials](https://docs.aws.amazon.com/sdkforruby/api/Aws/AssumeRoleCredentials.html)
 
 **role_arn (required)**
 
@@ -196,11 +196,11 @@ Retrieve temporary security credentials via HTTP request. This is useful on EC2 
 
 See also:
 
-*   [Aws::InstanceProfileCredentials](http://docs.aws.amazon.com/sdkforruby/api/Aws/InstanceProfileCredentials.html)
+*   [Aws::InstanceProfileCredentials](https://docs.aws.amazon.com/sdkforruby/api/Aws/InstanceProfileCredentials.html)
 *   [Temporary Security Credentials - AWS Identity and Access
-    Management](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html)
+    Management](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html)
 *   [Instance Metadata and User Data - Amazon Elastic Compute
-    Cloud](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+    Cloud](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
 
 **retries**
 
@@ -237,7 +237,7 @@ This loads AWS access credentials from local ini file. This is useful for local 
 
 See also:
 
-*   [Aws::SharedCredentials](http://docs.aws.amazon.com/sdkforruby/api/Aws/SharedCredentials.html)
+*   [Aws::SharedCredentials](https://docs.aws.amazon.com/sdkforruby/api/Aws/SharedCredentials.html)
 
 **path**
 
@@ -281,7 +281,7 @@ This plugin uses `Fluent::TextFormatter` to serialize record to string. See [for
       </format>
     </match>
 
-For other configurations of `json` formatter, see [json Formatter Plugin](https://docs.fluentd.org/formatter/json).
+For other configurations of `json` formatter, see [json formatter plugin][fluentd-formatter-json].
 
 ### inject (section)
 This plugin uses `Fluent::TimeFormatter` and other injection configurations. See [inject.rb] for more details.
@@ -412,14 +412,15 @@ Bug reports and pull requests are welcome on [GitHub][github].
 * [Amazon Kinesis Data Streams Developer Guide](http://docs.aws.amazon.com/kinesis/latest/dev/introduction.html)
 * [Amazon Kinesis Data Firehose Developer Guide](http://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html)
 
-[fluentd]: http://fluentd.org/
+[fluentd]: https://www.fluentd.org/
 [streams]: https://aws.amazon.com/kinesis/streams/
 [firehose]: https://aws.amazon.com/kinesis/firehose/
 [kpl]: https://github.com/awslabs/amazon-kinesis-producer/blob/master/aggregation-format.md
-[td-agent]: https://github.com/treasure-data/td-agent
-[bundler]: http://bundler.io/
-[region]: http://docs.aws.amazon.com/general/latest/gr/rande.html#ak_region
-[fluentd_buffer]: https://docs.fluentd.org/buffer
+[td-agent]: https://github.com/treasure-data/omnibus-td-agent
+[bundler]: https://bundler.io/
+[region]: https://docs.aws.amazon.com/general/latest/gr/rande.html#ak_region
+[fluentd-buffer-section]: https://docs.fluentd.org/configuration/buffer-section
+[fluentd-formatter-json]: https://docs.fluentd.org/formatter/json
 [github]: https://github.com/awslabs/aws-fluent-plugin-kinesis
 [formatter.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/formatter.rb
 [inject.rb]: https://github.com/fluent/fluentd/blob/master/lib/fluent/plugin_helper/inject.rb
