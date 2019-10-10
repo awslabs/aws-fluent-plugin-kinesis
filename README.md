@@ -51,7 +51,7 @@ Or just download specify your Ruby library path. Below is the sample for specify
 
 ## Dependencies
  * Ruby 2.1.0+
- * Fluentd 0.14.10+
+ * Fluentd 0.14.22+
 
 ## Basic Usage
 Here are general procedures for using this plugin:
@@ -369,6 +369,30 @@ Here are `kinesis_streams` specific configurations.
 
 ### stream_name
 Name of the stream to put data.
+As of Fluentd v1, we can handle built-in placeholders.
+Now, this parameter is supported built-in placeholders.
+
+**NOTE:**
+Built-in placeholders request to include target key information with buffer attributes.
+
+e.g.)
+
+If you specify the following `stream_name` configuration with built-in placeholder:
+
+```aconf
+stream_name "${$.kubernetes.annotations.kinesis_stream}"
+```
+
+You ought to specify the corresponding attributes in buffer directive:
+
+```aconf
+# $.kubernetes.annotations.kinesis_stream is needed to set in buffer attributes
+<buffer $.kubernetes.annotations.kinesis_stream>
+   # ...
+</buffer>
+```
+
+In more detail, please refer [the Placeholders section in the official Fluentd](https://docs.fluentd.org/configuration/buffer-section#placeholders).
 
 ### partition_key
 A key to extract partition key from JSON object. Default `nil`, which means partition key will be generated randomly.
@@ -388,6 +412,30 @@ Here are `kinesis_streams_aggregated` specific configurations.
 
 ### stream_name
 Name of the stream to put data.
+As of Fluentd v1, we can handle built-in placeholders.
+Now, this parameter is supported built-in placeholders.
+
+**NOTE:**
+Built-in placeholders request to include target key information with buffer attributes.
+
+e.g.)
+
+If you specify the following `stream_name` configuration with built-in placeholder:
+
+```aconf
+stream_name "${$.kubernetes.annotations.kinesis_stream_aggregated}"
+```
+
+You ought to specify the corresponding attributes in buffer directive:
+
+```aconf
+# $.kubernetes.annotations.kinesis_stream_aggregated is needed to set in buffer attributes
+<buffer $.kubernetes.annotations.kinesis_stream_aggregated>
+   # ...
+</buffer>
+```
+In more detail, please refer [the Placeholders section in the official Fluentd](https://docs.fluentd.org/configuration/buffer-section#placeholders).
+
 
 ### fixed_partition_key
 A value of fixed partition key. Default `nil`, which means partition key will be generated randomly.
