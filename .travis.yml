@@ -11,7 +11,7 @@ gemfile:
 matrix:
   include:
     - rvm: 2.4.1
-      gemfile: gemfiles/Gemfile.fluentd-0.14.10
+      gemfile: gemfiles/Gemfile.fluentd-0.14.22
     - rvm: 2.4.2 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.1.0/config/projects/td-agent3.rb#L20
       gemfile: gemfiles/Gemfile.td-agent-3.1.0
     - rvm: 2.4.2 # https://github.com/treasure-data/omnibus-td-agent/blob/v3.1.1/config/projects/td-agent3.rb#L17

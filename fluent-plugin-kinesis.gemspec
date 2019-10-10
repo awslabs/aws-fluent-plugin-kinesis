@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   spec.required_ruby_version = '>= 2.3'
 
-  spec.add_dependency "fluentd", ">= 0.14.10", "< 2"
+  spec.add_dependency "fluentd", ">= 0.14.22", "< 2"
 
   # This plugin is sometimes used with s3 plugin, so watch out for conflicts
   #   https://rubygems.org/gems/fluent-plugin-s3
