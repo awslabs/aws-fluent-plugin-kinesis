@@ -25,7 +25,7 @@ Or you can install this plugin for [td-agent][td-agent] as:
 
     td-agent-gem install fluent-plugin-kinesis
 
-If you would like to build by yourself and install, please see the section below. Your need [bundler][bundler] for this.
+If you would like to build by yourself and install, see the section below. Your need [bundler][bundler] for this.
 
 In case of using with Fluentd: Fluentd will be also installed via the process below.
 
@@ -370,30 +370,30 @@ Here are `kinesis_streams` specific configurations.
 
 ### stream_name
 Name of the stream to put data.
-As of Fluentd v1, we can handle built-in placeholders.
-Now, this parameter is supported built-in placeholders.
+
+As of Fluentd v1, built-in placeholders are supported. Now, you can also use built-in placeholders for this parameter.
 
 **NOTE:**
-Built-in placeholders request to include target key information with buffer attributes.
+Built-in placeholders require target key information in your buffer section attributes.
 
 e.g.)
 
-If you specify the following `stream_name` configuration with built-in placeholder:
+When you specify the following `stream_name` configuration with built-in placeholder:
 
 ```aconf
-stream_name "${$.kubernetes.annotations.kinesis_stream}"
+stream_name "${$.kubernetes.annotations.kinesis_streams}"
 ```
 
-You ought to specify the corresponding attributes in buffer directive:
+you ought to specify the corresponding attributes in buffer section:
 
 ```aconf
-# $.kubernetes.annotations.kinesis_stream is needed to set in buffer attributes
-<buffer $.kubernetes.annotations.kinesis_stream>
+# $.kubernetes.annotations.kinesis_streams needs to be set in buffer attributes
+<buffer $.kubernetes.annotations.kinesis_streams>
    # ...
 </buffer>
 ```
 
-In more detail, please refer [the Placeholders section in the official Fluentd](https://docs.fluentd.org/configuration/buffer-section#placeholders).
+For more details, refer [Placeholders section in the official Fluentd document](https://docs.fluentd.org/configuration/buffer-section#placeholders).
 
 ### partition_key
 A key to extract partition key from JSON object. Default `nil`, which means partition key will be generated randomly.
@@ -413,30 +413,30 @@ Here are `kinesis_streams_aggregated` specific configurations.
 
 ### stream_name
 Name of the stream to put data.
-As of Fluentd v1, we can handle built-in placeholders.
-Now, this parameter is supported built-in placeholders.
+
+As of Fluentd v1, built-in placeholders are supported. Now, you can also use built-in placeholders for this parameter.
 
 **NOTE:**
-Built-in placeholders request to include target key information with buffer attributes.
+Built-in placeholders require target key information in your buffer section attributes.
 
 e.g.)
 
-If you specify the following `stream_name` configuration with built-in placeholder:
+When you specify the following `stream_name` configuration with built-in placeholder:
 
 ```aconf
-stream_name "${$.kubernetes.annotations.kinesis_stream_aggregated}"
+stream_name "${$.kubernetes.annotations.kinesis_streams_aggregated}"
 ```
 
-You ought to specify the corresponding attributes in buffer directive:
+you ought to specify the corresponding attributes in buffer section:
 
 ```aconf
-# $.kubernetes.annotations.kinesis_stream_aggregated is needed to set in buffer attributes
-<buffer $.kubernetes.annotations.kinesis_stream_aggregated>
+# $.kubernetes.annotations.kinesis_streams_aggregated needs to be set in buffer attributes
+<buffer $.kubernetes.annotations.kinesis_streams_aggregated>
    # ...
 </buffer>
 ```
-In more detail, please refer [the Placeholders section in the official Fluentd](https://docs.fluentd.org/configuration/buffer-section#placeholders).
 
+For more details, refer [Placeholders section in the official Fluentd document](https://docs.fluentd.org/configuration/buffer-section#placeholders).
 
 ### fixed_partition_key
 A value of fixed partition key. Default `nil`, which means partition key will be generated randomly.
