@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 3.2.0
+
+- Feature - Add placeholder support for stream names to send records to multiple streams : [#165](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/165) [#174](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/174)
+- Enhancement - Add sts_endpoint_url configuration parameter to support AWS STS regional endpoints : [#186](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/186)
+- Enhancement - Add aws_ses_token configuration parameter to use IAM with MFA and directly provided temporary credentials : [#166](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/166)
+- Dependency - Update gem dependency to Ruby 2.3.0+ and Fluentd 0.14.22+
+- Bug - Fix dependency problem on AWS SDK with td-agent v3.4.1
+
 ## 3.1.0
 
 - Feature - Add process_credentials configuration : [#178](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/178)
