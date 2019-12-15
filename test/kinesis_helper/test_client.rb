@@ -130,6 +130,16 @@ class KinesisHelperClientTest < Test::Unit::TestCase
   "Expiration" : "#{(expiration2).strftime('%Y-%m-%dT%H:%M:%SZ')}"
 }
     JSON
+
+    # Stub for IMDSv2 metadata token API
+    if Gem::Version.new(Aws::CORE_GEM_VERSION) > Gem::Version.new('3.78.0')
+      stub_request(:put, "http://169.254.169.254/latest/api/token").
+        with(
+          headers: {
+            'X-Aws-Ec2-Metadata-Token-Ttl-Seconds'=>'21600'
+          }).
+        to_return(:status => 200, :body => "aws-ec2-metadata-token\n")
+    end
     path = '/latest/meta-data/iam/security-credentials/'
     stub_request(:get, "http://169.254.169.254#{path}").
       to_return(:status => 200, :body => "profile-name\n")
