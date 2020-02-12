@@ -12,6 +12,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+require 'fluent/version'
+require 'fluent/msgpack_factory'
 require 'fluent/plugin/output'
 require 'fluent/plugin/kinesis_helper/client'
 require 'fluent/plugin/kinesis_helper/api'
@@ -20,7 +22,6 @@ require 'zlib'
 module Fluent
   module Plugin
     class KinesisOutput < Fluent::Plugin::Output
-      include Fluent::MessagePackFactory::Mixin
       include KinesisHelper::Client
       include KinesisHelper::API
 
@@ -131,6 +132,14 @@ module Fluent
       rescue SkipRecordError => e
         log.error(truncate e)
         ''
+      end
+
+      if Gem::Version.new(Fluent::VERSION) >= Gem::Version.new('1.8.0')
+        def msgpack_unpacker(*args)
+          Fluent::MessagePackFactory.msgpack_unpacker(*args)
+        end
+      else
+        include Fluent::MessagePackFactory::Mixin
       end
 
       def write_records_batch(chunk, &block)
