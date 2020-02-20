@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.2.1
+
+- Enhancement - Use Fluent::MessagePackFactory class methods instead of Mixin with Fluentd >= v1.8 : [#194](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/194) [#195](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/195)
+- Enhancement - Add td-agent 3.5.1 and Fluentd 1.9.1 to test cases
+
 ## 3.2.0
 
 - Feature - Add placeholder support for stream names to send records to multiple streams : [#165](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/165) [#174](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/174)
