@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.2.2
+
+- Enhancement - Make more strict gem pinning to deal with google-protobuf requiring Ruby 2.5+ : [#199](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/199)
+- Bug - Fix MissingRegionError when http_proxy and endpoint_url are specified : [#197](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/197)
+
 ## 3.2.1
 
 - Enhancement - Use Fluent::MessagePackFactory class methods instead of Mixin with Fluentd >= v1.8 : [#194](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/194) [#195](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/195)
