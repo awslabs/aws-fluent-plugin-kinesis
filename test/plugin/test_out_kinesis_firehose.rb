@@ -208,6 +208,61 @@ class KinesisFirehoseOutputTest < Test::Unit::TestCase
     assert @server.error_count > 0
   end
 
+  class PlaceholdersTest < self
+    def test_tag_placeholder
+      d = create_driver(
+          Fluent::Config::Element.new('ROOT', '', {
+              "delivery_stream_name" => "stream-placeholder-${tag}",
+              "@log_level" => "error",
+              "retries_on_batch_request" => 10,
+              "endpoint" => "https://localhost:#{@server.port}",
+              "ssl_verify_peer" => false,
+          }, [Fluent::Config::Element.new('buffer', 'tag', {'@type' => 'memory', }, [])])
+      )
+      record = {"a" => "test"}
+      driver_run(d, [record])
+      assert_equal("stream-placeholder-test", @server.detailed_records.first[:delivery_stream_name])
+      assert_equal 0, d.instance.log.out.logs.size
+      assert_equal (record.to_json + "\n").b, @server.records.first
+    end
+
+    def test_time_placeholder
+      d = create_driver(
+          Fluent::Config::Element.new('ROOT', '', {
+              "delivery_stream_name" => "stream-placeholder-${tag}-%Y%m%d",
+              "@log_level" => "error",
+              "retries_on_batch_request" => 10,
+              "endpoint" => "https://localhost:#{@server.port}",
+              "ssl_verify_peer" => false,
+          }, [Fluent::Config::Element.new('buffer', 'tag, time', {'@type' => 'memory', 'timekey' => 3600 }, [])])
+      )
+      record = {"a" => "test"}
+      time = event_time
+      driver_run(d, [record], time: time)
+      assert_equal("stream-placeholder-test-#{Time.now.strftime("%Y%m%d")}",
+                   @server.detailed_records.first[:delivery_stream_name])
+      assert_equal 0, d.instance.log.out.logs.size
+      assert_equal (record.to_json + "\n").b, @server.records.first
+    end
+
+    def test_custom_placeholder
+      d = create_driver(
+          Fluent::Config::Element.new('ROOT', '', {
+              "delivery_stream_name" => "stream-placeholder-${$.key.nested}",
+              "@log_level" => "error",
+              "retries_on_batch_request" => 10,
+              "endpoint" => "https://localhost:#{@server.port}",
+              "ssl_verify_peer" => false,
+          }, [Fluent::Config::Element.new('buffer', '$.key.nested', {'@type' => 'memory', }, [])])
+      )
+      record = {"key" => {"nested" => "nested-value"}}
+      driver_run(d, [record])
+      assert_equal("stream-placeholder-nested-value", @server.detailed_records.first[:delivery_stream_name])
+      assert_equal 0, d.instance.log.out.logs.size
+      assert_equal (record.to_json + "\n").b, @server.records.first
+    end
+  end
+
   # Debug test case for the issue that it fails to flush the buffer
   # https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133
   #def test_chunk_limit_size_for_debug

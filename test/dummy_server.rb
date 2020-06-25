@@ -245,7 +245,7 @@ class DummyServer
   def put_record_boby(req)
     body = JSON.parse(req.body)
     record = {'Data' => body['Data'], 'PartitionKey' => body['PartitionKey']}
-    @accepted_records << {:stream_name => body['StreamName'], :record => record} if recording?
+    @accepted_records << {:stream_name => body['StreamName'], :delivery_stream_name => body['DeliveryStreamName'], :record => record} if recording?
     {
       "SequenceNumber" => "21269319989653637946712965403778482177",
       "ShardId" => "shardId-000000000001"
@@ -278,7 +278,7 @@ class DummyServer
           "ErrorMessage" => "Rate exceeded for shard shardId-000000000001 in stream exampleStreamName under account 111111111111."
         }
       else
-        @accepted_records << {:stream_name => body['StreamName'], :record => record} if recording?
+        @accepted_records << {:stream_name => body['StreamName'], :delivery_stream_name => body['DeliveryStreamName'], :record => record} if recording?
         {
           "SequenceNumber" => "49543463076548007577105092703039560359975228518395019266",
           "ShardId" => "shardId-000000000000"
@@ -303,7 +303,7 @@ class DummyServer
           "ErrorMessage" => "Some message"
         }
       else
-        @accepted_records << {:stream_name => body['StreamName'], :record => record} if recording?
+        @accepted_records << {:stream_name => body['StreamName'], :delivery_stream_name => body['DeliveryStreamName'], :record => record} if recording?
         {
           "RecordId" => "49543463076548007577105092703039560359975228518395019266",
         }
@@ -323,13 +323,13 @@ class DummyServer
       if @aggregator.aggregated?(data)
         agg_data = @aggregator.deaggregate(data)[0]
         if detailed
-          {:stream_name => record[:stream_name], :data => agg_data, :partition_key => partition_key}
+          {:stream_name => record[:stream_name], :delivery_stream_name => record[:delivery_stream_name], :data => agg_data, :partition_key => partition_key}
         else
           agg_data
         end
       else
         if detailed
-          {:stream_name => record[:stream_name], :data => data, :partition_key => partition_key}
+          {:stream_name => record[:stream_name], :delivery_stream_name => record[:delivery_stream_name], :data => data, :partition_key => partition_key}
         else
           data
         end
