@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.2.3
+
+- Enhancement - Add placeholder support for delivery_stream_name of kinesis_firehose : [#203](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/203) [#204](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/204)
+
 ## 3.2.2
 
 - Enhancement - Make more strict gem pinning to deal with google-protobuf requiring Ruby 2.5+ : [#199](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/199)
