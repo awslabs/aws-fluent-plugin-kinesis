@@ -404,6 +404,30 @@ Here are `kinesis_firehose` specific configurations.
 ### delivery_stream_name
 Name of the delivery stream to put data.
 
+As of Fluentd v1, built-in placeholders are supported. Now, you can also use built-in placeholders for this parameter.
+
+**NOTE:**
+Built-in placeholders require target key information in your buffer section attributes.
+
+e.g.)
+
+When you specify the following `delivery_stream_name` configuration with built-in placeholder:
+
+```aconf
+delivery_stream_name "${$.kubernetes.annotations.kinesis_firehose_streams}"
+```
+
+you ought to specify the corresponding attributes in buffer section:
+
+```aconf
+# $.kubernetes.annotations.kinesis_firehose_streams needs to be set in buffer attributes
+<buffer $.kubernetes.annotations.kinesis_firehose_streams>
+   # ...
+</buffer>
+```
+
+For more details, refer [Placeholders section in the official Fluentd document](https://docs.fluentd.org/configuration/buffer-section#placeholders).
+
 ### append_new_line
 Boolean. Default `true`. If it is enabled, the plugin adds new line character (`\n`) to each serialized record.  
 Before appending `\n`, plugin calls chomp and removes separator from the end of each record as [chomp_record](#chomp_record) is `true`. Therefore, you don't need to enable [chomp_record](#chomp_record) option when you use [kinesis_firehose](#kinesis_firehose) output with default configuration ([append_new_line](#append_new_line) is `true`). If you want to set [append_new_line](#append_new_line) `false`, you can choose [chomp_record](#chomp_record) `false` (default) or `true` (compatible format with plugin v2).
