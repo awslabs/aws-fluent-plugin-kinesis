@@ -14,6 +14,7 @@
 
 require_relative '../helper'
 require 'fluent/plugin/kinesis_helper/client'
+require 'tempfile'
 
 class KinesisHelperClientTest < Test::Unit::TestCase
   class ProcessCredentials
@@ -49,6 +50,19 @@ class KinesisHelperClientTest < Test::Unit::TestCase
     def initialize
       @region = 'us-east-1'
       @process_credentials = ProcessCredentials
+    end
+
+    def request_type
+      :firehose
+    end
+  end
+
+  class MockWebIndentityCredentials
+    include Fluent::Plugin::KinesisHelper::Client
+    include Fluent::Configurable
+
+    def initialize
+      @region = 'us-east-1'
     end
 
     def request_type
@@ -101,6 +115,41 @@ class KinesisHelperClientTest < Test::Unit::TestCase
     omit_if(Gem::Version.new(Aws::CORE_GEM_VERSION) >= Gem::Version.new('3.24.0'))
     assert_raise(Fluent::ConfigError) do
       MockClientProcessCredentials.new.client.config.credentials
+    end
+  end
+
+  class WebIdentityCredentialsTest < self
+    def setup
+      sts = Aws::STS::Client.new(region: 'us-east-1', stub_responses: true)
+      Aws::STS::Client.stubs(:new).with(anything).returns(sts)
+    end
+
+    def test_web_identity_credentials
+      omit_if(Gem::Version.new(Aws::CORE_GEM_VERSION) < Gem::Version.new('3.65.0'))
+
+      Tempfile.open("kinesis-") do |token_file|
+        token_file.write("a token!")
+        token_file.flush
+
+        config = Fluent::Config::Element.new(
+          'ROOT', '', {'region' => 'us-east-1'}, [
+            Fluent::Config::Element.new('web_identity_credentials', '', {
+                                          'role_arn' => 'arn',
+                                          'web_identity_token_file' => token_file.path,
+                                          'role_session_name' => 'session-name',
+                                        }, [])
+          ])
+        credentials = MockWebIndentityCredentials.new
+        credentials.configure(config)
+        creds = credentials.client.config.credentials
+        assert_true creds.is_a?(Aws::AssumeRoleWebIdentityCredentials)
+        expected_creds = Aws::AssumeRoleCredentials.new(
+          role_arn: 'arn',
+          web_identity_token_file: token_file.path,
+          role_session_name: 'session-name',
+        )
+        assert_equal expected_creds.client, creds.client
+      end
     end
   end
 
