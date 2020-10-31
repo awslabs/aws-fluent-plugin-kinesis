@@ -1,5 +1,42 @@
 # CHANGELOG
 
+## 3.2.3
+
+- Enhancement - Add placeholder support for delivery_stream_name of kinesis_firehose : [#203](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/203) [#204](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/204)
+
+## 3.2.2
+
+- Enhancement - Make more strict gem pinning to deal with google-protobuf requiring Ruby 2.5+ : [#199](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/199)
+- Bug - Fix MissingRegionError when http_proxy and endpoint_url are specified : [#197](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/197)
+
+## 3.2.1
+
+- Enhancement - Use Fluent::MessagePackFactory class methods instead of Mixin with Fluentd >= v1.8 : [#194](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/194) [#195](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/195)
+- Enhancement - Add td-agent 3.5.1 and Fluentd 1.9.1 to test cases
+
+## 3.2.0
+
+- Feature - Add placeholder support for stream names to send records to multiple streams : [#165](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/165) [#174](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/174)
+- Enhancement - Add sts_endpoint_url configuration parameter to support AWS STS regional endpoints : [#186](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/186)
+- Enhancement - Add aws_ses_token configuration parameter to use IAM with MFA and directly provided temporary credentials : [#166](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/166)
+- Dependency - Update gem dependency to Ruby 2.3.0+ and Fluentd 0.14.22+
+- Bug - Fix dependency problem on AWS SDK with td-agent v3.4.1
+
+## 3.1.0
+
+- Feature - Add process_credentials configuration : [#178](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/178)
+
+## 3.0.0
+
+Plugin v3 is almost compatible with v2. You can use v3 with the same configuration as v2. For more details, please see [README](README.md).
+
+- Enhancement - Use modularized AWS SDK v3 since fluent-plugin-s3 also supports it : [#152](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/152)
+- Enhancement - Remove support for Fluentd v0.12 and use new Plugin API : [#156](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/156) (also fix [#133](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133))
+- Enhancement / Breaking change - Remove *chomp* method from internal formatter : [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142) [#144](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/144)
+- Enhancement - Add *chomp_record* option for compatible format with plugin v2 : [#142](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/142)
+- Bug - Fix undefined method error in flushing buffers : [#133](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133)
+- Bug - Fix dependency problem on AWS SDK : [#161](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/161)
+
 ## 2.1.1
 
 - Bug - Fix require aws-sdk-core before requiring the aws related libraries [#140](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/140)

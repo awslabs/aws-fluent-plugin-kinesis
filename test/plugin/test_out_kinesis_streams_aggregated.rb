@@ -79,7 +79,18 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
     formatter, expected = data
     d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>")
     driver_run(d, [{"a"=>1,"b"=>2}])
-    assert_equal expected, @server.records.first
+    assert_equal (expected + "\n").b, @server.records.first
+  end
+
+  data(
+    'json' => ['json', '{"a":1,"b":2}'],
+    'ltsv' => ['ltsv', "a:1\tb:2"],
+  )
+  def test_format_with_chomp_record(data)
+    formatter, expected = data
+    d = create_driver(default_config + "<format>\n@type #{formatter}\n</format>\nchomp_record true")
+    driver_run(d, [{"a"=>1,"b"=>2}])
+    assert_equal expected.b, @server.records.first
   end
 
   def test_data_key
@@ -172,7 +183,7 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
     record = {"a" => "てすと"}
     driver_run(d, [record])
     assert_equal 0, d.instance.log.out.logs.size
-    assert_equal record.to_json.b, @server.records.first
+    assert_equal (record.to_json + "\n").b, @server.records.first
   end
 
   data(
@@ -200,4 +211,95 @@ class KinesisStreamsOutputAggregatedTest < Test::Unit::TestCase
     assert @server.error_count > 0
     assert @server.raw_records.size < count
   end
+
+  class PlaceholdersTest < self
+    def test_tag_placeholder
+      d = create_driver(
+        Fluent::Config::Element.new('ROOT', '', {
+                                      "stream_name"  => "stream-placeholder-${tag}",
+                                      "@log_level" => "error",
+                                      "retries_on_batch_request" => 10,
+                                      "endpoint" => "https://localhost:#{@server.port}",
+                                      "ssl_verify_peer" => false,
+                                    },[
+                                      Fluent::Config::Element.new('buffer', 'tag', {
+                                                                    '@type' => 'memory',
+                                                                  }, [])
+                                    ])
+      )
+
+      record = {"a" => "test"}
+      driver_run(d, [record])
+      assert_equal("stream-placeholder-test", @server.detailed_records.first[:stream_name])
+      assert_equal 0, d.instance.log.out.logs.size
+      assert_equal (record.to_json + "\n").b, @server.records.first
+    end
+
+    def test_time_placeholder
+      d = create_driver(
+        Fluent::Config::Element.new('ROOT', '', {
+                                      "stream_name"  => "stream-placeholder-${tag}-%Y%m%d",
+                                      "@log_level" => "error",
+                                      "retries_on_batch_request" => 10,
+                                      "endpoint" => "https://localhost:#{@server.port}",
+                                      "ssl_verify_peer" => false,
+                                    },[
+                                      Fluent::Config::Element.new('buffer', 'tag, time', {
+                                                                    '@type' => 'memory',
+                                                                    'timekey' => 3600
+                                                                  }, [])
+                                    ])
+      )
+
+      record = {"a" => "test"}
+      time = event_time
+      driver_run(d, [record], time: time)
+      assert_equal("stream-placeholder-test-#{Time.now.strftime("%Y%m%d")}",
+                   @server.detailed_records.first[:stream_name])
+      assert_equal 0, d.instance.log.out.logs.size
+      assert_equal (record.to_json + "\n").b, @server.records.first
+    end
+
+    def test_custom_placeholder
+      d = create_driver(
+        Fluent::Config::Element.new('ROOT', '', {
+                                      "stream_name"  => "stream-placeholder-${$.key.nested}",
+                                      "@log_level" => "error",
+                                      "retries_on_batch_request" => 10,
+                                      "endpoint" => "https://localhost:#{@server.port}",
+                                      "ssl_verify_peer" => false,
+                                    },[
+                                      Fluent::Config::Element.new('buffer', '$.key.nested', {
+                                                                    '@type' => 'memory',
+                                                                  }, [])
+                                    ])
+      )
+
+      record = {"key" => {"nested" => "nested-value"}}
+      driver_run(d, [record])
+      assert_equal("stream-placeholder-nested-value", @server.detailed_records.first[:stream_name])
+      assert_equal 0, d.instance.log.out.logs.size
+      assert_equal (record.to_json + "\n").b, @server.records.first
+    end
+  end
+
+  # Debug test case for the issue that it fails to flush the buffer
+  # https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/133
+  #def test_chunk_limit_size_for_debug
+  #  config = <<-CONF
+  #    log_level warn
+  #    <buffer>
+  #      chunk_limit_size "1m"
+  #    </buffer>
+  #  CONF
+  #  d = create_driver(default_config + config)
+  #  d.run(wait_flush_completion: true, force_flush_retry: true) do
+  #    10.times do
+  #      time = Fluent::EventTime.now
+  #      events = Array.new(Kernel.rand(3000..5000)).map { [time, { msg: "x" * 256 }] }
+  #      d.feed("test", events)
+  #    end
+  #  end
+  #  d.logs.each { |log_record| assert_not_match(/NoMethodError/, log_record) }
+  #end
 end

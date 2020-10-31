@@ -16,11 +16,39 @@ require_relative '../helper'
 require 'fluent/plugin/kinesis_helper/client'
 
 class KinesisHelperClientTest < Test::Unit::TestCase
-  class Mock
+  class ProcessCredentials
+    def self.process
+      expiration = Time.now.utc + 3600
+      response = {
+          :SecretAccessKey => "secret",
+          :SessionToken => "session-token",
+          :Version => 1,
+          :Expiration => expiration.strftime('%Y-%m-%dT%H:%M:%SZ'),
+          :AccessKeyId => "akid"
+      }.to_json
+
+      "echo '#{response}'"
+    end
+  end
+
+  class MockClientInstanceProfile
     include Fluent::Plugin::KinesisHelper::Client
 
     def initialize
       @region = 'us-east-1'
+    end
+
+    def request_type
+      :firehose
+    end
+  end
+
+  class MockClientProcessCredentials
+    include Fluent::Plugin::KinesisHelper::Client
+
+    def initialize
+      @region = 'us-east-1'
+      @process_credentials = ProcessCredentials
     end
 
     def request_type
@@ -35,8 +63,6 @@ class KinesisHelperClientTest < Test::Unit::TestCase
   def setup
     WebMock.enable!
     FakeFS.activate!
-    @object = Mock.new
-    Aws.shared_config.fresh
   end
 
   def teardown
@@ -46,19 +72,36 @@ class KinesisHelperClientTest < Test::Unit::TestCase
   end
 
   def test_instance_profile
+    Aws.shared_config.fresh
     setup_instance_profile
-    credentials = @object.client.config.credentials
+    credentials = MockClientInstanceProfile.new.client.config.credentials
     assert_equal 'akid',          credentials.credentials.access_key_id
     assert_equal 'secret',        credentials.credentials.secret_access_key
     assert_equal 'session-token', credentials.credentials.session_token
   end
 
   def test_instance_profile_refresh
+    Aws.shared_config.fresh
     setup_instance_profile(Time.now.utc + 299)
-    credentials = @object.client.config.credentials
+    credentials = MockClientInstanceProfile.new.client.config.credentials
     assert_equal 'akid-2',          credentials.credentials.access_key_id
     assert_equal 'secret-2',        credentials.credentials.secret_access_key
     assert_equal 'session-token-2', credentials.credentials.session_token
+  end
+
+  def test_process_credentials
+    omit_if(Gem::Version.new(Aws::CORE_GEM_VERSION) < Gem::Version.new('3.24.0'))
+    credentials = MockClientProcessCredentials.new.client.config.credentials
+    assert_equal 'akid',          credentials.credentials.access_key_id
+    assert_equal 'secret',        credentials.credentials.secret_access_key
+    assert_equal 'session-token', credentials.credentials.session_token
+  end
+
+  def test_process_credentials_config_error
+    omit_if(Gem::Version.new(Aws::CORE_GEM_VERSION) >= Gem::Version.new('3.24.0'))
+    assert_raise(Fluent::ConfigError) do
+      MockClientProcessCredentials.new.client.config.credentials
+    end
   end
 
   private
@@ -87,6 +130,16 @@ class KinesisHelperClientTest < Test::Unit::TestCase
   "Expiration" : "#{(expiration2).strftime('%Y-%m-%dT%H:%M:%SZ')}"
 }
     JSON
+
+    # Stub for IMDSv2 metadata token API
+    if Gem::Version.new(Aws::CORE_GEM_VERSION) > Gem::Version.new('3.78.0')
+      stub_request(:put, "http://169.254.169.254/latest/api/token").
+        with(
+          headers: {
+            'X-Aws-Ec2-Metadata-Token-Ttl-Seconds'=>'21600'
+          }).
+        to_return(:status => 200, :body => "aws-ec2-metadata-token\n")
+    end
     path = '/latest/meta-data/iam/security-credentials/'
     stub_request(:get, "http://169.254.169.254#{path}").
       to_return(:status => 200, :body => "profile-name\n")
