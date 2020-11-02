@@ -55,7 +55,7 @@ Gem::Specification.new do |spec|
   #   https://github.com/aws/aws-sdk-ruby/commit/e26577d2a426a4be79cd2d9edc1a4a4176e388ba#diff-10f50e27b30c3dc522b3c25db5782e2e
   spec.add_dependency "aws-sdk-firehose", "~> 1", "!= 1.5", "!= 1.9", "!= 1.15"
 
-  spec.add_dependency "google-protobuf", "~> 3", "< 3.12"
+  spec.add_dependency "google-protobuf", "~> 3"
 
   spec.add_development_dependency "bundler", ">= 1.10"
   spec.add_development_dependency "rake", ">= 10.0"
