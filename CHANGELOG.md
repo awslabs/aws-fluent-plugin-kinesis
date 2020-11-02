@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 3.3.0
+
+- Feature - Add web_identity_credentials configuration for IRSA : [#208](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/208) [#209](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/209)
+- Enhancement - Remove strict gem pinning of google-protobuf to support Ruby 2.7 : [#199](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/199) [#206](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/206)
+- Enhancement - Add td-agent v4 (4.0.1) and Fluentd 1.11.2 to test cases
+
 ## 3.2.3
 
 - Enhancement - Add placeholder support for delivery_stream_name of kinesis_firehose : [#203](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/203) [#204](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/204)
