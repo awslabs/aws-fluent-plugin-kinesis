@@ -4,3 +4,5 @@ to the Fluent Plugin for Amazon Kinesis Streams and Amazon Kinesis Firehose. Giv
 Genki Sugawara
 sgwr_dts@yahoo.co.jp
 https://github.com/winebarrel
+https://github.com/adammw
+https://github.com/cosmo0920
