@@ -408,6 +408,17 @@ Default:
 - `kinesis_firehose`: 4 MB
 - `kinesis_streams_aggregated`: 1 MB
 
+### raise_error_on_batch_request_failure
+Boolean, default `false`.
+
+If *raise_error_on_batch_request_failure* is disabled (default), the plugin will give up sending records when we get batch request failure after retrying max times configured as *retries_on_batch_request*. This giving up
+can be monitored from [monitor_agent](https://docs.fluentd.org/input/monitor_agent) or [fluent-plugin-prometheus](https://docs.fluentd.org/monitoring-fluentd/monitoring-prometheus) as *retry_count* or *num_errors* metrics.
+
+If *raise_error_on_batch_request_failure* is enabled, the plugin will raise error and return chunk to Fluentd buffer when we get batch request failure after retrying max times. Fluentd will retry to send chunk records according to retry config in [Buffer Section](https://docs.fluentd.org/configuration/buffer-section). Note that this retryng may create duplicate records since [PutRecords API](https://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecords.html) of Kinesis Data Streams and [PutRecordBatch API](https://docs.aws.amazon.com/firehose/latest/APIReference/API_PutRecordBatch.html) of Kinesis Data Firehose may return a partially successful response.
+
+### monitor_num_of_batch_request_retries
+Boolean, default `false`. If enabled, the plugin will increment *retry_count* monitoring metrics after internal retrying to send batch request. This configuration enables you to monitor [ProvisionedThroughputExceededException](https://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecords.html) from [monitor_agent](https://docs.fluentd.org/input/monitor_agent) or [fluent-plugin-prometheus](https://docs.fluentd.org/monitoring-fluentd/monitoring-prometheus). Note that *retry_count* metrics will be counted by the plugin in addition to original Fluentd buffering mechanism if *monitor_num_of_batch_request_retries* is enabled.
+
 ## Configuration: kinesis_streams
 Here are `kinesis_streams` specific configurations.
 

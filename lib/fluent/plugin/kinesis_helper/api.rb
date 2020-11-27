@@ -41,10 +41,12 @@ module Fluent
         module BatchRequest
           module BatchRequestParams
             include Fluent::Configurable
-            config_param :retries_on_batch_request, :integer, default: 8
-            config_param :reset_backoff_if_success, :bool,    default: true
-            config_param :batch_request_max_count,  :integer, default: nil
-            config_param :batch_request_max_size,   :integer, default: nil
+            config_param :retries_on_batch_request,             :integer, default: 8
+            config_param :reset_backoff_if_success,             :bool,    default: true
+            config_param :batch_request_max_count,              :integer, default: nil
+            config_param :batch_request_max_size,               :integer, default: nil
+            config_param :raise_error_on_batch_request_failure, :bool,    default: false
+            config_param :monitor_num_of_batch_request_retries, :bool,    default: false
           end
 
           def self.included(mod)
@@ -97,6 +99,8 @@ module Fluent
                 wait_second = backoff.next
                 msg = 'Retrying to request batch. Retry count: %3d, Retry records: %3d, Wait seconds %3.2f' % [retry_count+1, failed_records.size, wait_second]
                 log.warn(truncate msg)
+                # Increment num_errors to monitor batch request retries from "monitor_agent" or "fluent-plugin-prometheus"
+                increment_num_errors if @monitor_num_of_batch_request_retries
                 reliable_sleep(wait_second)
                 batch_request_with_retry(retry_records(failed_records), retry_count+1, backoff: backoff, &block)
               else
@@ -173,6 +177,49 @@ module Fluent
                 record[:original]
               ])
             }
+
+            if @raise_error_on_batch_request_failure
+              # Raise error and return chunk to Fluentd for retrying
+              case request_type
+              # @see https://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecords.html
+              # @see https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/Kinesis/Client.html#put_records-instance_method
+              # @see https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/Kinesis/Errors.html
+              when :streams, :streams_aggregated
+                provisioned_throughput_exceeded_records = failed_records.select { |record| record[:error_code] == 'ProvisionedThroughputExceededException' }
+                target_failed_record = provisioned_throughput_exceeded_records.first || failed_records.first
+                target_error = provisioned_throughput_exceeded_records.empty? ?
+                  Aws::Kinesis::Errors::ServiceError :
+                  Aws::Kinesis::Errors::ProvisionedThroughputExceededException
+              # @see https://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecords.html
+              # @see https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/Firehose/Client.html#put_record_batch-instance_method
+              # @see https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/Firehose/Errors.html
+              when :firehose
+                service_unavailable_exception_records = failed_records.select { |record| record[:error_code] == 'ServiceUnavailableException' }
+                target_failed_record = service_unavailable_exception_records.first || failed_records.first
+                target_error = service_unavailable_exception_records.empty? ?
+                  Aws::Firehose::Errors::ServiceError :
+                  Aws::Firehose::Errors::ServiceUnavailableException
+              end
+              log.error("Raise #{target_failed_record[:error_code]} and return chunk to Fluentd buffer for retrying")
+              raise target_error.new(Seahorse::Client::RequestContext.new, target_failed_record[:error_message])
+            else
+              # Increment num_errors to monitor batch request failure from "monitor_agent" or "fluent-plugin-prometheus"
+              increment_num_errors
+            end
+          end
+
+          def increment_num_errors
+            # Prepare Fluent::Plugin::Output instance variables to count errors in this method.
+            # These instance variables are initialized here for possible future breaking changes of Fluentd.
+            @num_errors ||= 0
+            # @see https://github.com/fluent/fluentd/commit/d245454658d16170431d276fcd5849fb0d88ab2b
+            if Gem::Version.new(Fluent::VERSION) >= Gem::Version.new('1.7.0')
+              @counter_mutex ||= Mutex.new
+              @counter_mutex.synchronize{ @num_errors += 1 }
+            else
+              @counters_monitor ||= Monitor.new
+              @counters_monitor.synchronize{ @num_errors += 1 }
+            end
           end
 
           class Backoff
