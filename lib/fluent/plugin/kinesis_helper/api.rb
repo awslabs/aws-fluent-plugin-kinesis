@@ -41,12 +41,12 @@ module Fluent
         module BatchRequest
           module BatchRequestParams
             include Fluent::Configurable
-            config_param :retries_on_batch_request,             :integer, default: 8
-            config_param :reset_backoff_if_success,             :bool,    default: true
-            config_param :batch_request_max_count,              :integer, default: nil
-            config_param :batch_request_max_size,               :integer, default: nil
-            config_param :raise_error_on_batch_request_failure, :bool,    default: false
-            config_param :monitor_num_of_batch_request_retries, :bool,    default: false
+            config_param :retries_on_batch_request,                        :integer, default: 8
+            config_param :reset_backoff_if_success,                        :bool,    default: true
+            config_param :batch_request_max_count,                         :integer, default: nil
+            config_param :batch_request_max_size,                          :integer, default: nil
+            config_param :drop_failed_records_after_batch_request_retries, :bool,    default: true
+            config_param :monitor_num_of_batch_request_retries,            :bool,    default: false
           end
 
           def self.included(mod)
@@ -178,7 +178,10 @@ module Fluent
               ])
             }
 
-            if @raise_error_on_batch_request_failure
+            if @drop_failed_records_after_batch_request_retries
+              # Increment num_errors to monitor batch request failure from "monitor_agent" or "fluent-plugin-prometheus"
+              increment_num_errors
+            else
               # Raise error and return chunk to Fluentd for retrying
               case request_type
               # @see https://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecords.html
@@ -202,9 +205,6 @@ module Fluent
               end
               log.error("Raise #{target_failed_record[:error_code]} and return chunk to Fluentd buffer for retrying")
               raise target_error.new(Seahorse::Client::RequestContext.new, target_failed_record[:error_message])
-            else
-              # Increment num_errors to monitor batch request failure from "monitor_agent" or "fluent-plugin-prometheus"
-              increment_num_errors
             end
           end
 
