@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 3.4.0.rc1
+
+- Enhancement - Enable to monitor batch request failure and retries : [#150](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/150) [#211](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/211)
+- Enhancement - Make sleep reliable by measuring actual slept time : [#162](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/162)
+- Dependency - Restrict google-protobuf dependency to v3.14 or lower to handle KinesisStreamsOutputAggregatedTest performance issue
+- Enhancement - Add td-agent 3.8.1 and Fluentd 1.12.0 to test cases
+
 ## 3.3.0
 
 - Feature - Add web_identity_credentials configuration for IRSA : [#208](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/208) [#209](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/209)
