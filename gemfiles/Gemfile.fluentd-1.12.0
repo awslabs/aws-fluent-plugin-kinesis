@@ -17,4 +17,4 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in fluent-plugin-kinesis.gemspec
 gemspec path: ".."
 
-gem "fluentd", "1.11.2"
+gem "fluentd", "1.12.0"

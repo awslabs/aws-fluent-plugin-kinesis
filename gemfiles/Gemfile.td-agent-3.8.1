@@ -1,0 +1,31 @@
+#
+# Copyright 2014-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
+
+source 'https://rubygems.org'
+
+# Specify your gem's dependencies in fluent-plugin-kinesis.gemspec
+gemspec path: ".."
+
+# Specify related gems for td-agent v3.8.1
+# https://github.com/treasure-data/omnibus-td-agent/pull/273/files#diff-f73e763ace61e7c4bf48bf94bd6e295bc2cfd1ce5f9e38a4d19e266353e37498R27
+gem "fluentd", "1.11.5"
+# https://github.com/treasure-data/omnibus-td-agent/pull/273/files#diff-8d45eaa8758f7591f884c9e9917ea96105331a1daf5a891b4645b89e120f2d69R19-R25
+gem "jmespath", "1.4.0"
+gem "aws-partitions", "1.399.0"
+gem "aws-sigv4", "1.2.2"
+gem "aws-sdk-core", "3.109.3"
+gem "aws-sdk-kms", "1.39.0"
+gem "aws-sdk-sqs", "1.34.0"
+gem "aws-sdk-s3", "1.85.0"
+gem "fluent-plugin-s3", "1.4.0"
