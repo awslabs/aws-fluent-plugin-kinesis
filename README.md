@@ -1,6 +1,6 @@
 # Fluent plugin for Amazon Kinesis
 
-[![Build Status](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.org/awslabs/aws-fluent-plugin-kinesis)
+[![Build Status](https://travis-ci.com/awslabs/aws-fluent-plugin-kinesis.svg?branch=master)](https://travis-ci.com/awslabs/aws-fluent-plugin-kinesis)
 [![Gem Version](https://badge.fury.io/rb/fluent-plugin-kinesis.svg)](https://rubygems.org/gems/fluent-plugin-kinesis)
 [![Gem Downloads](https://img.shields.io/gem/dt/fluent-plugin-kinesis.svg)](https://rubygems.org/gems/fluent-plugin-kinesis)
 
