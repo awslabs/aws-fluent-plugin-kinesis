@@ -1,10 +1,10 @@
 # CHANGELOG
 
-## 3.4.0.rc2
+## 3.4.0
 
 - Enhancement - Enable to monitor batch request failure and retries : [#150](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/150) [#211](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/211)
 - Enhancement - Make sleep reliable by measuring actual slept time : [#162](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/162)
-- Enhancement - Add td-agent 3.8.1 and Fluentd 1.12.0 to test cases
+- Enhancement - Add td-agent 4.1.0 and Fluentd 1.12.3 to test cases
 
 ## 3.3.0
 
