@@ -1,0 +1,21 @@
+source 'https://rubygems.org'
+
+# Specify your gem's dependencies in fluent-plugin-kinesis.gemspec
+gemspec path: ".."
+
+# Specify related gems for td-agent v4.1.0
+# https://github.com/fluent-plugins-nursery/td-agent-builder/blob/master/CHANGELOG.md
+# https://github.com/fluent-plugins-nursery/td-agent-builder/blob/v4.1.0/td-agent/config.rb#L4
+gem "fluentd", "1.12.1"
+# https://github.com/fluent-plugins-nursery/td-agent-builder/blob/v4.1.0/td-agent/Gemfile#L32-L42
+gem "prometheus-client", "0.9.0"
+gem "fluent-plugin-prometheus", "1.8.5"
+gem "fluent-plugin-prometheus_pushgateway", "0.0.2"
+gem "jmespath", "1.4.0"
+gem "aws-partitions", "1.427.0"
+gem "aws-sdk-core", "3.112.0"
+gem "aws-sdk-kms", "1.42.0"
+gem "aws-sdk-sqs", "1.36.0"
+gem "aws-sigv4", "1.2.2"
+gem "aws-sdk-s3", "1.88.1"
+gem "fluent-plugin-s3", "1.5.1"

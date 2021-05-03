@@ -3,10 +3,10 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in fluent-plugin-kinesis.gemspec
 gemspec path: ".."
 
-# Specify related gems for td-agent v3.4.1
-# https://github.com/treasure-data/omnibus-td-agent/blob/v3.4.1/config/projects/td-agent3.rb#L27
+# Specify related gems for td-agent v3.4.0
+# https://github.com/treasure-data/omnibus-td-agent/blob/v3.4.0/config/projects/td-agent3.rb#L27
 gem "fluentd", "1.4.2"
-# https://github.com/treasure-data/omnibus-td-agent/blob/v3.4.1/plugin_gems.rb#L16-L23
+# https://github.com/treasure-data/omnibus-td-agent/blob/v3.4.0/plugin_gems.rb#L16-L23
 gem "jmespath", "1.4.0"
 gem "aws-partitions", "1.149.0"
 gem "aws-sigv4", "1.1.0"
