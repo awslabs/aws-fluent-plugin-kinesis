@@ -42,7 +42,7 @@ module Fluent
 
       def write(chunk)
         stream_name = extract_placeholders(@stream_name, chunk)
-        write_records_batch(chunk) do |batch|
+        write_records_batch(chunk, stream_name) do |batch|
           records = batch.map{|(data, partition_key)|
             { data: data, partition_key: partition_key }
           }
