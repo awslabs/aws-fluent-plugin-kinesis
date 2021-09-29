@@ -45,7 +45,7 @@ module Fluent
 
       def write(chunk)
         delivery_stream_name = extract_placeholders(@delivery_stream_name, chunk)
-        write_records_batch(chunk) do |batch|
+        write_records_batch(chunk, delivery_stream_name) do |batch|
           records = batch.map{|(data)|
             { data: data }
           }
