@@ -9,7 +9,8 @@ sudo: false
 matrix:
   include:
     - gemfile: gemfiles/Gemfile.fluentd-1.13.3 # Latest Fluentd / https://www.fluentd.org/download
-      rvm: 2.7.4 # Latest supported Ruby (less than v3.0.0) / https://www.ruby-lang.org/en/downloads
+      rvm: 3.0.2 # Latest supported Ruby / https://www.ruby-lang.org/en/downloads
+      dist: focal
     - gemfile: gemfiles/Gemfile.fluentd-0.14.22 # Oldest supported Fluentd
       rvm: 2.3.0 # Oldest supported Ruby
     - gemfile: gemfiles/Gemfile.td-agent-3.1.0
