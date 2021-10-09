@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.4.1
+
+- Enhancement - Add stream name to debug logs to identify : [#214](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/214)
+- Enhancement - Add td-agent 4.1.1, 4.2.0 and Fluentd 1.13.3 with Ruby 3.0.2 to test cases
+
 ## 3.4.0
 
 - Enhancement - Enable to monitor batch request failure and retries : [#150](https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/150) [#211](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/211)
