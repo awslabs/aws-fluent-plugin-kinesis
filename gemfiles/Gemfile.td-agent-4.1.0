@@ -4,10 +4,10 @@ source 'https://rubygems.org'
 gemspec path: ".."
 
 # Specify related gems for td-agent v4.1.0
-# https://github.com/fluent-plugins-nursery/td-agent-builder/blob/master/CHANGELOG.md
-# https://github.com/fluent-plugins-nursery/td-agent-builder/blob/v4.1.0/td-agent/config.rb#L4
+# https://github.com/fluent-plugins-nursery/fluent-package-builder/blob/master/CHANGELOG.md
+# https://github.com/fluent-plugins-nursery/fluent-package-builder/blob/v4.1.0/td-agent/config.rb#L4
 gem "fluentd", "1.12.1"
-# https://github.com/fluent-plugins-nursery/td-agent-builder/blob/v4.1.0/td-agent/Gemfile#L32-L42
+# https://github.com/fluent-plugins-nursery/fluent-package-builder/blob/v4.1.0/td-agent/Gemfile#L32-L42
 gem "prometheus-client", "0.9.0"
 gem "fluent-plugin-prometheus", "1.8.5"
 gem "fluent-plugin-prometheus_pushgateway", "0.0.2"
