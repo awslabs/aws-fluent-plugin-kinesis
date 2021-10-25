@@ -121,6 +121,8 @@ module Fluent
         case @compression
         when "zlib"
           ->(data) { Zlib::Deflate.deflate(data) }
+        when "gzip"
+          ->(data) { Gzip.compress(data) }
         else
           ->(data) { data }
         end

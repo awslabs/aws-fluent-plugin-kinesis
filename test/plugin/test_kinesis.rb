@@ -14,6 +14,7 @@
 
 require_relative '../helper'
 require 'fluent/plugin/kinesis'
+require 'fluent/plugin/kinesis_helper/compression'
 
 module Fluent
   module Plugin
@@ -83,6 +84,17 @@ class KinesisOutputTest < Test::Unit::TestCase
     compression, expected = data
     d = create_driver(default_config + "data_key a\ncompression #{compression}")
     driver_run(d, [{"a"=>"foo"}])
+    result = d.formatted.first
+    assert_equal expected, MessagePack.unpack(result).first
+  end
+
+  data(
+    'gzip' => ['gzip', Gzip.compress("abc")],
+    )
+  def test_format_compression_gzip(data)
+    compression, expected = data
+    d = create_driver(default_config + "data_key test\ncompression #{compression}")
+    driver_run(d, [{"test"=>"abc"}])
     result = d.formatted.first
     assert_equal expected, MessagePack.unpack(result).first
   end
