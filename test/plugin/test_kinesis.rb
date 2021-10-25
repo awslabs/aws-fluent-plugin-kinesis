@@ -89,14 +89,15 @@ class KinesisOutputTest < Test::Unit::TestCase
   end
 
   data(
-    'gzip' => ['gzip', Gzip.compress("abc")],
+    'gzip' => ['gzip', Gzip.compress("foo2")],
     )
   def test_format_compression_gzip(data)
     compression, expected = data
-    d = create_driver(default_config + "data_key test\ncompression #{compression}")
-    driver_run(d, [{"test"=>"abc"}])
+    d = create_driver(default_config + "data_key a\ncompression #{compression}")
+    driver_run(d, [{"a"=>"foo2"}])
     result = d.formatted.first
-    assert_equal expected, MessagePack.unpack(result).first
+    unpacked = MessagePack.unpack(result).first
+    assert_equal Gzip.decompress(expected), Gzip.decompress(unpacked)
   end
 
   data(
