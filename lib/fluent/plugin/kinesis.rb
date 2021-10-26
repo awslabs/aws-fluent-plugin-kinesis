@@ -17,6 +17,7 @@ require 'fluent/msgpack_factory'
 require 'fluent/plugin/output'
 require 'fluent/plugin/kinesis_helper/client'
 require 'fluent/plugin/kinesis_helper/api'
+require 'fluent/plugin/kinesis_helper/compression'
 require 'zlib'
 
 module Fluent
