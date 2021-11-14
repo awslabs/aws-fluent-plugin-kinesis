@@ -17,6 +17,7 @@ require 'fluent/msgpack_factory'
 require 'fluent/plugin/output'
 require 'fluent/plugin/kinesis_helper/client'
 require 'fluent/plugin/kinesis_helper/api'
+require 'fluent/plugin/kinesis_helper/compression'
 require 'zlib'
 
 module Fluent
@@ -121,6 +122,8 @@ module Fluent
         case @compression
         when "zlib"
           ->(data) { Zlib::Deflate.deflate(data) }
+        when "gzip"
+          ->(data) { Gzip.compress(data) }
         else
           ->(data) { data }
         end

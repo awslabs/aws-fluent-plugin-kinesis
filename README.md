@@ -353,7 +353,7 @@ Also, there are some format related options below:
 If your record contains a field whose string should be sent to Amazon Kinesis directly (without formatter), use this parameter to specify the field. In that case, other fields than **data_key** are thrown away and never sent to Amazon Kinesis. Default `nil`, which means whole record will be formatted and sent.
 
 ### compression
-Specifing compression way for data of each record. Current accepted options are `zlib`. Otherwise, no compression will be preformed.
+Specifying compression way for data of each record. Current accepted options are `zlib` and `gzip`. Otherwise, no compression will be preformed.
 
 ### log_truncate_max_size
 Integer, default 1024. When emitting the log entry, the message will be truncated by this size to avoid infinite loop when the log is also sent to Kinesis. The value 0 means no truncation.
