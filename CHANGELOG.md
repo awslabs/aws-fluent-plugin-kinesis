@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 3.4.2
+- Feature - Add option to support gzip compression : [#215](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/215)
+
 ## 3.4.1
 
 - Enhancement - Add stream name to debug logs to identify : [#214](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/214)
