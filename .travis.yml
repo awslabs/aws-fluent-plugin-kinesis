@@ -8,9 +8,8 @@ sudo: false
 # https://github.com/fluent-plugins-nursery/fluent-package-builder/blob/master/CHANGELOG.md
 matrix:
   include:
-    - gemfile: gemfiles/Gemfile.fluentd-1.13.3 # Latest Fluentd / https://www.fluentd.org/download
-      rvm: 3.0.2 # Latest supported Ruby / https://www.ruby-lang.org/en/downloads
-      dist: focal
+    - gemfile: gemfiles/Gemfile.fluentd-1.14.3 # Latest Fluentd / https://www.fluentd.org/download
+      rvm: 3.0.3 # Latest supported Ruby / https://www.ruby-lang.org/en/downloads & https://rubies.travis-ci.org
     - gemfile: gemfiles/Gemfile.fluentd-0.14.22 # Oldest supported Fluentd
       rvm: 2.3.0 # Oldest supported Ruby
     - gemfile: gemfiles/Gemfile.td-agent-3.1.0
@@ -51,6 +50,8 @@ matrix:
       rvm: 2.7.3 # https://github.com/fluent-plugins-nursery/fluent-package-builder/blob/v4.1.1/td-agent/config.rb#L17
     - gemfile: gemfiles/Gemfile.td-agent-4.2.0
       rvm: 2.7.4 # https://github.com/fluent-plugins-nursery/fluent-package-builder/blob/v4.2.0/td-agent/config.rb#L21
+    - gemfile: gemfiles/Gemfile.td-agent-4.3.0
+      rvm: 2.7.5 # https://github.com/fluent-plugins-nursery/fluent-package-builder/blob/v4.3.0/td-agent/config.rb#L21
   fast_finish: true
 
 script: bundle exec rake test
