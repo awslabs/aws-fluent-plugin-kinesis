@@ -4,3 +4,9 @@ source 'https://rubygems.org'
 gemspec path: ".."
 
 gem "fluentd", "0.14.22"
+
+# google-protobuf 3.19.2 requires Ruby 2.5+
+# https://rubygems.org/gems/google-protobuf/versions/3.19.2-x86_64-linux
+if Gem::Version.create(RUBY_VERSION) < Gem::Version.create("2.5")
+  gem "google-protobuf", "< 3.19.2"
+end
