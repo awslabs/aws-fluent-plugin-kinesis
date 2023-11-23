@@ -16,8 +16,9 @@ gem "aws-sdk-sqs", "1.10.0"
 gem "aws-sdk-s3", "1.30.0"
 gem "fluent-plugin-s3", "1.1.7"
 
-# google-protobuf 3.19.2 requires Ruby 2.5+
+# google-protobuf 3.19.2 and aws-eventstream 1.13.0 requires Ruby 2.5+
 # https://rubygems.org/gems/google-protobuf/versions/3.19.2-x86_64-linux
 if Gem::Version.create(RUBY_VERSION) < Gem::Version.create("2.5")
   gem "google-protobuf", "< 3.19.2"
+  gem "aws-eventstream", "< 1.13.0"
 end
