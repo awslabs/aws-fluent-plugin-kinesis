@@ -53,7 +53,9 @@ Gem::Specification.new do |spec|
   #   LoadError: cannot load such file -- aws-sdk-core/plugins/transfer_encoding.rb
   #   https://github.com/aws/aws-sdk-ruby/commit/bb61ed0a2fabc6b1f90b757f13f37d5aeae48d8a#diff-d51486091a10ada65b308b7f45966af1R26
   #   https://github.com/aws/aws-sdk-ruby/commit/e26577d2a426a4be79cd2d9edc1a4a4176e388ba#diff-10f50e27b30c3dc522b3c25db5782e2e
-  spec.add_dependency "aws-sdk-firehose", "~> 1", "!= 1.5", "!= 1.9", "!= 1.15"
+  # Exlude aws-sdk-firehose from the v1.59 to avoid fluent-plugin-kinesis dependency problem with aws-sdk-core v3.188.0 and aws-event-stream v1.3.0 which are dependency of this aws-sdk-firehose
+  #   aws-sdk-core v3.188.0 and aws-eventstream v1.3.0 boths requires Ruby version >= 2.5 and it conflict with fluent-plugin-kinesis's required ruby version, 2.3.
+  spec.add_dependency "aws-sdk-firehose", "~> 1", "< 1.59", "!= 1.5", "!= 1.9", "!= 1.15"
 
   spec.add_dependency "google-protobuf", "~> 3"
 
