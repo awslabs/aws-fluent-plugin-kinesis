@@ -1,6 +1,12 @@
 # CHANGELOG
 
+## 3.5.0
+
+- Enhancement - Add td-agent 4.3-4.5, fluent-package 5.0, and Fluentd 1.16.3 with Ruby 3.3.0 to test cases
+- Dependency - Update gem dependency to Ruby 2.4.2+
+
 ## 3.4.2
+
 - Feature - Add option to support gzip compression : [#215](https://github.com/awslabs/aws-fluent-plugin-kinesis/pull/215)
 
 ## 3.4.1
