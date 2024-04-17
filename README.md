@@ -30,8 +30,8 @@ If you would like to build by yourself and install, you can build and install as
     $ bundle exec rake build
     $ bundle exec rake install
 
-    # If using fluent-package (td-agent), use td-agent-gem
-    $ td-agent-gem install pkg/fluent-plugin-kinesis
+If using td-agent v4 or lower, use td-agent-gem
+    $ td-agent-gem install fluent-plugin-kinesis
 
 ## Requirements
 
