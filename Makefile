@@ -42,3 +42,7 @@ benchmark:
 
 benchmark-remote:
 	bundle exec rake benchmark:remote
+
+regenerate-protobuf:
+	protoc --proto_path=proto --ruby_out=lib/fluent/plugin/gen kinesis_aggregation.proto
+
