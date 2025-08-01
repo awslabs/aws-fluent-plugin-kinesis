@@ -14,24 +14,7 @@
 
 require 'fluent/configurable'
 require 'google/protobuf'
-
-Google::Protobuf::DescriptorPool.generated_pool.build do
-  add_message "AggregatedRecord" do
-    repeated :partition_key_table, :string, 1
-    repeated :explicit_hash_key_table, :string, 2
-    repeated :records, :message, 3, "Record"
-  end
-  add_message "Tag" do
-    optional :key, :string, 1
-    optional :value, :string, 2
-  end
-  add_message "Record" do
-    optional :partition_key_index, :uint64, 1
-    optional :explicit_hash_key_index, :uint64, 2
-    optional :data, :bytes, 3
-    repeated :tags, :message, 4, "Tag"
-  end
-end
+require 'fluent/plugin/gen/kinesis_aggregation_pb'
 
 module Fluent
   module Plugin
