@@ -1,10 +1,13 @@
 # CHANGELOG
 
+## 3.6.1
+
+- Dependency - Update gem dependency to Ruby 2.7.1+
+
 ## 3.6.0
 
 - Enhancement - Add fluent-package 5.2 and Fluentd 1.19.0 with Ruby 3.4.5 to test cases
 - Dependency - Update google-protobuf dependency to v4
-- Dependency - Update gem dependency to Ruby 2.7.1+
 
 ## 3.5.0
 
