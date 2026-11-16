@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.7.2
+
+- Bug fix - Log the retry sleep that was woken up early at debug level instead of error level, since the plugin sleeps again for the rest of the time
+
 ## 3.7.1
 
 - Bug fix - Fix loading the plugin with Bundler on Ruby 4.0, where benchmark is no longer a default gem

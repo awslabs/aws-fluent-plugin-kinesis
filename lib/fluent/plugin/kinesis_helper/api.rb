@@ -117,7 +117,7 @@ module Fluent
               sleep(wait_second)
               actual = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at
               break if actual >= wait_second
-              log.error("#{Thread.current.object_id} sleep failed expected #{wait_second} but slept #{actual}")
+              log.debug("#{Thread.current.object_id} sleep failed expected #{wait_second} but slept #{actual}")
               wait_second -= actual
             end
           end

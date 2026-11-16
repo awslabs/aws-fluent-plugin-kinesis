@@ -126,6 +126,8 @@ class KinesisHelperAPITest < Test::Unit::TestCase
     t.join
     time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at
     assert_operator time, :>, 0.15
+    # Waking up early is handled by sleeping again, so it is not logged as an error
+    assert_equal [], @object.log.logs.grep(/\[error\]/)
   end
 
   data(
