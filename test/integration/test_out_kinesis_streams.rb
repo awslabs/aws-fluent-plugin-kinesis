@@ -87,7 +87,8 @@ class KinesisStreamsOutputAwsEmulatorTest < Test::Unit::TestCase
   end
 
   def test_put_records_split_into_multiple_requests
-    stream_name = create_stream
+    # Use 2 shards, since a shard accepts up to 1,000 records per second
+    stream_name = create_stream(shard_count: 2)
     # More than BatchRequestLimitCount (500) records in a chunk
     records = (1..1200).map { |i| { 'id' => i } }
     d = create_driver("stream_name #{stream_name}")
@@ -96,7 +97,8 @@ class KinesisStreamsOutputAwsEmulatorTest < Test::Unit::TestCase
     assert_no_error_logs(d)
     assert_equal 3, requests.size
 
+    # Records are ordered only within each shard
     actual = read_records(stream_name, records.size)
-    assert_equal records.map { |r| "#{r.to_json}\n" }, actual.map(&:data)
+    assert_equal records.map { |r| "#{r.to_json}\n" }.sort, actual.map(&:data).sort
   end
 end

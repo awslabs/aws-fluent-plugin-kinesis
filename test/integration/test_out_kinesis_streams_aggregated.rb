@@ -63,11 +63,13 @@ class KinesisStreamsAggregatedOutputAwsEmulatorTest < Test::Unit::TestCase
 
   def test_put_aggregated_records_split_into_multiple_requests
     stream_name = create_stream
-    # More than BatchRequestLimitSize (1 MB) of records in a chunk
-    records = (1..300).map { |i| { 'id' => i, 'data' => 'a' * 10 * 1024 } }
+    # More than batch_request_max_size of records in a chunk.
+    # Keep the total under 1 MB, since a shard accepts up to 1 MB per second and all records go to one shard.
+    records = (1..60).map { |i| { 'id' => i, 'data' => 'a' * 10 * 1024 } }
     d = create_driver(%[
       stream_name #{stream_name}
       fixed_partition_key fixed-key
+      batch_request_max_size 204800
       <buffer>
         chunk_limit_size 8m
       </buffer>
@@ -79,7 +81,7 @@ class KinesisStreamsAggregatedOutputAwsEmulatorTest < Test::Unit::TestCase
 
     actual = read_records(stream_name, requests.size)
     assert_equal requests.size, actual.size
-    actual.each { |r| assert_operator r.data.bytesize, :<=, 1024 * 1024 }
+    actual.each { |r| assert_operator r.data.bytesize, :<=, 204800 }
     assert_equal records.map { |r| "#{r.to_json}\n" }, deaggregate(actual).flat_map(&:first)
   end
 end
